@@ -1,0 +1,1043 @@
+<!-- src/app/pages/admin/admin.component.html -->
+
+<!-- Navegación Principal -->
+<nav class="main-nav">
+  <div class="nav-container">
+    <a routerLink="/inicio" class="nav-brand">
+      <i class="fas fa-tint"></i>
+      <span>HydroSave</span>
+    </a>
+    
+    <div class="nav-menu">
+      <a routerLink="/inicio" class="nav-link">
+        <i class="fas fa-home"></i>
+        <span>Inicio</span>
+      </a>
+      <a routerLink="/modulos" class="nav-link">
+        <i class="fas fa-graduation-cap"></i>
+        <span>Módulos</span>
+      </a>
+      <a routerLink="/biblioteca" class="nav-link">
+        <i class="fas fa-book"></i>
+        <span>Biblioteca</span>
+      </a>
+      <a routerLink="/actividades" class="nav-link">
+        <i class="fas fa-tasks"></i>
+        <span>Actividades</span>
+      </a>
+      <a *ngIf="usuario?.rol === 'admin'" routerLink="/admin" class="nav-link" routerLinkActive="active">
+        <i class="fas fa-shield-alt"></i>
+        <span>Admin</span>
+      </a>
+    </div>
+    
+    <div class="nav-profile-container">
+      <a routerLink="/perfil" class="nav-profile">
+        <img *ngIf="fotoUsuario || usuario?.foto" [src]="fotoUsuario || usuario?.foto" class="profile-img" [alt]="usuario?.nombre || 'Usuario'">
+        <i *ngIf="!(fotoUsuario || usuario?.foto)" class="fas fa-user"></i>
+        <span>{{ usuario?.nombre || 'Perfil' }}</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- Mensaje de error global -->
+<div class="error-message" *ngIf="error">
+  <div class="error-content">
+    <i class="fas fa-exclamation-triangle"></i>
+    <span>{{error}}</span>
+    <button class="btn-close-error" (click)="error = null">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Container Principal -->
+<div class="admin-container">
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <nav class="sidebar-nav">
+      <button 
+        class="sidebar-btn"
+        [class.active]="seccionActiva === 'dashboard'"
+        (click)="cambiarSeccion('dashboard')">
+        <i class="fas fa-chart-line"></i>
+        <span>Dashboard</span>
+      </button>
+      
+      <button 
+        class="sidebar-btn"
+        [class.active]="seccionActiva === 'usuarios'"
+        (click)="cambiarSeccion('usuarios')">
+        <i class="fas fa-users"></i>
+        <span>Usuarios</span>
+      </button>
+      
+      <button 
+        class="sidebar-btn"
+        [class.active]="seccionActiva === 'modulos'"
+        (click)="cambiarSeccion('modulos')">
+        <i class="fas fa-graduation-cap"></i>
+        <span>Módulos</span>
+      </button>
+      
+      <button 
+        class="sidebar-btn"
+        [class.active]="seccionActiva === 'actividades'"
+        (click)="cambiarSeccion('actividades')">
+        <i class="fas fa-tasks"></i>
+        <span>Actividades</span>
+      </button>
+      
+      <button 
+        class="sidebar-btn"
+        [class.active]="seccionActiva === 'biblioteca'"
+        (click)="cambiarSeccion('biblioteca')">
+        <i class="fas fa-book"></i>
+        <span>Biblioteca</span>
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Contenido Principal -->
+  <main class="admin-content">
+    
+    <!-- ===== DASHBOARD ===== -->
+    <div class="section-content" *ngIf="seccionActiva === 'dashboard'">
+      <div class="section-header">
+        <div>
+          <h2>
+            <i class="fas fa-chart-line"></i>
+            Dashboard General
+          </h2>
+          <p>Estadísticas y métricas principales del sistema</p>
+        </div>
+      </div>
+
+      <div class="stats-grid" *ngIf="estadisticasGenerales">
+        <div class="stat-card">
+          <div class="stat-icon users">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{estadisticasGenerales.total_usuarios}}</h3>
+            <p>Total Usuarios</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon admins">
+            <i class="fas fa-user-shield"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{estadisticasGenerales.total_admins}}</h3>
+            <p>Administradores</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon modules">
+            <i class="fas fa-graduation-cap"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{estadisticasGenerales.total_modulos}}</h3>
+            <p>Módulos Activos</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon activities">
+            <i class="fas fa-tasks"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{estadisticasGenerales.total_actividades}}</h3>
+            <p>Actividades</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon resources">
+            <i class="fas fa-book"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{estadisticasGenerales.total_recursos}}</h3>
+            <p>Recursos Biblioteca</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon certificates">
+            <i class="fas fa-certificate"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{estadisticasGenerales.total_certificados}}</h3>
+            <p>Certificados Emitidos</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== USUARIOS ===== -->
+    <div class="section-content" *ngIf="seccionActiva === 'usuarios'">
+      <div class="section-header">
+        <div>
+          <h2>
+            <i class="fas fa-users"></i>
+            Gestión de Usuarios
+          </h2>
+          <p>Administra usuarios y sus permisos</p>
+        </div>
+        <button class="btn-primary" (click)="abrirModalUsuario()">
+          <i class="fas fa-plus"></i>
+          Nuevo Usuario
+        </button>
+      </div>
+
+      <!-- Filtros -->
+      <div class="filters-bar">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input 
+            type="text" 
+            [(ngModel)]="busqueda"
+            (keyup.enter)="aplicarFiltros()"
+            placeholder="Buscar por nombre o correo...">
+        </div>
+
+        <select [(ngModel)]="filtroRol" (change)="aplicarFiltros()" class="filter-select">
+          <option value="">Todos los roles</option>
+          <option value="usuario">Usuario</option>
+          <option value="admin">Admin</option>
+        </select>
+
+        <select [(ngModel)]="ordenUsuarios" (change)="aplicarFiltros()" class="filter-select">
+          <option value="fecha_desc">Más recientes</option>
+          <option value="fecha_asc">Más antiguos</option>
+          <option value="nombre_asc">A-Z</option>
+          <option value="nombre_desc">Z-A</option>
+        </select>
+
+        <button class="btn-secondary" (click)="aplicarFiltros()">
+          <i class="fas fa-filter"></i>
+          Filtrar
+        </button>
+      </div>
+
+      <!-- Tabla de usuarios -->
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Usuario</th>
+              <th>Correo</th>
+              <th>Rol</th>
+              <th>Módulos</th>
+              <th>Actividades</th>
+              <th>Puntos</th>
+              <th>Registro</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let usuario of usuarios">
+              <td>{{usuario.id}}</td>
+              <td>
+                <div class="user-cell">
+                  <i class="fas fa-user-circle"></i>
+                  <span>{{usuario.nombre}}</span>
+                </div>
+              </td>
+              <td>{{usuario.correo}}</td>
+              <td>
+                <span class="badge" [style.background-color]="obtenerColorRol(usuario.rol)">
+                  {{usuario.rol}}
+                </span>
+              </td>
+              <td>{{usuario.modulos_completados}}</td>
+              <td>{{usuario.actividades_completadas}}</td>
+              <td>{{usuario.puntos_totales}}</td>
+              <td>{{formatearFecha(usuario.fecha_registro)}}</td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn-icon" title="Editar" (click)="abrirModalUsuario(usuario)">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn-icon" title="Cambiar rol" (click)="cambiarRolUsuario(usuario)">
+                    <i class="fas fa-user-shield"></i>
+                  </button>
+                  <button class="btn-icon" title="Resetear contraseña" (click)="resetearPasswordUsuario(usuario)">
+                    <i class="fas fa-key"></i>
+                  </button>
+                  <button class="btn-icon" title="Reset progreso/puntos" (click)="abrirOpcionesReset(usuario)">
+                    <i class="fas fa-redo"></i>
+                  </button>
+                  <button class="btn-icon danger" title="Eliminar" (click)="eliminarUsuario(usuario)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <div class="pagination" *ngIf="totalPaginas > 1">
+        <button 
+          class="btn-page" 
+          [disabled]="paginaActual === 1"
+          (click)="cambiarPagina(paginaActual - 1)">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        
+        <span class="page-info">Página {{paginaActual}} de {{totalPaginas}}</span>
+        
+        <button 
+          class="btn-page" 
+          [disabled]="paginaActual === totalPaginas"
+          (click)="cambiarPagina(paginaActual + 1)">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== MÓDULOS MEJORADO ===== -->
+    <div class="section-content" *ngIf="seccionActiva === 'modulos'">
+      <div class="section-header">
+        <div>
+          <h2>
+            <i class="fas fa-book"></i>
+            Gestión de Módulos
+          </h2>
+          <p>Administra módulos de aprendizaje</p>
+        </div>
+        <button class="btn-primary" (click)="abrirModalModulo()">
+          <i class="fas fa-plus"></i>
+          Nuevo Módulo
+        </button>
+      </div>
+
+      <div class="cards-grid">
+        <div class="resource-card" *ngFor="let modulo of modulos">
+          <div class="card-header" [style.background]="'linear-gradient(135deg, ' + modulo.color + ', ' + modulo.color + 'dd)'">
+            <i [class]="modulo.icono"></i>
+            <span class="badge-nivel" [style.background-color]="obtenerColorNivel(modulo.nivel)">
+              {{modulo.nivel}}
+            </span>
+          </div>
+          
+          <div class="card-body">
+            <h3>{{modulo.titulo}}</h3>
+            <p>{{modulo.descripcion}}</p>
+            
+            <div class="card-stats">
+              <div class="stat">
+                <i class="fas fa-sort-numeric-up"></i>
+                <span>Orden: {{modulo.orden}}</span>
+              </div>
+              <div class="stat">
+                <i class="fas fa-star"></i>
+                <span>{{modulo.puntos}} pts</span>
+              </div>
+              <div class="stat">
+                <i class="fas fa-users"></i>
+                <span>{{modulo.usuarios_completados}} usuarios</span>
+              </div>
+            </div>
+
+            <div class="card-status">
+              <span class="status-badge" [class.active]="modulo.activo" [class.inactive]="!modulo.activo">
+                {{modulo.activo ? 'Activo' : 'Inactivo'}}
+              </span>
+            </div>
+          </div>
+          
+          <div class="card-actions">
+            <button class="btn-card" (click)="abrirModalModulo(modulo)">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn-card " (click)="toggleActivoModulo(modulo)">
+              <i [class]="modulo.activo ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+            <button class="btn-card danger" (click)="eliminarModulo(modulo)">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ACTIVIDADES ===== -->
+    <!-- ===== ACTIVIDADES ===== -->
+<div class="section-content" *ngIf="seccionActiva === 'actividades'">
+  <div class="section-header">
+    <div>
+      <h2>
+        <i class="fas fa-gamepad"></i>
+        Gestión de Actividades
+      </h2>
+      <p>Administra actividades y juegos</p>
+    </div>
+    <button class="btn-primary" (click)="abrirModalActividad()">
+      <i class="fas fa-plus"></i>
+      Nueva Actividad
+    </button>
+  </div>
+
+  <div class="cards-grid">
+    <div class="resource-card" *ngFor="let actividad of actividades">
+      <div class="card-header" [style.background]="'linear-gradient(135deg, ' + actividad.color + ', ' + actividad.color + 'dd)'">
+        <i [class]="actividad.icono"></i>
+        <span class="badge-tipo">{{actividad.tipo}}</span>
+      </div>
+      
+      <div class="card-body">
+        <h3>{{actividad.titulo}}</h3>
+        <p>{{actividad.descripcion}}</p>
+        
+        <div class="card-stats">
+          <div class="stat">
+            <i class="fas fa-layer-group"></i>
+            <span>{{actividad.nivel}}</span>
+          </div>
+          <div class="stat">
+            <i class="fas fa-star"></i>
+            <span>{{actividad.puntos}} pts</span>
+          </div>
+          <div class="stat">
+            <i class="fas fa-users"></i>
+            <span>{{actividad.usuarios_completaron}} completaron</span>
+          </div>
+        </div>
+
+        <div class="card-status">
+          <span class="status-badge" 
+                [class.active]="actividad.activo" 
+                [class.inactive]="!actividad.activo">
+            {{actividad.activo ? 'Activa' : 'Inactiva'}}
+          </span>
+        </div>
+      </div>
+      
+      <div class="card-actions">
+        <button class="btn-card" (click)="abrirModalActividad(actividad)" title="Editar">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn-card " 
+                (click)="toggleActivoActividad(actividad)" 
+                [title]="actividad.activo ? 'Desactivar' : 'Activar'">
+          <i [class]="actividad.activo ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+        </button>
+        <button class="btn-card danger" (click)="eliminarActividad(actividad)" title="Eliminar">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- ===== BIBLIOTECA ===== -->
+    <div class="section-content" *ngIf="seccionActiva === 'biblioteca'">
+      <div class="section-header">
+        <div>
+          <h2>
+            <i class="fas fa-book-open"></i>
+            Gestión de Biblioteca
+          </h2>
+          <p>Administra recursos y materiales</p>
+        </div>
+        <button class="btn-primary" (click)="abrirModalRecurso()">
+          <i class="fas fa-plus"></i>
+          Nuevo Recurso
+        </button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Título</th>
+              <th>Autor</th>
+              <th>Tipo</th>
+              <th>Nivel</th>
+              <th>Categoría</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let recurso of recursos">
+              <td>{{recurso.id}}</td>
+              <td>{{recurso.titulo}}</td>
+              <td>{{recurso.autor}}</td>
+              <td>
+                <span class="badge badge-tipo">{{recurso.tipo}}</span>
+              </td>
+              <td>
+                <span class="badge" [style.background-color]="obtenerColorNivel(recurso.nivel)">
+                  {{recurso.nivel}}
+                </span>
+              </td>
+              <td>{{recurso.categoria || 'N/A'}}</td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn-icon" title="Editar" (click)="abrirModalRecurso(recurso)">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn-icon danger" title="Eliminar" (click)="eliminarRecurso(recurso)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ===== MODAL USUARIO ===== -->
+<div class="modal-overlay" *ngIf="mostrarModalUsuario" (click)="cerrarModalUsuario()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>
+        <i class="fas fa-user"></i>
+        {{usuarioEnEdicion ? 'Editar Usuario' : 'Nuevo Usuario'}}
+      </h3>
+      <button class="btn-close" (click)="cerrarModalUsuario()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <form [formGroup]="formUsuario" (ngSubmit)="guardarUsuario()" class="modal-form">
+      <div class="form-group">
+        <label>Nombre de usuario *</label>
+        <input type="text" formControlName="nombre" class="form-control" placeholder="Nombre de usuario">
+      </div>
+
+      <div class="form-group">
+        <label>Correo *</label>
+        <input type="email" formControlName="correo" class="form-control" placeholder="correo@ejemplo.com">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="tel" formControlName="telefono" class="form-control" placeholder="+57 300 123 4567">
+        </div>
+
+        <div class="form-group">
+          <label>Nombre</label>
+          <input type="text" formControlName="nombreUsuario" class="form-control" placeholder="Nombre Completo">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Rol *</label>
+        <select formControlName="rol" class="form-control">
+          <option value="usuario">Usuario</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="cerrarModalUsuario()">
+          <i class="fas fa-times"></i>
+          Cancelar
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="formUsuario.invalid || cargando">
+          <i class="fas fa-save" *ngIf="!cargando"></i>
+          <i class="fas fa-spinner fa-spin" *ngIf="cargando"></i>
+          {{cargando ? 'Guardando...' : 'Guardar'}}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MODAL RESET USUARIO ===== -->
+<div class="modal-overlay" *ngIf="mostrarOpcionesReset" (click)="cerrarOpcionesReset()">
+  <div class="modal-content" (click)="$event.stopPropagation()" style="max-width: 450px;">
+    <div class="modal-header">
+      <h3>
+        <i class="fas fa-redo"></i>
+        Opciones de Reinicio
+      </h3>
+      <button class="btn-close" (click)="cerrarOpcionesReset()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="modal-form" *ngIf="usuarioSeleccionadoReset">
+      <p style="margin-bottom: 1.5rem; color: #666;">
+        Selecciona qué deseas reiniciar para el usuario <strong>{{usuarioSeleccionadoReset.nombre}}</strong>
+      </p>
+
+      <div class="reset-buttons" style="display: flex; flex-direction: column; gap: 1rem;">
+        <button type="button" class="btn-warning" (click)="resetearProgresoModulos(usuarioSeleccionadoReset.id)">
+          <i class="fas fa-book"></i>
+          Reiniciar Progreso de Módulos
+        </button>
+
+        <button type="button" class="btn-warning" (click)="resetearProgresoActividades(usuarioSeleccionadoReset.id)">
+          <i class="fas fa-gamepad"></i>
+          Reiniciar Progreso de Actividades
+        </button>
+
+        <button type="button" class="btn-danger" (click)="resetearPuntos(usuarioSeleccionadoReset.id)">
+          <i class="fas fa-star"></i>
+          Reiniciar Puntos
+        </button>
+
+        <button type="button" class="btn-secondary" (click)="cerrarOpcionesReset()" style="margin-top: 1rem;">
+          <i class="fas fa-times"></i>
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL MÓDULO MEJORADO ===== -->
+<div class="modal-overlay" *ngIf="mostrarModalModulo" (click)="cerrarModalModulo()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>
+        <i class="fas fa-book"></i>
+        {{moduloEnEdicion ? 'Editar Módulo' : 'Nuevo Módulo'}}
+      </h3>
+      <button class="btn-close" (click)="cerrarModalModulo()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <form [formGroup]="formModulo" (ngSubmit)="guardarModulo()" class="modal-form">
+      <!-- Información Básica -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Título *</label>
+          <input type="text" formControlName="titulo" class="form-control" placeholder="Título del módulo">
+        </div>
+
+        <div class="form-group">
+          <label>Orden *</label>
+          <input type="number" formControlName="orden" class="form-control" min="1" placeholder="1">
+        </div>
+      </div>
+
+
+      <div class="form-group">
+        <label>Descripción *</label>
+        <textarea formControlName="descripcion" class="form-control" rows="3" placeholder="Descripción del módulo"></textarea>
+      </div>
+
+      <!-- Configuración -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nivel *</label>
+          <select formControlName="nivel" class="form-control">
+            <option value="basico">Básico</option>
+            <option value="intermedio">Intermedio</option>
+            <option value="avanzado">Avanzado</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Puntos</label>
+          <input type="number" formControlName="puntos" class="form-control" min="0" placeholder="100">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Icono</label>
+          <input type="text" formControlName="icono" class="form-control" placeholder="fas fa-book">
+        </div>
+
+        <div class="form-group">
+          <label>Color *</label>
+  <select formControlName="color" class="form-control">
+    <option *ngFor="let color of coloresPorNivelArray" [value]="color.valor">
+      {{color.nombre}}
+    </option>
+  </select>
+        </div>
+      </div>
+
+      <!-- Lecturas -->
+      <div style="border-top: 2px solid #e0e0e0; margin-top: 2rem; padding-top: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h4 style="color: #00a8e8; margin: 0;">
+            <i class="fas fa-book"></i>
+            Lecturas
+          </h4>
+          <button type="button" class="btn-primary" (click)="agregarLectura()">
+            <i class="fas fa-plus"></i>
+            Agregar Lectura
+          </button>
+        </div>
+
+        <div class="lectura-item" *ngFor="let lectura of lecturasTemporal; let i = index" style="margin-bottom: 1.5rem; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+            <h5 style="margin: 0; color: #333;">Lectura {{i + 1}}</h5>
+            <button *ngIf="lecturasTemporal.length > 1" type="button" class="btn-icon danger" (click)="eliminarLectura(i)">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+
+          <div class="form-group">
+            <label>Título de la Lectura *</label>
+            <input type="text" [(ngModel)]="lectura.titulo" [ngModelOptions]="{standalone: true}" class="form-control" placeholder="Título de la lectura">
+          </div>
+
+          <div class="form-group">
+            <label>Descripción (Vista Previa) *</label>
+            <textarea [(ngModel)]="lectura.descripcion" [ngModelOptions]="{standalone: true}" class="form-control" rows="2" placeholder="Descripción que se verá antes de abrir la lectura"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Contenido de la Lectura *</label>
+            <textarea [(ngModel)]="lectura.contenido" [ngModelOptions]="{standalone: true}" class="form-control" rows="4" placeholder="Contenido completo de la lectura (soporta HTML)"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Duración</label>
+            <input type="text" [(ngModel)]="lectura.duracion" [ngModelOptions]="{standalone: true}" class="form-control" placeholder="10 min">
+          </div>
+        </div>
+      </div>
+
+      <!-- src/app/pages/admin/admin.component.html - CONTINUACIÓN MODAL MÓDULO -->
+
+      <!-- Materiales Adicionales -->
+      <div style="border-top: 2px solid #e0e0e0; margin-top: 2rem; padding-top: 1.5rem;">
+        <h4 style="color: #00a8e8; margin-bottom: 1rem;">
+          <i class="fas fa-download"></i>
+          Materiales Adicionales
+        </h4>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-infografia')">
+            <i class="fas fa-image"></i>
+            Infografía
+          </button>
+          <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-guia')">
+            <i class="fas fa-file-pdf"></i>
+            Guía
+          </button>
+          <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-video')">
+            <i class="fas fa-video"></i>
+            Video
+          </button>
+          <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-otro')">
+            <i class="fas fa-file"></i>
+            Otro
+          </button>
+        </div>
+
+        <!-- Inputs ocultos -->
+        <input type="file" id="input-infografia" (change)="onMaterialSeleccionado($event, 'infografia')" style="display: none;">
+        <input type="file" id="input-guia" (change)="onMaterialSeleccionado($event, 'guia')" style="display: none;">
+        <input type="file" id="input-video" (change)="onMaterialSeleccionado($event, 'video')" style="display: none;">
+        <input type="file" id="input-otro" (change)="onMaterialSeleccionado($event, 'otro')" style="display: none;">
+
+        <!-- Lista de materiales -->
+        <div *ngIf="materialesSeleccionados.length > 0" style="margin-top: 1rem;">
+          <h5 style="color: #333; margin-bottom: 1rem;">Materiales Subidos ({{materialesSeleccionados.length}})</h5>
+          <div class="materiales-list">
+            <div *ngFor="let material of materialesSeleccionados; let i = index" class="material-item" 
+              style="display: grid; grid-template-columns: auto 1fr auto; gap: 1rem; align-items: center; padding: 1rem; background: #f5f5f5; border-radius: 8px; margin-bottom: 0.8rem;">
+              
+              <div style="width: 50px; height: 50px; border-radius: 8px; background: #ddd; display: flex; align-items: center; justify-content: center; color: #666;">
+                <i class="fas fa-file-alt" style="font-size: 1.5rem;"></i>
+              </div>
+
+              <div>
+                <p style="margin: 0 0 0.5rem 0; font-weight: 600; color: #333;">{{material.titulo}}</p>
+                <p style="margin: 0; font-size: 0.85rem; color: #666;">
+                  <span style="background: #e3f2fd; padding: 0.2rem 0.6rem; border-radius: 4px; text-transform: uppercase; font-size: 0.75rem;">
+                    {{material.tipo}}
+                  </span>
+                </p>
+              </div>
+
+              <button type="button" class="btn-icon danger" (click)="eliminarMaterial(i)" style="width: 40px; height: 40px;">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div class="modal-actions" style="margin-top: 2rem;">
+        <button type="button" class="btn-secondary" (click)="cerrarModalModulo()">
+          <i class="fas fa-times"></i>
+          Cancelar
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="formModulo.invalid || archivosCargando">
+          <i class="fas fa-save" *ngIf="!archivosCargando"></i>
+          <i class="fas fa-spinner fa-spin" *ngIf="archivosCargando"></i>
+          {{archivosCargando ? 'Guardando...' : 'Guardar Módulo'}}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MODAL ACTIVIDAD ===== -->
+<div class="modal-overlay" *ngIf="mostrarModalActividad" (click)="cerrarModalActividad()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>
+        <i class="fas fa-gamepad"></i>
+        {{actividadEnEdicion ? 'Editar Actividad' : 'Nueva Actividad'}}
+      </h3>
+      <button class="btn-close" (click)="cerrarModalActividad()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <form [formGroup]="formActividad" (ngSubmit)="guardarActividad()" class="modal-form">
+      <div class="form-group">
+        <label>Título *</label>
+        <input type="text" formControlName="titulo" class="form-control" placeholder="Título de la actividad">
+      </div>
+
+      <div class="form-group">
+        <label>Descripción *</label>
+        <textarea formControlName="descripcion" class="form-control" rows="3" placeholder="Descripción de la actividad"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tipo *</label>
+          <select formControlName="tipo" class="form-control">
+            <option value="quiz">Quiz</option>
+            <option value="juego">Juego</option>
+            <option value="trivia">trivia</option>
+            <option value="pregunta">Pregunta</option>
+            <option value="simulador">simulador</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Nivel *</label>
+          <select formControlName="nivel" class="form-control">
+            <option value="basico">Básico</option>
+            <option value="intermedio">Intermedio</option>
+            <option value="avanzado">Avanzado</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Puntos</label>
+          <input type="number" formControlName="puntos" class="form-control" min="0" placeholder="10">
+        </div>
+
+        <div class="form-group">
+          <label>Orden</label>
+          <input type="number" formControlName="orden" class="form-control" min="1" placeholder="1">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Icono</label>
+          <input type="text" formControlName="icono" class="form-control" placeholder="fas fa-gamepad">
+        </div>
+
+        <div class="form-group">
+          <label>Color</label>
+          <input type="color" formControlName="color" class="form-control">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Duración</label>
+        <input type="text" formControlName="duracion" class="form-control" placeholder="10-15 min">
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="cerrarModalActividad()">
+          <i class="fas fa-times"></i>
+          Cancelar
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="formActividad.invalid || cargando">
+          <i class="fas fa-save" *ngIf="!cargando"></i>
+          <i class="fas fa-spinner fa-spin" *ngIf="cargando"></i>
+          {{cargando ? 'Guardando...' : 'Guardar'}}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MODAL RECURSO ===== -->
+<div class="modal-overlay" *ngIf="mostrarModalRecurso" (click)="cerrarModalRecurso()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>
+        <i class="fas fa-book-open"></i>
+        {{recursoEnEdicion ? 'Editar Recurso' : 'Nuevo Recurso'}}
+      </h3>
+      <button class="btn-close" (click)="cerrarModalRecurso()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <form [formGroup]="formRecurso" (ngSubmit)="guardarRecurso()" class="modal-form">
+      <div class="form-group">
+        <label>Título *</label>
+        <input type="text" formControlName="titulo" class="form-control" placeholder="Título del recurso">
+      </div>
+
+      <div class="form-group">
+        <label>Descripción</label>
+        <textarea formControlName="descripcion" class="form-control" rows="3" placeholder="Descripción breve del recurso"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Autor *</label>
+          <input type="text" formControlName="autor" class="form-control" placeholder="Nombre del autor">
+        </div>
+
+        <div class="form-group">
+          <label>Tipo *</label>
+          <select formControlName="tipo" class="form-control">
+            <option value="video">Video</option>
+            <option value="infografia">Infografía</option>
+            <option value="guia">Guía</option>
+            <option value="estudio">Estudio</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>URL</label>
+        <input type="url" formControlName="url" class="form-control" placeholder="https://ejemplo.com/recurso">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nivel</label>
+          <select formControlName="nivel" class="form-control">
+            <option value="basico">Básico</option>
+            <option value="intermedio">Intermedio</option>
+            <option value="avanzado">Avanzado</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Categoría</label>
+          <input type="text" formControlName="categoria" class="form-control" placeholder="Ej: Agricultura">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Archivo del Recurso</label>
+        <div class="file-upload-container">
+          <input 
+  type="file" 
+  id="archivoRecurso"
+  (change)="onArchivoSeleccionado($event)"
+  accept=".pdf,.jpg,.jpeg,.png,.mp4,.ppt,.pptx"
+  class="form-control"
+  style="display: none;">
+
+          <button type="button" class="btn-secondary" (click)="selectArchivoRecurso()">
+  <i class="fas fa-upload"></i> Seleccionar Archivo
+</button>
+
+          <span *ngIf="archivoSeleccionado" class="file-name">
+            {{archivoSeleccionado.name}}
+          </span>
+          <span *ngIf="!archivoSeleccionado && formRecurso.value.url" class="file-name">
+            Archivo actual cargado
+          </span>
+        </div>
+        <small class="text-muted">
+          Formatos aceptados: PDF, Imágenes, Videos, Presentaciones (máx. 50MB)
+        </small>
+        <div *ngIf="previsualizacionArchivo" class="preview-container">
+          <img [src]="previsualizacionArchivo" alt="Previsualización" style="max-width: 200px; margin-top: 1rem; border-radius: 8px;">
+        </div>
+      </div>
+
+      <!-- URL alternativa -->
+      <div class="form-group">
+        <label>URL (alternativa)</label>
+        <input type="url" formControlName="url" class="form-control" 
+               placeholder="https://ejemplo.com/recurso o URL de YouTube">
+        <small class="text-muted">
+          Si no subes archivo, puedes ingresar una URL externa (YouTube, Google Drive, etc.)
+        </small>
+      </div>
+
+      <!-- Thumbnail -->
+      <div class="form-group">
+        <label>Imagen de Portada</label>
+        <div class="file-upload-container">
+          <input 
+  type="file" 
+  id="thumbnailRecurso"
+  (change)="onThumbnailSeleccionado($event)"
+  accept="image/*"
+  class="form-control"
+  style="display: none;">
+
+
+          <button type="button" class="btn-secondary" (click)="selectThumbnailRecurso()">
+  <i class="fas fa-image"></i> Seleccionar Imagen
+</button>
+
+          <span *ngIf="thumbnailSeleccionado" class="file-name">
+            {{thumbnailSeleccionado.name}}
+          </span>
+        </div>
+        <small class="text-muted">O ingresa una URL de imagen:</small>
+        <input type="url" formControlName="thumbnail" class="form-control mt-2" 
+               placeholder="https://ejemplo.com/imagen.jpg">
+        <div *ngIf="previsualizacionThumbnail" class="preview-container">
+          <img [src]="previsualizacionThumbnail" alt="Thumbnail" style="max-width: 200px; margin-top: 1rem; border-radius: 8px;">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Duración</label>
+          <input type="text" formControlName="duracion" class="form-control" placeholder="Ej: 10 min">
+        </div>
+
+        <div class="form-group">
+          <label>Puntos</label>
+          <input type="number" formControlName="puntos" class="form-control" min="0" placeholder="0">
+        </div>
+      </div>
+<!-- Thumbnail 
+      <div class="form-group">
+        <label>Thumbnail URL</label>
+        <input type="url" formControlName="thumbnail" class="form-control" placeholder="URL de la imagen de portada">
+      </div>-->
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="cerrarModalRecurso()">
+          <i class="fas fa-times"></i>
+          Cancelar
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="formRecurso.invalid || cargando">
+          <i class="fas fa-save" *ngIf="!cargando"></i>
+          <i class="fas fa-spinner fa-spin" *ngIf="cargando"></i>
+          {{cargando ? 'Guardando...' : 'Guardar'}}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

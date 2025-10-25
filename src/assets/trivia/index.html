@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Reuso de Agua</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style id="app-style">
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f9ff;
+            color: #334155;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            margin: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-top: 1.5vh;
+        }
+
+        .quiz-container {
+            max-width: 800px;
+            width: 100vw;
+            min-height: 80vh;
+            max-height: 96vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: #10b981;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background-color: #059669;
+            transform: translateY(-2px);
+        }
+
+        .progress-bar {
+            height: 10px;
+            border-radius: 5px;
+            background-color: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #3b82f6;
+            transition: width 0.5s ease;
+        }
+
+        .option-btn {
+            transition: all 0.2s ease;
+            border: 2px solid #e2e8f0;
+        }
+
+        .option-btn:hover:not(.selected) {
+            border-color: #cbd5e1;
+            background-color: #f8fafc;
+        }
+
+        .option-btn.selected {
+            border-color: #3b82f6;
+        }
+
+        .option-btn.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+        }
+
+        .option-btn.incorrect {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background-color: #dbeafe;
+            color: #3b82f6;
+        }
+
+        .timer {
+            font-family: monospace;
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .timer.warning {
+            color: #f59e0b;
+        }
+
+        .timer.danger {
+            color: #ef4444;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .achievement {
+            background-color: #f0f9ff;
+            border: 2px solid #bae6fd;
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .achievement.unlocked {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
+        }
+
+        .achievement-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #e0f2fe;
+            border-radius: 50%;
+            color: #0284c7;
+        }
+
+        .achievement.unlocked .achievement-icon {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Estilos para el overlay de resultados */
+        #results-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #results-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .medalla {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .puntaje {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .detalle-puntaje {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: #555;
+        }
+
+        .recomendaciones {
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            color: #333;
+            text-align: left;
+        }
+
+        .acciones {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container p-4 md:p-8" id="quiz-container">
+        <!-- Welcome Screen -->
+        <div id="welcome-screen" class="flex flex-col items-center justify-center h-full py-12 text-center">
+            <div class="w-24 h-24 mb-6 rounded-full bg-blue-100 flex items-center justify-center">
+                <i class="fas fa-water text-4xl text-blue-500"></i>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold mb-4 text-blue-700">Quiz Reuso de Agua</h1>
+            <p class="text-lg md:text-xl mb-8 max-w-md">Pon a prueba tus conocimientos sobre el reuso responsable del agua en el hogar</p>
+            <img src="https://www.iagua.es/sites/default/files/styles/thumbnail-830x455/public/drop-3698073_640.jpg?itok=LW_L0vy0" alt="Conservación del agua" class="w-64 h-auto rounded-lg shadow-md mb-8">
+            <button id="start-btn" class="btn-primary text-lg py-3 px-8 rounded-lg shadow-lg">
+                <i class="fas fa-play mr-2"></i> Comenzar Quiz
+            </button>
+        </div>
+
+        <!-- Mode Selection Screen -->
+        <div id="mode-screen" class="hidden flex flex-col items-center justify-center h-full py-12 fade-in">
+            <h2 class="text-2xl md:text-3xl font-bold mb-6 text-blue-700">Elige un Modo de Juego</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
+                <div class="mode-card p-6 bg-white rounded-xl shadow-md border-2 border-blue-100 hover:border-blue-500 cursor-pointer transition-all duration-300" data-mode="normal">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="p-3 rounded-full bg-blue-100">
+                            <i class="fas fa-book-reader text-xl text-blue-600"></i>
+                        </div>
+                        <span class="badge">Recomendado</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Modo Normal</h3>
+                    <p class="text-gray-600 mb-4">Responde las preguntas a tu propio ritmo, sin presión de tiempo.</p>
+                    <ul class="text-sm text-gray-500 space-y-1">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> Sin límite de tiempo</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> Explicaciones detalladas</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> Ideal para aprender</li>
+                    </ul>
+                </div>
+                <div class="mode-card p-6 bg-white rounded-xl shadow-md border-2 border-blue-100 hover:border-blue-500 cursor-pointer transition-all duration-300" data-mode="challenge">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="p-3 rounded-full bg-orange-100">
+                            <i class="fas fa-stopwatch text-xl text-orange-600"></i>
+                        </div>
+                        <span class="badge bg-orange-100 text-orange-600">Desafío</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Modo Desafío</h3>
+                    <p class="text-gray-600 mb-4">¡Responde todas las preguntas antes de que se acabe el tiempo!</p>
+                    <ul class="text-sm text-gray-500 space-y-1">
+                        <li><i class="fas fa-clock text-orange-500 mr-2"></i> Límite de 2 minutos</li>
+                        <li><i class="fas fa-award text-orange-500 mr-2"></i> Desbloquea insignias especiales</li>
+                        <li><i class="fas fa-bolt text-orange-500 mr-2"></i> Pone a prueba tu conocimiento</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden h-full fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex items-center">
+                    <i class="fas fa-water text-blue-500 mr-2"></i>
+                    <span class="text-lg font-semibold">Quiz Reuso de Agua</span>
+                </div>
+                <div id="timer-container" class="hidden">
+                    <div class="timer" id="timer">02:00</div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="mb-6">
+                <div class="flex justify-between text-sm mb-1">
+                    <span>Progreso</span>
+                    <span id="progress-text">0/10</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Question Container -->
+            <div id="question-container" class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <div class="question-number text-sm text-gray-500 mb-2">Pregunta <span id="current-question">1</span> de <span id="total-questions">10</span></div>
+                <h2 id="question-text" class="text-xl md:text-2xl font-semibold mb-4">¿Qué es el reuso del agua?</h2>
+                
+                <div id="question-image-container" class="mb-6 hidden">
+                    <img id="question-image" src="" alt="Imagen de la pregunta" class="rounded-lg w-full h-auto max-h-64 object-cover">
+                </div>
+
+                <div id="options-container" class="space-y-3">
+                    <!-- Options will be inserted here dynamically -->
+                </div>
+
+                <div id="feedback-container" class="mt-6 p-4 rounded-lg hidden">
+                    <div id="feedback-correct" class="hidden bg-green-50 border border-green-200 p-4 rounded-lg">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-lg font-medium text-green-800">¡Correcto!</h3>
+                                <div class="mt-2 text-sm text-green-700" id="correct-explanation"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="feedback-incorrect" class="hidden bg-red-50 border border-red-200 p-4 rounded-lg">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-times-circle text-red-500 text-xl"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-lg font-medium text-red-800">Incorrecto</h3>
+                                <div class="mt-2 text-sm text-red-700" id="incorrect-explanation"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Next Button -->
+            <div class="flex justify-end">
+                <button id="next-btn" class="btn-primary py-2 px-6 rounded-lg hidden">
+                    Siguiente <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="hidden h-full py-8 fade-in">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-blue-100 flex items-center justify-center">
+                    <i class="fas fa-trophy text-3xl text-blue-500"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold mb-2 text-blue-700">¡Quiz Completado!</h2>
+                <p class="text-lg text-gray-600">Tu puntuación:</p>
+                <div class="text-4xl font-bold my-4 text-blue-700"><span id="score">0</span>/<span id="total">10</span></div>
+                <div id="score-percent" class="text-xl text-gray-600 mb-6">0%</div>
+
+                <div id="challenge-result" class="hidden">
+                    <p id="time-used" class="text-lg mb-4">Tiempo utilizado: <span class="font-semibold">01:45</span></p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h3 class="text-xl font-semibold mb-4">Consejos para el reuso de agua</h3>
+                <div class="text-gray-700 space-y-3">
+                    <p>🌱 <strong>Reusa el agua de cocina:</strong> El agua usada para lavar frutas y verduras es ideal para regar plantas.</p>
+                    <p>🚿 <strong>Captura el agua fría:</strong> Coloca un balde mientras esperas que salga agua caliente de la ducha.</p>
+                    <p>☔ <strong>Aprovecha la lluvia:</strong> Instala sistemas sencillos de captación de agua de lluvia en tu hogar.</p>
+                    <p>👕 <strong>Reutiliza el agua de la lavadora:</strong> El agua del último ciclo puede usarse para trapear pisos o lavar patios.</p>
+                </div>
+            </div>
+
+            <h3 class="text-xl font-semibold mb-4">Logros</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <div id="achievement-perfect" class="achievement">
+                    <div class="flex items-center">
+                        <div class="achievement-icon mr-4">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg">Maestro del Agua</h4>
+                            <p class="text-sm text-gray-600">Obtén una puntuación perfecta (10/10)</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="achievement-challenge" class="achievement">
+                    <div class="flex items-center">
+                        <div class="achievement-icon mr-4">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg">Contrarreloj</h4>
+                            <p class="text-sm text-gray-600">Completa el modo desafío</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-center space-x-4">
+                <button id="retry-btn" class="btn-primary py-3 px-6 rounded-lg">
+                    <i class="fas fa-redo mr-2"></i> Reintentar
+                </button>
+                <button id="home-btn" class="btn-secondary py-3 px-6 rounded-lg">
+                    <i class="fas fa-home mr-2"></i> Inicio
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay de resultados centrado -->
+    <div id="results-overlay" style="display:none;">
+      <div id="results-card">
+        <div class="medalla" id="medalla-text"></div>
+        <div class="puntaje" id="puntaje-final"></div>
+        <div class="detalle-puntaje" id="detalle-puntaje"></div>
+        <div class="recomendaciones" id="recomendaciones-box" style="display:none;"></div>
+        <div class="acciones">
+          <button class="btn-primary" id="btn-reintentar">Reintentar</button>
+          <button class="btn-secondary" id="btn-continuar">Continuar</button>
+          <button class="btn-secondary" id="btn-cambiar-dificultad">Cambiar Dificultad</button>
+        </div>
+      </div>
+    </div>
+
+    <script id="app-script">
+        // Quiz data
+        const quizData = [
+            {
+                question: "¿Qué es el reuso del agua?",
+                options: [
+                    "Utilizar el agua más de una vez para diferentes propósitos",
+                    "Usar el agua una sola vez",
+                    "Tirar el agua después de usarla"
+                ],
+                correctAnswer: 0,
+                correctExplanation: "El reuso del agua consiste en aprovechar el agua ya utilizada para darle un nuevo propósito, maximizando así este recurso valioso.",
+                incorrectExplanation: "El reuso del agua significa aprovechar el agua ya utilizada para darle un segundo uso, no desperdiciarla después de un solo uso."
+            },
+            {
+                question: "¿Cuál de estas aguas es segura para regar plantas?",
+                options: [
+                    "Agua del inodoro",
+                    "Agua con cloro",
+                    "Agua de lluvia"
+                ],
+                correctAnswer: 2,
+                correctExplanation: "El agua de lluvia es ideal para regar plantas ya que no contiene cloro y es naturalmente adecuada para la vegetación.",
+                incorrectExplanation: "El agua de lluvia es la opción segura para regar plantas. El agua del inodoro contiene patógenos y el agua con cloro puede dañar las plantas."
+            },
+            {
+                question: "¿Dónde puedes recolectar agua de lluvia?",
+                options: [
+                    "En macetas",
+                    "En cubetas o contenedores",
+                    "En piscinas"
+                ],
+                correctAnswer: 1,
+                correctExplanation: "Cubetas, barriles o contenedores ubicados estratégicamente pueden recolectar agua de lluvia de forma efectiva para su posterior uso.",
+                incorrectExplanation: "El agua de lluvia se debe recolectar en contenedores adecuados ubicados en espacios abiertos como patios o jardines."
+            },
+            {
+                question: "¿Cuál de estos es un beneficio del reuso del agua?",
+                options: [
+                    "Contaminación",
+                    "Gasto innecesario",
+                    "Ahorro de recursos"
+                ],
+                correctAnswer: 2,
+                correctExplanation: "El reuso del agua permite ahorrar este recurso vital, reducir costos en la factura y disminuir la presión sobre las fuentes naturales de agua.",
+                incorrectExplanation: "El principal beneficio del reuso del agua es el ahorro de este recurso natural y la reducción de costos, no genera contaminación ni gastos innecesarios."
+            },
+            {
+                question: "¿Qué puedes hacer con el agua usada para lavar verduras?",
+                options: [
+                    "Beberla directamente",
+                    "Tirarla al drenaje",
+                    "Usarla para regar plantas"
+                ],
+                correctAnswer: 2,
+                correctExplanation: "Esta agua contiene nutrientes y es perfectamente segura para regar plantas, contribuyendo al ahorro de agua potable.",
+                incorrectExplanation: "El agua usada para lavar verduras contiene nutrientes beneficiosos para las plantas, por lo que es mejor reutilizarla para riego que desecharla."
+            },
+            {
+                question: "¿Qué tipo de agua se considera 'agua gris'?",
+                options: [
+                    "Agua de la ducha o lavamanos",
+                    "Agua del inodoro",
+                    "Agua de lluvia"
+                ],
+                correctAnswer: 0,
+                correctExplanation: "Las aguas grises son aquellas provenientes de la ducha, lavamanos y lavadora, que pueden ser tratadas y reutilizadas fácilmente.",
+                incorrectExplanation: "Las aguas grises son las que provienen de lavamanos, duchas y lavadoras. El agua del inodoro se considera 'agua negra' y la de lluvia es 'agua pluvial'."
+            },
+            {
+                question: "¿Qué debemos evitar al recolectar agua para reuso?",
+                options: [
+                    "Guardar en la sombra",
+                    "Usar cubetas limpias",
+                    "Dejar los recipientes abiertos al sol"
+                ],
+                correctAnswer: 2,
+                correctExplanation: "Dejar recipientes abiertos al sol puede favorecer la proliferación de algas y mosquitos, además de la evaporación del agua.",
+                incorrectExplanation: "Los recipientes abiertos al sol favorecen la proliferación de mosquitos y algas, además de que el agua se evapora más rápido. Es mejor mantenerlos cubiertos."
+            },
+            {
+                question: "¿Qué aparato genera agua que puede reutilizarse para lavar el piso?",
+                options: [
+                    "El inodoro",
+                    "Lavadora",
+                    "Nevera"
+                ],
+                correctAnswer: 1,
+                correctExplanation: "El agua del ciclo final de la lavadora puede recolectarse y usarse para lavar pisos, patios o incluso el auto.",
+                incorrectExplanation: "La lavadora genera agua que puede reutilizarse para lavar pisos o patios, especialmente del último ciclo de enjuague que contiene menos detergente."
+            },
+            {
+                question: "¿Cuándo es mejor recolectar agua de lluvia?",
+                options: [
+                    "Durante una tormenta o lluvia",
+                    "En un día soleado",
+                    "En verano seco"
+                ],
+                correctAnswer: 0,
+                correctExplanation: "El mejor momento para recolectar agua es durante episodios de lluvia o tormentas, cuando se puede acumular en mayor cantidad.",
+                incorrectExplanation: "El agua de lluvia solo puede recolectarse cuando está lloviendo. Es importante tener los sistemas de captación listos antes de que comience la precipitación."
+            },
+            {
+                question: "¿Cuál de estas opciones representa una acción responsable?",
+                options: [
+                    "Recolectar el agua de la regadera mientras se calienta",
+                    "Tirar el agua de enjuague al drenaje",
+                    "Dejar el grifo abierto mientras te cepillas"
+                ],
+                correctAnswer: 0,
+                correctExplanation: "Recolectar el agua fría mientras esperas que se caliente la ducha puede ahorrar varios litros diarios que pueden reutilizarse.",
+                incorrectExplanation: "Recolectar el agua mientras se calienta la ducha es una acción responsable que permite ahorrar varios litros de agua potable diariamente."
+            }
+        ];
+
+        // DOM Elements
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const modeScreen = document.getElementById('mode-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const startBtn = document.getElementById('start-btn');
+        const modeCards = document.querySelectorAll('.mode-card');
+        const timerContainer = document.getElementById('timer-container');
+        const timerDisplay = document.getElementById('timer');
+        const progressFill = document.querySelector('.progress-fill');
+        const progressText = document.getElementById('progress-text');
+        const currentQuestionNum = document.getElementById('current-question');
+        const totalQuestionsNum = document.getElementById('total-questions');
+        const questionText = document.getElementById('question-text');
+        const questionImageContainer = document.getElementById('question-image-container');
+        const questionImage = document.getElementById('question-image');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackContainer = document.getElementById('feedback-container');
+        const correctFeedback = document.getElementById('feedback-correct');
+        const incorrectFeedback = document.getElementById('feedback-incorrect');
+        const correctExplanation = document.getElementById('correct-explanation');
+        const incorrectExplanation = document.getElementById('incorrect-explanation');
+        const nextBtn = document.getElementById('next-btn');
+        const scoreDisplay = document.getElementById('score');
+        const totalDisplay = document.getElementById('total');
+        const scorePercentDisplay = document.getElementById('score-percent');
+        const challengeResult = document.getElementById('challenge-result');
+        const timeUsed = document.getElementById('time-used');
+        const achievementPerfect = document.getElementById('achievement-perfect');
+        const achievementChallenge = document.getElementById('achievement-challenge');
+        const retryBtn = document.getElementById('retry-btn');
+        const homeBtn = document.getElementById('home-btn');
+
+        // Quiz State
+        let currentQuestion = 0;
+        let score = 0;
+        let quizMode = 'normal';
+        let timer;
+        let timeLeft = 120; // 2 minutes in seconds
+        let selectedOptionIndex = -1;
+        let quizCompleted = false;
+        let startTime = Date.now();
+
+        function sendStatsToParent(isCorrect = false) {
+            // Calcula tiempo jugado en segundos
+            const now = Date.now();
+            const timePlayed = Math.floor((now - startTime) / 1000);
+            window.parent.postMessage({
+                type: 'trivia-update',
+                puntuacion: score * 10,
+                correctas: score,
+                total: currentQuestion + 1,
+                tiempo: timePlayed,
+                preguntaActual: currentQuestion + 1,
+                isCorrect: isCorrect
+            }, '*');
+        }
+
+        // Event Listeners
+        startBtn.addEventListener('click', () => {
+            welcomeScreen.classList.add('hidden');
+            modeScreen.classList.remove('hidden');
+        });
+
+        modeCards.forEach(card => {
+            card.addEventListener('click', () => {
+                quizMode = card.dataset.mode;
+                modeScreen.classList.add('hidden');
+                quizScreen.classList.remove('hidden');
+                
+                if (quizMode === 'challenge') {
+                    timerContainer.classList.remove('hidden');
+                    startTimer();
+                }
+                
+                initializeQuiz();
+            });
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentQuestion < quizData.length - 1) {
+                currentQuestion++;
+                displayQuestion();
+            } else {
+                endQuiz();
+            }
+        });
+
+        retryBtn.addEventListener('click', () => {
+            resultsScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            resetQuiz();
+            if (quizMode === 'challenge') {
+                timerContainer.classList.remove('hidden');
+                startTimer();
+            }
+        });
+
+        homeBtn.addEventListener('click', () => {
+            resultsScreen.classList.add('hidden');
+            welcomeScreen.classList.remove('hidden');
+            resetQuiz();
+        });
+
+        // Functions
+        function initializeQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            quizCompleted = false;
+            totalQuestionsNum.textContent = quizData.length;
+            totalDisplay.textContent = quizData.length;
+            displayQuestion();
+        }
+
+        function displayQuestion() {
+            feedbackContainer.classList.add('hidden');
+            correctFeedback.classList.add('hidden');
+            incorrectFeedback.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            selectedOptionIndex = -1;
+
+            // Update progress
+            const progress = ((currentQuestion + 1) / quizData.length) * 100;
+            progressFill.style.width = `${progress}%`;
+            progressText.textContent = `${currentQuestion + 1}/${quizData.length}`;
+            currentQuestionNum.textContent = currentQuestion + 1;
+
+            // Display question
+            const question = quizData[currentQuestion];
+            questionText.textContent = question.question;
+
+            // Check if question has an image (feature not implemented in this version)
+            if (question.image) {
+                questionImageContainer.classList.remove('hidden');
+                questionImage.src = question.image;
+                questionImage.alt = `Imagen para la pregunta ${currentQuestion + 1}`;
+            } else {
+                questionImageContainer.classList.add('hidden');
+            }
+
+            // Display options
+            optionsContainer.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-btn w-full text-left p-4 rounded-lg';
+                button.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                            <span class="text-blue-800 text-sm font-medium">${String.fromCharCode(97 + index)}</span>
+                        </div>
+                        <span>${option}</span>
+                    </div>
+                `;
+                button.dataset.index = index;
+                
+                button.addEventListener('click', () => {
+                    if (selectedOptionIndex !== -1) return; // Prevent selecting after an answer
+                    
+                    selectedOptionIndex = index;
+                    const buttons = optionsContainer.querySelectorAll('.option-btn');
+                    
+                    buttons.forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
+                    
+                    button.classList.add('selected');
+                    checkAnswer(index);
+                });
+                
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        // Variables para racha
+        let rachaActual = 0;
+        let mejorRacha = 0;
+
+        function checkAnswer(selectedIndex) {
+            const question = quizData[currentQuestion];
+            const isCorrect = selectedIndex === question.correctAnswer;
+            // Update score
+            if (isCorrect) {
+                score++;
+                rachaActual++;
+                if (rachaActual > mejorRacha) mejorRacha = rachaActual;
+            } else {
+                rachaActual = 0;
+            }
+            sendStatsToParent(isCorrect);
+
+            // Show visual feedback on options
+            const options = optionsContainer.querySelectorAll('.option-btn');
+            
+            options[selectedIndex].classList.add(isCorrect ? 'correct' : 'incorrect');
+            options[question.correctAnswer].classList.add('correct');
+
+            // Show feedback message
+            feedbackContainer.classList.remove('hidden');
+            
+            if (isCorrect) {
+                correctFeedback.classList.remove('hidden');
+                correctExplanation.textContent = question.correctExplanation;
+            } else {
+                incorrectFeedback.classList.remove('hidden');
+                incorrectExplanation.textContent = question.incorrectExplanation;
+            }
+
+            // Show next button
+            nextBtn.classList.remove('hidden');
+
+            // If this is the last question, change button text
+            if (currentQuestion === quizData.length - 1) {
+                nextBtn.innerHTML = 'Ver resultados <i class="fas fa-chart-bar ml-2"></i>';
+            }
+        }
+
+        function startTimer() {
+            clearInterval(timer);
+            timeLeft = 120; // 2 minutes
+            updateTimerDisplay();
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 30) {
+                    timerDisplay.classList.add('warning');
+                }
+                
+                if (timeLeft <= 10) {
+                    timerDisplay.classList.remove('warning');
+                    timerDisplay.classList.add('danger');
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    endQuiz();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function endQuiz() {
+            quizCompleted = true;
+            clearInterval(timer);
+            const percentage = Math.round((score / quizData.length) * 100);
+            scoreDisplay.textContent = score;
+            scorePercentDisplay.textContent = `${percentage}%`;
+            const now = Date.now();
+            const timePlayed = Math.floor((now - startTime) / 1000);
+            window.parent.postMessage({
+                type: 'trivia-completed',
+                puntuacionFinal: score * 10,
+                correctas: score,
+                total: quizData.length,
+                tiempo: timePlayed,
+                mejorRacha: mejorRacha,
+                rachaActual: rachaActual
+            }, '*');
+            // Mostrar overlay de resultados
+            quizScreen.classList.add('hidden');
+            resultsScreen.classList.add('hidden');
+            // No ocultar quiz-container, solo mostrar overlay encima
+            // Datos para el overlay
+            const medalla = (score === quizData.length) ? '🏅 Maestro del Agua' : '🎓 Participante';
+            const puntaje = score * 10;
+            const detalle = `${score}/${quizData.length} Correctas · ${percentage}% Precisión · Mejor Racha: ${mejorRacha}`;
+            const recomendaciones = [
+                "Revisa las preguntas que tuviste incorrectas y sus explicaciones.",
+                "Practica más sobre el tema de reuso de agua.",
+                "Comparte tus conocimientos con amigos y familiares."
+            ];
+            mostrarResultadosOverlay(medalla, puntaje, detalle, recomendaciones);
+        }
+
+                function mostrarResultadosFinales(medalla, puntaje, correctas, total, precision, racha, recomendaciones) {
+                    // Mostrar el overlay de resultados y ocultar el quiz
+                    const quizContainer = document.getElementById('quiz-container');
+                    if (quizContainer) quizContainer.style.display = 'none';
+                    const overlay = document.getElementById('results-overlay');
+                    if (overlay) overlay.style.display = 'flex';
+                    // Rellenar datos de resultados
+                    document.getElementById('medalla-text').textContent = medalla;
+                    document.getElementById('puntaje-final').textContent = `${puntaje} pts`;
+                    document.getElementById('detalle-puntaje').textContent = `${correctas}/${total} Correctas · ${precision}% Precisión`;
+                    document.getElementById('mejor-racha').textContent = `Mejor Racha: ${racha}`;
+                    document.getElementById('recomendaciones-box').innerHTML = recomendaciones.map(r => `• ${r}`).join('<br>');
+                }
+
+        function resetQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            quizCompleted = false;
+            selectedOptionIndex = -1;
+            timerDisplay.classList.remove('warning', 'danger');
+            clearInterval(timer);
+            initializeQuiz();
+        }
+
+        // Detectar finalización del quiz y mostrar overlay de resultados
+function finalizarQuiz() {
+  // Ejemplo: obtén los datos reales del quiz
+  const medalla = calcularMedalla(); // función que determina la medalla
+  const puntaje = calcularPuntaje(); // función que calcula el puntaje final
+  const detalle = generarDetallePuntaje(); // texto con detalles del puntaje
+  const recomendaciones = obtenerRecomendaciones(); // array de recomendaciones
+
+  mostrarResultadosOverlay(medalla, puntaje, detalle, recomendaciones);
+}
+
+// Llama a finalizarQuiz() en tu lógica de finalización del quiz
+// Por ejemplo, si tienes una función que se ejecuta al responder la última pregunta:
+// finalizarQuiz();
+
+// Ejemplo de funciones auxiliares (debes adaptar según tu lógica real):
+function calcularMedalla() {
+  // Lógica para determinar la medalla según el puntaje
+  // return 'Medalla de Oro';
+  return 'Medalla de Oro';
+}
+function calcularPuntaje() {
+  // return el puntaje final
+  return 90;
+}
+function generarDetallePuntaje() {
+  // return texto con detalles
+  return '¡Excelente desempeño!';
+}
+function obtenerRecomendaciones() {
+  // return array de recomendaciones
+  return ['Sigue practicando', 'Lee más sobre reúso de agua'];
+}
+
+        // Check for previous scores in localStorage
+        function checkPreviousResults() {
+            const lastScore = localStorage.getItem('waterReuseQuizLastScore');
+            const lastMode = localStorage.getItem('waterReuseQuizLastMode');
+            
+            if (lastScore && lastMode) {
+                // Could show a notification about previous results
+                console.log(`Previous score: ${lastScore} in ${lastMode} mode`);
+            }
+        }
+
+        // Initialize 
+        document.addEventListener('DOMContentLoaded', () => {
+            checkPreviousResults();
+            document.body.style.display = 'flex';
+            document.body.style.justifyContent = 'center';
+            document.body.style.alignItems = 'center';
+            document.body.style.minHeight = '100vh';
+        });
+
+        // Eliminar botón de cambiar dificultad (si existe)
+        document.addEventListener('DOMContentLoaded', function() {
+          const btn = document.querySelector('button#cambiar-dificultad');
+          if (btn) btn.remove();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+/* Efecto especial para el formulario de registro */
+.register-form {
+  position: relative;
+}
+
+.register-form::before {
+  content: '\f043';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 3rem;
+  color: var(--primary-color);
+  opacity: 0.2;
+  z-index: -1;
+}
+
+/* Efecto de olas en los bordes */
+.card {
+  position: relative;
+}
+
+.card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 10px;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="%2300a8e8"></path><path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="%2300a8e8"></path><path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="%2300a8e8"></path></svg>');
+  background-size: cover;
+  background-repeat: no-repeat;
+  opacity: 0.1;
+}
+
+/* Contenedores */
+.password-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.password-container input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.password-container .toggle-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #0077b6;
+  font-size: 1.1rem;
+}
+
+/* Compactar formulario */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 0;
+}
+
+.label {
+  margin-bottom: 2px;
+  font-size: 0.9rem;
+}
+
+/* Hint */
+.hint {
+  display: block;
+  font-size: 0.75rem;
+  color: #666;
+  margin-top: -6px;
+  margin-bottom: 6px;
+}
+
+.hint i {
+  margin-right: 4px;
+  color: #0077b6;
+}
+
+/* Password Strength */
+.password-strength-container {
+  margin: 6px 0 10px;
+}
+
+.strength-bar {
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.strength-fill {
+  height: 100%;
+  transition: all 0.3s ease;
+  border-radius: 3px;
+}
+
+.strength-fill.strength-weak { background: #e74c3c; }
+.strength-fill.strength-medium { background: #f39c12; }
+.strength-fill.strength-good { background: #3498db; }
+.strength-fill.strength-strong { background: #2ecc71; }
+
+.strength-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: 4px 0 6px;
+}
+
+.strength-text.text-weak { color: #e74c3c; }
+.strength-text.text-medium { color: #f39c12; }
+.strength-text.text-good { color: #3498db; }
+.strength-text.text-strong { color: #2ecc71; }
+
+.strength-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.strength-checklist li {
+  font-size: 0.8rem;
+  color: #999;
+  margin: 2px 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s ease;
+}
+
+.strength-checklist li i {
+  margin-right: 6px;
+  font-size: 0.9rem;
+}
+
+.strength-checklist li.valid {
+  color: #2ecc71;
+}
+
+.strength-checklist li.valid i {
+  color: #2ecc71;
+}
+
+/* Mensajes y botones */
+.msgs p {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+button.primary {
+  margin-top: 10px;
+  padding: 8px 0;
+  font-size: 0.95rem;
+  border-radius: 8px;
+}
+
+.actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}

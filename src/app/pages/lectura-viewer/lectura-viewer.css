@@ -1,0 +1,294 @@
+/* ===============================
+   ESTILOS GENERALES
+================================*/
+.lectura-viewer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f7faff;
+  color: #1e2a36;
+  font-family: 'Poppins', sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ===============================
+   BARRA DE PROGRESO FIJA
+================================*/
+.barra-progreso-fija {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(240, 248, 255, 0.95);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  backdrop-filter: blur(6px);
+}
+
+.progreso-container {
+  width: 70%;
+  height: 8px;
+  background: #e5edf3;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progreso-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00a8e8, #0077b6);
+  border-radius: 10px;
+  transition: width 0.4s ease;
+}
+
+.progreso-texto {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #0077b6;
+}
+
+/* ===============================
+   HEADER DE LECTURA
+================================*/
+.lectura-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5rem 2rem 1.5rem;
+  flex-wrap: wrap;
+  background: linear-gradient(135deg, #e0f7ff, #f8fdff);
+  border-bottom: 1px solid #dbe8f1;
+}
+
+.btn-cerrar {
+  background: none;
+  border: none;
+  color: #0077b6;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s ease;
+}
+
+.btn-cerrar:hover {
+  color: #005f87;
+}
+
+.lectura-info {
+  flex: 1;
+  text-align: center;
+}
+
+.lectura-info h1 {
+  font-size: 1.8rem;
+  color: #023047;
+  margin-bottom: 0.5rem;
+}
+
+.lectura-meta {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: #5c677d;
+}
+
+.lectura-meta i {
+  margin-right: 4px;
+  color: #0077b6;
+}
+
+/* ===============================
+   BOTÓN COMPLETAR
+================================*/
+.btn-completar {
+  background: linear-gradient(135deg, #00a8e8, #0077b6);
+  border: none;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-completar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 119, 182, 0.25);
+}
+
+.estado-completado {
+  background: #dfffe0;
+  color: #1a7f37;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ===============================
+   CONTENIDO DE LECTURA
+================================*/
+.lectura-contenido {
+  flex: 1;
+  padding: 2rem 1.5rem 6rem;
+  max-width: 900px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.lectura-descripcion {
+  margin-bottom: 1rem;
+  color: #4a5568;
+  font-size: 1rem;
+  border-left: 4px solid #00a8e8;
+  padding-left: 1rem;
+  background: #eef9ff;
+  border-radius: 4px;
+}
+
+.texto-principal {
+  font-size: 1.05rem;
+  color: #1a1a1a;
+  text-align: justify;
+}
+
+.texto-principal h2,
+.texto-principal h3 {
+  color: #0077b6;
+  margin-top: 1.4rem;
+}
+
+.texto-principal ul {
+  padding-left: 1.5rem;
+}
+
+.texto-principal a {
+  color: #0077b6;
+  text-decoration: underline;
+}
+
+.texto-principal a:hover {
+  color: #005f87;
+}
+
+/* ===============================
+   SECCIÓN DE NOTAS
+================================*/
+.seccion-notas {
+  margin-top: 3rem;
+  background: #f0faff;
+  border: 1px solid #d1e9f9;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0, 168, 232, 0.05);
+}
+
+.seccion-notas h3 {
+  color: #0077b6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.2rem;
+}
+
+.notas-descripcion {
+  font-size: 0.9rem;
+  color: #5c677d;
+  margin-bottom: 1rem;
+}
+
+.textarea-notas {
+  width: 100%;
+  resize: vertical;
+  min-height: 120px;
+  padding: 0.8rem;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.textarea-notas:focus {
+  border-color: #00a8e8;
+  box-shadow: 0 0 0 3px rgba(0, 168, 232, 0.1);
+}
+
+.btn-guardar-notas {
+  background: linear-gradient(135deg, #00a8e8, #0077b6);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-guardar-notas:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 119, 182, 0.25);
+}
+
+/* ===============================
+   INDICADOR DE POSICIÓN
+================================*/
+.indicador-posicion {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 30;
+}
+
+.circulo-progreso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.porcentaje {
+  position: absolute;
+  font-weight: 600;
+  color: #0077b6;
+  font-size: 0.9rem;
+  transform: translateY(5px);
+}
+
+/* ===============================
+   SPINNER DE CARGA
+================================*/
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: #f7faff;
+  color: #0077b6;
+}
+
+.loading-spinner i {
+  font-size: 2rem;
+  margin-bottom: 0.8rem;
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0); }
+  to { transform: rotate(360deg); }
+}

@@ -1,0 +1,394 @@
+<!-- Floating Navigation -->
+<div class="floating-nav">
+  <div class="nav-items">
+    <a href="#impacto" class="nav-item" title="Impacto">
+      <i class="fas fa-exclamation-triangle"></i>
+    </a>
+    <a href="#datos" class="nav-item" title="Datos">
+      <i class="fas fa-chart-bar"></i>
+    </a>
+    <a href="#beneficios" class="nav-item" title="Beneficios">
+      <i class="fas fa-leaf"></i>
+    </a>
+    <a href="#ejemplos" class="nav-item" title="Ejemplos">
+      <i class="fas fa-lightbulb"></i>
+    </a>
+    <a href="#flujo" class="nav-item" title="Flujo">
+      <i class="fas fa-stream"></i>
+    </a>
+    <a href="#comparativo" class="nav-item" title="Comparativo">
+      <i class="fas fa-balance-scale"></i>
+    </a>
+    <a href="#retos" class="nav-item" title="Retos">
+      <i class="fas fa-shield-alt"></i>
+    </a>
+    <a href="#recursos" class="nav-item" title="Recursos">
+      <i class="fas fa-book"></i>
+    </a>
+    <a href="#casos" class="nav-item" title="Casos de éxito">
+      <i class="fas fa-trophy"></i>
+    </a>
+  </div>
+</div>
+
+<!-- Barra de navegación principal -->
+<nav class="main-nav">
+  <div class="nav-container">
+    <a routerLink="/inicio" class="nav-brand">
+      <i class="fas fa-tint"></i>
+      <span>HydroSave</span>
+    </a>
+    
+    <div class="nav-menu">
+      <a routerLink="/inicio" class="nav-link active">
+        <i class="fas fa-home"></i>
+        <span>Inicio</span>
+      </a>
+      <a routerLink="/modulos" class="nav-link">
+        <i class="fas fa-graduation-cap"></i>
+        <span>Módulos</span>
+      </a>
+      <a routerLink="/biblioteca" class="nav-link">
+        <i class="fas fa-book"></i>
+        <span>Biblioteca</span>
+      </a>
+      <a routerLink="/actividades" class="nav-link">
+        <i class="fas fa-tasks"></i>
+        <span>Actividades</span>
+      </a>
+      <a *ngIf="usuario?.rol === 'admin'"
+   routerLink="/admin"
+   class="nav-link"
+   routerLinkActive="active">
+  <i class="fas fa-shield-alt"></i>
+  <span>Admin</span>
+      </a>
+
+    </div>
+    
+    <div class="nav-profile-container">
+      <a routerLink="/perfil" class="nav-profile">
+        <img *ngIf="fotoUsuario || usuario?.foto" [src]="fotoUsuario || usuario?.foto" class="profile-img" [alt]="usuario?.nombre || 'Usuario'">
+        <i *ngIf="!(fotoUsuario || usuario?.foto)" class="fas fa-user"></i>
+        <span>{{ usuario?.nombre || 'Perfil' }}</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ¿Por Qué Reutilizar el Agua? -->
+<section id="impacto" class="impact-section">
+  <div class="section-content">
+    <h2 class="section-title">¿Por Qué Reutilizar el Agua?</h2>
+    <p class="section-description">
+      Colombia enfrenta desafíos hídricos particulares que hacen del reúso de agua una necesidad estratégica.
+    </p>
+    
+    <div class="impact-grid">
+      <div class="impact-card environmental">
+        <div class="impact-icon">
+          <i class="fas fa-leaf"></i>
+        </div>
+        <h3>Impacto Ambiental</h3>
+        <p>Preservación de ecosistemas acuáticos y reducción de la presión sobre fuentes naturales de agua.</p>
+        <div class="impact-stats">
+          <span class="stat-number">30%</span>
+          <span class="stat-label">reducción en extracción</span>
+        </div>
+      </div>
+      
+      <div class="impact-card economic">
+        <div class="impact-icon">
+          <i class="fas fa-dollar-sign"></i>
+        </div>
+        <h3>Impacto Económico</h3>
+        <p>Ahorro significativo en facturas de agua y valorización de propiedades sostenibles.</p>
+        <div class="impact-stats">
+          <span class="stat-number">40%</span>
+          <span class="stat-label">ahorro en costos</span>
+        </div>
+      </div>
+      
+      <div class="impact-card social">
+        <div class="impact-icon">
+          <i class="fas fa-users"></i>
+        </div>
+        <h3>Impacto Social</h3>
+        <p>Mayor disponibilidad de agua para comunidades y educación en sostenibilidad.</p>
+        <div class="impact-stats">
+          <span class="stat-number">2M+</span>
+          <span class="stat-label">personas beneficiadas</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Datos Impactantes -->
+<section id="datos" class="data-section">
+  <div class="section-content">
+    <h2 class="section-title">Datos Impactantes</h2>
+    <p class="section-description">
+      Cifras que demuestran la importancia del reúso de agua en Colombia y su impacto potencial.
+    </p>
+    
+    <div class="chart-container">
+      <canvas id="consumptionChart"></canvas>
+    </div>
+    
+    <div class="data-insights">
+      <div class="insight-card">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h4>Crisis Hídrica</h4>
+        <p>Colombia desperdicia el 43% del agua potable por fugas y mal uso</p>
+      </div>
+      <div class="insight-card">
+        <i class="fas fa-tint"></i>
+        <h4>Potencial de Reúso</h4>
+        <p>El 70% del agua doméstica puede ser reutilizada con tratamiento básico</p>
+      </div>
+      <div class="insight-card">
+        <i class="fas fa-chart-line"></i>
+        <h4>Crecimiento</h4>
+        <p>Demanda hídrica aumentará 25% en los próximos 10 años</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Beneficios del Reúso de Agua -->
+<section id="beneficios" class="benefits-section">
+  <div class="section-content">
+    <h2 class="section-title">Beneficios del Reúso de Agua</h2>
+    <p class="section-description">
+      El reúso de agua genera múltiples beneficios que van más allá del ahorro económico.
+    </p>
+    
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-icon">
+          <i class="fas fa-seedling"></i>
+        </div>
+        <h3>Sostenibilidad Ambiental</h3>
+        <ul>
+          <li>Reduce la extracción de agua fresca</li>
+          <li>Disminuye la contaminación de cuerpos de agua</li>
+          <li>Protege ecosistemas acuáticos</li>
+        </ul>
+      </div>
+      
+      <div class="benefit-card">
+        <div class="benefit-icon">
+          <i class="fas fa-coins"></i>
+        </div>
+        <h3>Ahorro Económico</h3>
+        <ul>
+          <li>Reducción del 30-50% en facturas</li>
+          <li>Menor costo de tratamiento</li>
+          <li>Valorización inmobiliaria</li>
+        </ul>
+      </div>
+      
+      <div class="benefit-card">
+        <div class="benefit-icon">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <h3>Seguridad Hídrica</h3>
+        <ul>
+          <li>Mayor disponibilidad durante sequías</li>
+          <li>Independencia de suministro externo</li>
+          <li>Resiliencia ante crisis hídricas</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Ejemplos Prácticos de Reúso -->
+<section id="ejemplos" class="examples-section">
+  <div class="section-content">
+    <h2 class="section-title">Ejemplos Prácticos de Reúso</h2>
+    <p class="section-description">
+      Casos reales implementados en Colombia que demuestran la efectividad del reúso de agua.
+    </p>
+    
+    <div class="examples-grid">
+      <div class="example-card" *ngFor="let example of examples">
+        <div class="example-image">
+          <i [class]="example.icon"></i>
+        </div>
+        <div class="example-content">
+          <h3>{{example.title}}</h3>
+          <p class="example-location">{{example.location}}</p>
+          <p>{{example.description}}</p>
+          <div class="example-results">
+            <span class="result-label">Ahorro:</span>
+            <span class="result-value">{{example.savings}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Flujo del Agua en una Casa Sostenible -->
+<section id="flujo" class="flow-section">
+  <div class="section-content">
+    <h2 class="section-title">Flujo del Agua en una Casa Sostenible</h2>
+    <p class="section-description">
+      Comprende cómo circula el agua en un hogar que implementa sistemas de reúso.
+    </p>
+    
+    <div class="flow-diagram">
+      <div class="flow-step" *ngFor="let step of flowSteps; let i = index">
+        <div class="step-circle">
+          <span>{{i + 1}}</span>
+        </div>
+        <div class="step-content">
+          <h4>{{step.title}}</h4>
+          <p>{{step.description}}</p>
+        </div>
+        <div class="flow-arrow" *ngIf="i < flowSteps.length - 1">
+          <i class="fas fa-arrow-right"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Comparativo Agua Nueva vs. Agua Reciclada -->
+<section id="comparativo" class="comparison-section">
+  <div class="section-content">
+    <h2 class="section-title">Comparativo: Agua Nueva vs. Agua Reciclada</h2>
+    
+    <div class="comparison-grid">
+      <div class="comparison-card">
+        <h3><i class="fas fa-calculator"></i> Análisis de Costo-Beneficio</h3>
+        <div class="comparison-items">
+          <div class="comparison-item">
+            <span class="item-label">Costo inicial:</span>
+            <span class="new-water">Alto</span>
+            <span class="recycled-water">Medio</span>
+          </div>
+          <div class="comparison-item">
+            <span class="item-label">Costo operativo:</span>
+            <span class="new-water">Alto</span>
+            <span class="recycled-water">Bajo</span>
+          </div>
+          <div class="comparison-item">
+            <span class="item-label">ROI (5 años):</span>
+            <span class="new-water">Negativo</span>
+            <span class="recycled-water">Positivo</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="comparison-card">
+        <h3><i class="fas fa-shield-alt"></i> Calidad y Seguridad</h3>
+        <div class="comparison-items">
+          <div class="comparison-item">
+            <span class="item-label">Pureza:</span>
+            <span class="new-water">100%</span>
+            <span class="recycled-water">95%</span>
+          </div>
+          <div class="comparison-item">
+            <span class="item-label">Usos seguros:</span>
+            <span class="new-water">Todos</span>
+            <span class="recycled-water">Específicos</span>
+          </div>
+          <div class="comparison-item">
+            <span class="item-label">Tratamiento:</span>
+            <span class="new-water">Completo</span>
+            <span class="recycled-water">Básico</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Retos y Precauciones -->
+<section id="retos" class="challenges-section">
+  <div class="section-content">
+    <h2 class="section-title">Retos y Precauciones</h2>
+    
+    <div class="challenges-grid">
+      <div class="challenge-card">
+        <div class="challenge-icon danger">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3>Qué Evitar</h3>
+        <ul>
+          <li>Almacenar agua gris más de 24 horas</li>
+          <li>Usar agua de cocina sin filtrar</li>
+          <li>Reutilizar agua contaminada con químicos</li>
+          <li>Contacto directo sin protección</li>
+        </ul>
+      </div>
+      
+      <div class="challenge-card">
+        <div class="challenge-icon solution">
+          <i class="fas fa-lightbulb"></i>
+        </div>
+        <h3>Soluciones</h3>
+        <ul>
+          <li>Sistemas de filtración adecuados</li>
+          <li>Almacenamiento correcto y rotativo</li>
+          <li>Etiquetado claro de tuberías</li>
+          <li>Mantenimiento regular del sistema</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Recursos Oficiales en Colombia -->
+<section id="recursos" class="resources-section">
+  <div class="section-content">
+    <h2 class="section-title">Recursos Oficiales en Colombia</h2>
+    
+    <div class="resources-grid">
+      <div class="resource-card" *ngFor="let resource of officialResources">
+        <div class="resource-icon">
+          <i [class]="resource.icon"></i>
+        </div>
+        <h3>{{resource.name}}</h3>
+        <p>{{resource.description}}</p>
+        <a [href]="resource.link" class="resource-link" target="_blank">
+          Visitar sitio <i class="fas fa-external-link-alt"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Casos de Éxito en Colombia -->
+<section id="casos" class="success-cases-section">
+  <div class="section-content">
+    <h2 class="section-title">Casos de Éxito en Colombia</h2>
+    
+    <div class="cases-grid">
+      <div class="case-card" *ngFor="let case of successCases">
+        <div class="case-header">
+          <div class="case-location">
+            <i class="fas fa-map-marker-alt"></i>
+            {{case.location}}
+          </div>
+          <div class="case-year">{{case.year}}</div>
+        </div>
+        <h3>{{case.title}}</h3>
+        <p>{{case.description}}</p>
+        <div class="case-metrics">
+          <div class="metric">
+            <span class="metric-value">{{case.waterSaved}}</span>
+            <span class="metric-label">litros ahorrados/año</span>
+          </div>
+          <div class="metric">
+            <span class="metric-value">{{case.costSavings}}</span>
+            <span class="metric-label">ahorro económico</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

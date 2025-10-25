@@ -1,0 +1,362 @@
+<!-- Barra de navegación principal -->
+<nav class="main-nav">
+  <div class="nav-container">
+    <a routerLink="/inicio" class="nav-brand">
+      <i class="fas fa-tint"></i>
+      <span>HydroSave</span>
+    </a>
+    
+    <div class="nav-menu">
+      <a routerLink="/inicio" class="nav-link">
+        <i class="fas fa-home"></i>
+        <span>Inicio</span>
+      </a>
+      <a routerLink="/modulos" class="nav-link">
+        <i class="fas fa-graduation-cap"></i>
+        <span>Módulos</span>
+      </a>
+      <a routerLink="/biblioteca" class="nav-link active">
+        <i class="fas fa-book"></i>
+        <span>Biblioteca</span>
+      </a>
+      <a routerLink="/actividades" class="nav-link">
+        <i class="fas fa-tasks"></i>
+        <span>Actividades</span>
+      </a>
+      <a *ngIf="usuario?.rol === 'admin'" routerLink="/admin" class="nav-link" routerLinkActive="active">
+        <i class="fas fa-shield-alt"></i>
+        <span>Admin</span>
+      </a>
+    </div>
+    
+    <div class="nav-profile-container">
+      <a routerLink="/perfil" class="nav-profile">
+        <img *ngIf="fotoUsuario || usuario?.foto" [src]="fotoUsuario || usuario?.foto" class="profile-img" [alt]="usuario?.nombre || 'Usuario'">
+        <i *ngIf="!(fotoUsuario || usuario?.foto)" class="fas fa-user"></i>
+        <span>{{ usuario?.nombre || 'Perfil' }}</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- Mensaje de error global -->
+<div class="error-message" *ngIf="error">
+  <div class="error-content">
+    <i class="fas fa-exclamation-triangle"></i>
+    <span>{{error}}</span>
+    <button class="btn-close-error" (click)="error = null">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Indicador de carga -->
+<div class="loading-container" *ngIf="cargando">
+  <div class="loading-spinner">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Cargando biblioteca...</p>
+  </div>
+</div>
+
+<!-- Vista principal: Biblioteca -->
+<div class="modulos-container" *ngIf="!mostrandoRecurso && !cargando">
+  <div class="modulos-header">
+    <h1 class="modulos-title">Biblioteca Interactiva</h1>
+    <p class="modulos-subtitle">
+      Recursos multimedia sobre técnicas de reutilización del agua y proyectos exitosos
+    </p>
+  </div>
+
+  <!-- Barra de búsqueda y filtros -->
+  <div class="biblioteca-filtros">
+    <div class="filtros-busqueda">
+      <div class="busqueda-container">
+        <i class="fas fa-search"></i>
+        <input 
+          type="text" 
+          [(ngModel)]="filtros.busqueda"
+          placeholder="Buscar recursos, autores, categorías..."
+          class="input-busqueda">
+      </div>
+      
+      <button 
+        class="btn-limpiar-filtros"
+        *ngIf="filtros.busqueda || filtros.tipos.length || filtros.niveles.length"
+        (click)="limpiarFiltros()">
+        <i class="fas fa-times"></i>
+        Limpiar filtros
+      </button>
+    </div>
+
+    <!-- Filtros por tipo -->
+    <div class="filtros-tipo">
+      <h3 class="filtros-titulo">
+        <i class="fas fa-filter"></i>
+        Filtrar por tipo
+      </h3>
+      <div class="filtros-opciones">
+        <button
+          *ngFor="let tipo of tiposDisponibles"
+          class="filtro-boton"
+          [ngClass]="{'activo': filtros.tipos.includes(tipo.key)}"
+          [style.border-color]="filtros.tipos.includes(tipo.key) ? tipo.color : '#e0e0e0'"
+          [style.background-color]="filtros.tipos.includes(tipo.key) ? tipo.color + '20' : 'white'"
+          [style.color]="filtros.tipos.includes(tipo.key) ? tipo.color : '#6c757d'"
+          (click)="alternarFiltroTipo(tipo.key)">
+          <i [class]="tipo.icono"></i>
+          {{tipo.label}}
+        </button>
+      </div>
+    </div>
+
+    <!-- Filtros por nivel -->
+    <div class="filtros-nivel">
+      <h3 class="filtros-titulo">
+        <i class="fas fa-layer-group"></i>
+        Filtrar por nivel
+      </h3>
+      <div class="filtros-opciones">
+        <button
+          *ngFor="let nivel of nivelesDisponibles"
+          class="filtro-boton"
+          [ngClass]="{'activo': filtros.niveles.includes(nivel.key)}"
+          [style.border-color]="filtros.niveles.includes(nivel.key) ? nivel.color : '#e0e0e0'"
+          [style.background-color]="filtros.niveles.includes(nivel.key) ? nivel.color + '20' : 'white'"
+          [style.color]="filtros.niveles.includes(nivel.key) ? nivel.color : '#6c757d'"
+          (click)="alternarFiltroNivel(nivel.key)">
+          {{nivel.label | titlecase}}
+        </button>
+      </div>
+    </div>
+
+    <!-- Pestañas de navegación -->
+    <div class="biblioteca-pestanas">
+      <button 
+        class="pestana-boton"
+        [ngClass]="{'activa': pestanaActiva === 'todos'}"
+        (click)="cambiarPestana('todos')">
+        <i class="fas fa-list"></i>
+        Todos ({{recursos.length}})
+      </button>
+      <button 
+        class="pestana-boton"
+        [ngClass]="{'activa': pestanaActiva === 'favoritos'}"
+        (click)="cambiarPestana('favoritos')">
+        <i class="fas fa-star"></i>
+        Favoritos ({{favoritos.length}})
+      </button>
+    </div>
+  </div>
+
+  <!-- Grid de recursos -->
+  <div 
+    class="recursos-grid" 
+    [ngClass]="{'pocos-elementos': tienePocoElementos()}"
+    *ngIf="obtenerRecursosFiltrados().length > 0">
+    <div 
+      class="recurso-card"
+      *ngFor="let recurso of obtenerRecursosFiltrados()"
+      (click)="abrirRecurso(recurso)">
+      
+      <!-- Imagen del recurso -->
+      <div class="recurso-imagen">
+        <img [src]="recurso.thumbnail" [alt]="recurso.titulo" />
+        <div class="recurso-tipo" [style.background-color]="obtenerColorTipo(recurso.tipo)">
+          <i [class]="obtenerIconoTipo(recurso.tipo)"></i>
+        </div>
+        
+        <!-- Badge de leído -->
+        <div class="recurso-leido-badge" *ngIf="esRecursoLeido(recurso.id)">
+          <i class="fas fa-check-circle"></i>
+          Leído
+        </div>
+        
+        <button 
+          class="btn-favorito"
+          (click)="alternarFavorito(recurso); $event.stopPropagation()">
+          <i 
+            class="fas fa-star"
+            [style.color]="esFavorito(recurso.id) ? '#f39c12' : '#bdc3c7'">
+          </i>
+        </button>
+      </div>
+      
+      <!-- Contenido del recurso -->
+      <div class="recurso-contenido">
+        <div class="recurso-header">
+          <h3 class="recurso-titulo">{{recurso.titulo}}</h3>
+          <div class="recurso-meta">
+            <span class="recurso-autor" *ngIf="recurso.autor">
+              <i class="fas fa-user"></i>
+              {{recurso.autor}}
+            </span>
+            <span class="recurso-duracion" *ngIf="recurso.duracion">
+              <i class="fas fa-clock"></i>
+              {{recurso.duracion}}
+            </span>
+            <span 
+              class="recurso-nivel" 
+              *ngIf="recurso.nivel"
+              [style.color]="obtenerColorNivel(recurso.nivel)">
+              {{recurso.nivel | titlecase}}
+            </span>
+          </div>
+        </div>
+        
+        <p class="recurso-descripcion">{{recurso.descripcion}}</p>
+        
+        <!-- Estadísticas del recurso -->
+        <div class="recurso-stats">
+          <div class="stat">
+            <i class="fas fa-tag"></i>
+            <span>{{recurso.categoria}}</span>
+          </div>
+          <div class="stat" *ngIf="recurso.puntos">
+            <i class="fas fa-star"></i>
+            <span>{{recurso.puntos}} puntos</span>
+          </div>
+        </div>
+        
+        <!-- Acción principal -->
+        <div class="recurso-accion">
+          <button class="btn-ver-recurso" [style.background-color]="obtenerColorTipo(recurso.tipo)">
+            <i class="fas fa-play"></i>
+            Ver recurso
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensaje cuando no hay recursos -->
+  <div class="no-recursos" *ngIf="obtenerRecursosFiltrados().length === 0 && !cargando">
+    <i class="fas fa-search"></i>
+    <h3>No se encontraron recursos</h3>
+    <p>Intenta cambiar los filtros o términos de búsqueda.</p>
+    <button class="btn-limpiar" (click)="limpiarFiltros()">
+      <i class="fas fa-refresh"></i>
+      Limpiar filtros
+    </button>
+  </div>
+</div>
+
+<!-- Modal de recurso -->
+<div class="recurso-modal" *ngIf="mostrandoRecurso && recursoSeleccionado">
+  <div class="modal-overlay" (click)="cerrarRecurso()"></div>
+  
+  <div class="modal-contenido">
+    
+    <!-- Header del modal -->
+    <div class="modal-header">
+      <div class="modal-info">
+        <h2>{{recursoSeleccionado.titulo}}</h2>
+        <div class="modal-meta">
+          <span class="tipo-badge" [style.background-color]="obtenerColorTipo(recursoSeleccionado.tipo)">
+            <i [class]="obtenerIconoTipo(recursoSeleccionado.tipo)"></i>
+            {{ obtenerLabelTipo(recursoSeleccionado.tipo) }}
+          </span>
+          <span *ngIf="recursoSeleccionado.autor" class="autor-badge">
+            <i class="fas fa-user"></i>
+            {{recursoSeleccionado.autor}}
+          </span>
+        </div>
+      </div>
+      
+      <div class="modal-acciones">
+        <button 
+          class="btn-modal-favorito"
+          (click)="alternarFavorito(recursoSeleccionado)">
+          <i 
+            class="fas fa-star"
+            [style.color]="esFavorito(recursoSeleccionado.id) ? '#f39c12' : '#bdc3c7'">
+          </i>
+        </button>
+        <button class="btn-modal-cerrar" (click)="cerrarRecurso()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Puntos ganados -->
+    <div class="puntos-ganados" *ngIf="mostrarPuntos && puntosGanados > 0">
+      <i class="fas fa-trophy"></i>
+      ¡Has ganado {{puntosGanados}} puntos por leer este recurso!
+    </div>
+    
+    <!-- Cuerpo del modal -->
+    <div class="modal-body">
+  <div class="loading-container" *ngIf="cargandoRecurso">
+    <div class="loading-spinner">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Cargando recurso...</p>
+    </div>
+  </div>
+      
+      <div class="recurso-visor" *ngIf="!cargandoRecurso && recursoSeleccionado">
+    <!-- VIDEO: si es mp4 subido mostramos <video>, si es YouTube hacemos embed -->
+    <div class="video-container" *ngIf="recursoSeleccionado.tipo === 'video'">
+      <ng-container *ngIf="isMp4(recursoSeleccionado.url); else youtubeEmbed">
+        <video *ngIf="previewUrl" [src]="previewUrl" controls playsinline style="width:100%; height:auto;"></video>
+        <p *ngIf="!previewUrl">No se puede previsualizar el video. <button class="btn-descargar" (click)="descargarArchivo()">Descargar</button></p>
+      </ng-container>
+      <ng-template #youtubeEmbed>
+        <iframe 
+          [src]="sanitizarUrl('https://www.youtube.com/embed/' + obtenerIdYoutube(recursoSeleccionado.url) + '?autoplay=1')"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe>
+      </ng-template>
+    </div>
+        
+        <!-- Infografía/PDF/Guía -->
+        <div class="pdf-container" *ngIf="['infografia','guia','estudio'].includes(recursoSeleccionado.tipo)">
+      <div class="pdf-toolbar">
+        <h4>{{recursoSeleccionado.titulo}}</h4>
+        <button class="btn-descargar" (click)="descargarArchivo()">
+          <i class="fas fa-download"></i> Descargar
+        </button>
+      </div>
+
+      <iframe *ngIf="previewUrl" class="pdf-viewer" [src]="previewUrl" frameborder="0" style="width:100%; height:70vh;"></iframe>
+
+      <div *ngIf="!previewUrl">
+        <p>No se pudo generar la vista previa. Intenta descargar el archivo.</p>
+        <button class="btn-descargar" (click)="descargarArchivo()">Descargar</button>
+      </div>
+    </div>
+        
+        <!-- Estudio/Artículo -->
+        <div class="articulo-container" *ngIf="recursoSeleccionado.tipo === 'estudio'">
+          
+          
+          <!-- Vista previa del PDF -->
+          <div class="pdf-preview" *ngIf="recursoSeleccionado.url">
+            <iframe 
+              class="pdf-viewer"
+              *ngIf="sanitizedRecursoUrl"
+              [src]="sanitizedRecursoUrl"
+              frameborder="0">
+            </iframe>
+          </div>
+          
+          <!-- Contenido del artículo -->
+          <div class="articulo-contenido" *ngIf="recursoSeleccionado.contenido">
+            <div class="texto-principal" [innerHTML]="recursoSeleccionado.contenido  "></div>
+          </div>
+          
+          <!-- Información adicional -->
+          <div class="articulo-footer">
+            <p><strong>Autor:</strong> {{recursoSeleccionado.autor}}</p>
+            <p *ngIf="recursoSeleccionado.categoria">
+              <strong>Categoría:</strong> {{recursoSeleccionado.categoria}}
+            </p>
+            <p *ngIf="recursoSeleccionado.nivel">
+              <strong>Nivel:</strong> {{recursoSeleccionado.nivel | titlecase}}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

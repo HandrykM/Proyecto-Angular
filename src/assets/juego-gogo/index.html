@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>GoGo - Atrapa Gotas</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      position: fixed;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Comic Sans MS", "Chalkboard SE", sans-serif;
+      background: linear-gradient(to bottom, #87ceeb, #e0f6ff);
+      touch-action: manipulation;
+      user-select: none;
+    }
+
+    #game-container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    #game-canvas {
+      background: linear-gradient(to bottom, #87ceeb 0%, #e0f6ff 60%, #f0f8ff 100%);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      border-radius: 0;
+      border: none;
+      touch-action: none;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Panel de controles - Desktop only */
+    #controls-panel {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 180px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 15px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      z-index: 10;
+    }
+
+    #controls-panel h3 {
+      font-size: 1rem;
+      color: #2e86c1;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .control-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-size: 0.75rem;
+    }
+
+    .control-item i {
+      color: #2e86c1;
+      font-size: 1rem;
+    }
+
+    /* Panel de pausa */
+    #pause-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      align-items: center;
+      justify-content: center;
+      z-index: 500;
+      padding: 20px;
+    }
+
+    #pause-overlay.active {
+      display: flex;
+    }
+
+    .pause-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+      max-width: 90%;
+      width: 400px;
+    }
+
+    .pause-content h2 {
+      font-size: 2rem;
+      color: #2e86c1;
+      margin-bottom: 1rem;
+    }
+
+    .pause-content p {
+      font-size: 1rem;
+      color: #6c757d;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Ranking panel - Desktop only */
+    #ranking-panel {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 240px;
+      max-height: 70vh;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 15px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      overflow-y: auto;
+      z-index: 10;
+    }
+
+    #ranking-panel h3 {
+      font-size: 1.1rem;
+      color: #2e86c1;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      position: sticky;
+      top: 0;
+      background: rgba(255, 255, 255, 0.95);
+      padding-bottom: 8px;
+    }
+
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      transition: transform 0.2s;
+    }
+
+    .ranking-item:hover {
+      transform: translateX(-5px);
+    }
+
+    .ranking-position {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-right: 10px;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .ranking-position.top1 {
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      color: #fff;
+    }
+
+    .ranking-position.top2 {
+      background: linear-gradient(135deg, #C0C0C0, #A8A8A8);
+      color: #fff;
+    }
+
+    .ranking-position.top3 {
+      background: linear-gradient(135deg, #CD7F32, #B8860B);
+      color: #fff;
+    }
+
+    .ranking-position.other {
+      background: #6c757d;
+      color: #fff;
+    }
+
+    .ranking-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .ranking-name {
+      font-weight: 600;
+      color: #2c3e50;
+      font-size: 0.85rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ranking-score {
+      color: #3498db;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    /* Modales */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      align-items: center;
+      justify-content: center;
+      padding: 15px;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      padding: 1.5rem;
+      border-radius: 20px;
+      width: calc(100% - 30px);
+      max-width: 400px;
+      max-height: 85vh;
+      overflow-y: auto;
+      text-align: center;
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+      animation: modalSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      margin: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        transform: scale(0.8) translateY(50px);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-title {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #2e86c1;
+      margin-bottom: 1rem;
+    }
+
+    .mode-selection {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.8rem;
+      margin: 1rem 0;
+    }
+
+    .mode-card {
+      padding: 1rem;
+      border: 3px solid #e0e0e0;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: #f8f9fa;
+    }
+
+    .mode-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .mode-card.selected {
+      border-color: #3498db;
+      background: linear-gradient(135deg, #e8f4f8, #d4e9f7);
+      box-shadow: 0 6px 20px rgba(52, 152, 219, 0.3);
+    }
+
+    .mode-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .mode-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 0.3rem;
+    }
+
+    .mode-description {
+      font-size: 0.8rem;
+      color: #6c757d;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #3498db, #2e86c1);
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+    }
+
+    .difficulty-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+
+    .difficulty-btn {
+      padding: 0.6rem 0.3rem;
+      border: 2px solid #3498db;
+      background: white;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      font-size: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    .difficulty-btn i {
+      font-size: 1.1rem;
+    }
+
+    .difficulty-btn:hover {
+      background: #e8f4f8;
+      transform: translateY(-2px);
+    }
+
+    .difficulty-btn.selected {
+      background: #3498db;
+      color: white;
+      border-color: #2e86c1;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .stat-box {
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      padding: 1.2rem 0.8rem;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #2e86c1;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: #7f8c8d;
+      margin-top: 0.3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+      padding: 0.8rem 1.2rem;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .btn-secondary:hover {
+      background: #5a6268;
+      transform: translateY(-2px);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #2ecc71, #27ae60);
+      color: white;
+      padding: 0.8rem 1.2rem;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+    }
+
+    .victory-banner {
+      background: linear-gradient(135deg, #2ecc71, #27ae60);
+      color: white;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      font-weight: bold;
+    }
+
+    /* RESPONSIVE */
+    @media (min-width: 768px) {
+      .mode-selection {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .btn-group {
+        flex-direction: row;
+      }
+
+      .btn-secondary,
+      .btn-success {
+        flex: 1;
+      }
+
+      .modal-content {
+        max-width: 500px;
+        padding: 2rem;
+      }
+
+      .modal-title {
+        font-size: 1.8rem;
+      }
+
+      .stat-value {
+        font-size: 2rem;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      #controls-panel,
+      #ranking-panel {
+        display: none;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .modal-content {
+        width: calc(100% - 20px);
+        max-width: 380px;
+        padding: 1.2rem;
+      }
+
+      .modal-title {
+        font-size: 1.2rem;
+        margin-bottom: 0.8rem;
+      }
+
+      .mode-icon {
+        font-size: 1.8rem;
+      }
+
+      .mode-title {
+        font-size: 0.9rem;
+      }
+
+      .mode-description {
+        font-size: 0.75rem;
+      }
+
+      .stats-grid {
+        gap: 0.6rem;
+      }
+
+      .stat-value {
+        font-size: 1.3rem;
+      }
+
+      .stat-label {
+        font-size: 0.65rem;
+      }
+
+      .stat-box {
+        padding: 0.8rem 0.5rem;
+      }
+
+      .btn-primary,
+      .btn-secondary,
+      .btn-success {
+        padding: 0.65rem 0.8rem;
+        font-size: 0.8rem;
+      }
+
+      .difficulty-btn {
+        padding: 0.5rem 0.2rem;
+        font-size: 0.7rem;
+      }
+
+      .difficulty-btn i {
+        font-size: 1rem;
+      }
+
+      .victory-banner {
+        font-size: 0.8rem;
+        padding: 0.7rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .modal-content {
+        padding: 1rem;
+        max-width: 350px;
+      }
+
+      .modal-title {
+        font-size: 1.1rem;
+      }
+
+      .mode-icon {
+        font-size: 1.6rem;
+      }
+
+      .difficulty-btn {
+        font-size: 0.65rem;
+        padding: 0.45rem 0.15rem;
+      }
+
+      .stat-value {
+        font-size: 1.2rem;
+      }
+
+      .btn-primary,
+      .btn-secondary,
+      .btn-success {
+        font-size: 0.75rem;
+        padding: 0.6rem 0.7rem;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .modal-content {
+        width: calc(100% - 15px);
+        padding: 0.9rem;
+      }
+
+      .modal-title {
+        font-size: 1rem;
+      }
+
+      .mode-card {
+        padding: 0.8rem;
+      }
+
+      .stat-value {
+        font-size: 1.1rem;
+      }
+
+      .stat-label {
+        font-size: 0.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
+    
+    <!-- Panel de controles (desktop only) -->
+    <div id="controls-panel">
+      <h3>
+        <i class="fas fa-gamepad"></i> Controles
+      </h3>
+      <div class="control-item">
+        <i class="fas fa-arrows-alt-h"></i>
+        <span>Flechas o Mouse</span>
+      </div>
+      <div class="control-item">
+        <i class="fas fa-pause"></i>
+        <span>ESPACIO pausa</span>
+      </div>
+      <div class="control-item">
+        <i class="fas fa-mobile-alt"></i>
+        <span>Touch móvil</span>
+      </div>
+    </div>
+
+    <!-- Overlay de pausa -->
+    <div id="pause-overlay">
+      <div class="pause-content">
+        <h2><i class="fas fa-pause-circle"></i> PAUSADO</h2>
+        <p>Presiona ESPACIO o toca el botón para continuar</p>
+        <button class="btn-primary" onclick="togglePause()">
+          <i class="fas fa-play"></i> Continuar
+        </button>
+      </div>
+    </div>
+    
+    <!-- Ranking panel (desktop only) -->
+    <div id="ranking-panel" style="display: none;">
+      <h3>
+        <i class="fas fa-trophy"></i> Top Jugadores
+      </h3>
+      <div id="ranking-list"></div>
+    </div>
+  </div>
+
+  <!-- Modal de selección de modo -->
+  <div id="mode-modal" class="modal-overlay active">
+    <div class="modal-content">
+      <h2 class="modal-title">
+        <i class="fas fa-tint"></i> Selecciona el Modo
+      </h2>
+      
+      <div class="mode-selection">
+        <div class="mode-card selected" data-mode="normal">
+          <div class="mode-icon">🎯</div>
+          <div class="mode-title">Modo Normal</div>
+          <div class="mode-description">Alcanza 1000 puntos para completar</div>
+        </div>
+        
+        <div class="mode-card" data-mode="ranked">
+          <div class="mode-icon">🏆</div>
+          <div class="mode-title">Clasificatoria</div>
+          <div class="mode-description">Infinito - Compite por el mejor puntaje</div>
+        </div>
+      </div>
+
+      <div class="difficulty-options">
+        <button class="difficulty-btn selected" data-difficulty="easy">
+          <i class="fas fa-smile"></i>
+          <span>Fácil</span>
+        </button>
+        <button class="difficulty-btn" data-difficulty="medium">
+          <i class="fas fa-meh"></i>
+          <span>Medio</span>
+        </button>
+        <button class="difficulty-btn" data-difficulty="hard">
+          <i class="fas fa-sad-tear"></i>
+          <span>Difícil</span>
+        </button>
+      </div>
+
+      <button class="btn-primary" id="start-game-btn">
+        <i class="fas fa-play"></i> Comenzar Juego
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal de resultados -->
+  <div id="results-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div id="victory-message" class="victory-banner" style="display: none;">
+        <i class="fas fa-trophy"></i> ¡Felicitaciones! Has completado la actividad
+      </div>
+      
+      <h2 class="modal-title" id="results-title">Resultados del Juego</h2>
+      
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-value" id="final-score">0</div>
+          <div class="stat-label">Puntos</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="final-level">1</div>
+          <div class="stat-label">Nivel</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="final-drops">0</div>
+          <div class="stat-label">Gotas</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="final-time">0</div>
+          <div class="stat-label">Tiempo (min)</div>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn-secondary" id="change-mode-btn">
+          <i class="fas fa-exchange-alt"></i> Cambiar Modo
+        </button>
+        <button class="btn-secondary" id="play-again-btn">
+          <i class="fas fa-redo"></i> Jugar de Nuevo
+        </button>
+        <button class="btn-success" id="continue-btn">
+          <i class="fas fa-check"></i> Continuar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let gameConfig = { mode: 'normal', difficulty: 'easy', soundEnabled: true };
+    let gameState = { score: 0, level: 1, dropsCollected: 0, startTime: 0, gameActive: false, isPaused: false };
+    
+    const POINTS_PER_DROP = 10;
+    const DROPS_PER_LEVEL = 50;
+    const TARGET_SCORE_NORMAL = 1000;
+
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d');
+    const modeModal = document.getElementById('mode-modal');
+    const resultsModal = document.getElementById('results-modal');
+    const rankingPanel = document.getElementById('ranking-panel');
+    const pauseOverlay = document.getElementById('pause-overlay');
+
+    let drops = [];
+    let clouds = [];
+    let bucket = { width: 120, height: 80, x: 0, y: 0, speed: 10 };
+    let dropSpeed = 2;
+    let dropInterval = 1000;
+    let dropTimeout = null;
+    let animationFrame = null;
+
+    function init() {
+      resizeCanvas();
+      initializeClouds();
+      setupEventListeners();
+      loadRanking();
+      window.addEventListener('resize', resizeCanvas);
+      window.addEventListener('orientationchange', () => {
+        setTimeout(resizeCanvas, 100);
+      });
+    }
+
+    function resizeCanvas() {
+      // Obtener dimensiones completas de la ventana
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      // Escalar elementos del juego proporcionalmente
+      const scale = Math.min(width / 800, height / 600);
+      bucket.width = Math.max(60, 120 * scale);
+      bucket.height = Math.max(45, 80 * scale);
+      bucket.speed = Math.max(8, 15 * scale);
+      bucket.x = canvas.width / 2 - bucket.width / 2;
+      bucket.y = canvas.height - bucket.height - 20;
+      
+      initializeClouds();
+    }
+
+    function initializeClouds() {
+      const scale = canvas.width / 800;
+      clouds = [
+        { x: canvas.width * 0.15, y: 40 * scale, size: 50 * scale, speed: 0.3 * scale },
+        { x: canvas.width * 0.5, y: 60 * scale, size: 45 * scale, speed: 0.25 * scale },
+        { x: canvas.width * 0.75, y: 30 * scale, size: 40 * scale, speed: 0.35 * scale }
+      ];
+    }
+
+    function setupEventListeners() {
+      document.querySelectorAll('.mode-card').forEach(card => {
+        card.addEventListener('click', () => {
+          document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          gameConfig.mode = card.dataset.mode;
+        });
+      });
+
+      document.querySelectorAll('.difficulty-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          gameConfig.difficulty = btn.dataset.difficulty;
+        });
+      });
+
+      document.getElementById('start-game-btn').addEventListener('click', startGame);
+      document.getElementById('change-mode-btn').addEventListener('click', () => {
+        resultsModal.classList.remove('active');
+        modeModal.classList.add('active');
+      });
+      document.getElementById('play-again-btn').addEventListener('click', () => {
+        resultsModal.classList.remove('active');
+        startGame();
+      });
+      document.getElementById('continue-btn').addEventListener('click', finishActivity);
+
+      document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && gameState.gameActive) {
+          e.preventDefault();
+          togglePause();
+        }
+      });
+
+      setupGameControls();
+    }
+
+    function togglePause() {
+      if (!gameState.gameActive) return;
+      
+      gameState.isPaused = !gameState.isPaused;
+      
+      if (gameState.isPaused) {
+        pauseOverlay.classList.add('active');
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+        if (dropTimeout) clearTimeout(dropTimeout);
+      } else {
+        pauseOverlay.classList.remove('active');
+        createDrop();
+        gameLoop();
+      }
+    }
+
+    window.togglePause = togglePause;
+
+    function setupGameControls() {
+      let isDragging = false;
+
+      canvas.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        updateBucketPosition(e.clientX);
+      });
+
+      canvas.addEventListener('mousemove', (e) => {
+        if (isDragging && !gameState.isPaused) updateBucketPosition(e.clientX);
+      });
+
+      window.addEventListener('mouseup', () => isDragging = false);
+
+      canvas.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        updateBucketPosition(e.touches[0].clientX);
+      });
+
+      canvas.addEventListener('touchmove', (e) => {
+        if (isDragging && !gameState.isPaused) {
+          e.preventDefault();
+          updateBucketPosition(e.touches[0].clientX);
+        }
+      }, { passive: false });
+
+      canvas.addEventListener('touchend', () => isDragging = false);
+
+      document.addEventListener('keydown', (e) => {
+        if (!gameState.gameActive || gameState.isPaused) return;
+        
+        if (e.key === 'ArrowLeft') {
+          bucket.x = Math.max(0, bucket.x - bucket.speed);
+        } else if (e.key === 'ArrowRight') {
+          bucket.x = Math.min(canvas.width - bucket.width, bucket.x + bucket.speed);
+        }
+      });
+    }
+
+    function updateBucketPosition(clientX) {
+      if (!gameState.gameActive || gameState.isPaused) return;
+      
+      const rect = canvas.getBoundingClientRect();
+      const x = clientX - rect.left;
+      bucket.x = x - bucket.width / 2;
+      bucket.x = Math.max(0, Math.min(canvas.width - bucket.width, bucket.x));
+    }
+
+    function startGame() {
+      modeModal.classList.remove('active');
+
+      let baseDropSpeed, baseDropInterval;
+      switch(gameConfig.difficulty) {
+        case 'easy':
+          baseDropSpeed = 2;
+          baseDropInterval = 1200;
+          break;
+        case 'medium':
+          baseDropSpeed = 3;
+          baseDropInterval = 900;
+          break;
+        case 'hard':
+          baseDropSpeed = 4;
+          baseDropInterval = 700;
+          break;
+      }
+
+      dropSpeed = baseDropSpeed;
+      dropInterval = baseDropInterval;
+
+      gameState = {
+        score: 0,
+        level: 1,
+        dropsCollected: 0,
+        startTime: Date.now(),
+        gameActive: true,
+        isPaused: false
+      };
+
+      drops = [];
+      resizeCanvas();
+
+      if (gameConfig.mode === 'ranked' && window.innerWidth > 1024) {
+        rankingPanel.style.display = 'block';
+        loadRanking();
+      } else {
+        rankingPanel.style.display = 'none';
+      }
+
+      if (dropTimeout) clearTimeout(dropTimeout);
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+
+      sendMessageToParent('gogo-score-update', { score: 0, level: 1 });
+      createDrop();
+      gameLoop();
+    }
+
+    function drawClouds() {
+      ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
+      
+      clouds.forEach(cloud => {
+        cloud.x += cloud.speed;
+        if (cloud.x > canvas.width + cloud.size) {
+          cloud.x = -cloud.size;
+        }
+        
+        drawCloud(cloud.x, cloud.y, cloud.size);
+      });
+    }
+
+    function drawCloud(x, y, size) {
+      ctx.beginPath();
+      ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+      ctx.arc(x + size * 0.3, y - size * 0.3, size * 0.6, 0, Math.PI * 2);
+      ctx.arc(x + size * 0.7, y, size * 0.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawBucket() {
+      const { x, y, width, height } = bucket;
+      
+      ctx.save();
+      
+      // Gradiente metálico para el balde
+      const metalGradient = ctx.createLinearGradient(x, y, x + width, y);
+      metalGradient.addColorStop(0, "#95a5a6");
+      metalGradient.addColorStop(0.3, "#bdc3c7");
+      metalGradient.addColorStop(0.5, "#ecf0f1");
+      metalGradient.addColorStop(0.7, "#bdc3c7");
+      metalGradient.addColorStop(1, "#95a5a6");
+
+      // Cuerpo principal del balde (forma trapezoidal)
+      ctx.fillStyle = metalGradient;
+      ctx.beginPath();
+      ctx.moveTo(x + width * 0.15, y);
+      ctx.lineTo(x + width * 0.85, y);
+      ctx.lineTo(x + width * 0.95, y + height);
+      ctx.lineTo(x + width * 0.05, y + height);
+      ctx.closePath();
+      ctx.fill();
+
+      // Contorno oscuro del balde
+      ctx.strokeStyle = "#34495e";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Agua dentro del balde con gradiente realista
+      const waterGradient = ctx.createLinearGradient(x, y + height * 0.3, x, y + height);
+      waterGradient.addColorStop(0, "rgba(52, 152, 219, 0.6)");
+      waterGradient.addColorStop(0.4, "rgba(41, 128, 185, 0.75)");
+      waterGradient.addColorStop(1, "rgba(30, 100, 150, 0.85)");
+      
+      ctx.fillStyle = waterGradient;
+      ctx.beginPath();
+      // Superficie del agua con onda
+      ctx.moveTo(x + width * 0.18, y + height * 0.35);
+      ctx.quadraticCurveTo(
+        x + width * 0.35, y + height * 0.32,
+        x + width * 0.5, y + height * 0.35
+      );
+      ctx.quadraticCurveTo(
+        x + width * 0.65, y + height * 0.38,
+        x + width * 0.82, y + height * 0.35
+      );
+      // Lados del agua
+      ctx.lineTo(x + width * 0.93, y + height * 0.95);
+      ctx.lineTo(x + width * 0.07, y + height * 0.95);
+      ctx.closePath();
+      ctx.fill();
+
+      // Reflejos en el agua (ondas)
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      for (let i = 0; i < 2; i++) {
+        const waveY = y + height * 0.5 + i * height * 0.15;
+        ctx.moveTo(x + width * 0.2, waveY);
+        ctx.quadraticCurveTo(
+          x + width * 0.4, waveY - 2,
+          x + width * 0.5, waveY
+        );
+        ctx.quadraticCurveTo(
+          x + width * 0.6, waveY + 2,
+          x + width * 0.8, waveY
+        );
+      }
+      ctx.stroke();
+
+      // Brillo metálico en la parte superior del balde
+      const shineGradient = ctx.createLinearGradient(x, y, x, y + height * 0.3);
+      shineGradient.addColorStop(0, "rgba(255, 255, 255, 0.5)");
+      shineGradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+      
+      ctx.fillStyle = shineGradient;
+      ctx.beginPath();
+      ctx.moveTo(x + width * 0.2, y);
+      ctx.lineTo(x + width * 0.8, y);
+      ctx.lineTo(x + width * 0.75, y + height * 0.25);
+      ctx.lineTo(x + width * 0.25, y + height * 0.25);
+      ctx.closePath();
+      ctx.fill();
+
+      // Asa del balde con grosor
+      ctx.strokeStyle = "#7f8c8d";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(x + width * 0.5, y - 8, width * 0.25, 0.3, Math.PI - 0.3);
+      ctx.stroke();
+
+      // Sombra del asa
+      ctx.strokeStyle = "#34495e";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(x + width * 0.5, y - 7, width * 0.25, 0.3, Math.PI - 0.3);
+      ctx.stroke();
+
+      // Base metálica del balde
+      ctx.fillStyle = "#7f8c8d";
+      ctx.fillRect(x + width * 0.05, y + height * 0.95, width * 0.9, height * 0.05);
+
+      ctx.restore();
+    }
+
+    function drawDrops() {
+      drops.forEach(drop => {
+        drop.wobble += 0.1;
+        const wobbleOffset = Math.sin(drop.wobble) * 2;
+        
+        const x = drop.x + wobbleOffset;
+        const y = drop.y;
+        const size = drop.size;
+        
+        ctx.save();
+        
+        // Sombra de la gota
+        ctx.shadowColor = "rgba(0, 100, 200, 0.4)";
+        ctx.shadowBlur = size * 0.8;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 4;
+        
+        // Gradiente principal de la gota (azul agua realista)
+        const gradient = ctx.createRadialGradient(
+          x + size * 0.4, y + size * 0.5, size * 0.2,
+          x + size * 0.6, y + size * 0.8, size * 1.5
+        );
+        gradient.addColorStop(0, "#e3f2fd");
+        gradient.addColorStop(0.2, "#90caf9");
+        gradient.addColorStop(0.5, "#42a5f5");
+        gradient.addColorStop(0.75, "#1e88e5");
+        gradient.addColorStop(1, "#1565c0");
+        
+        ctx.fillStyle = gradient;
+        
+        // Forma de gota de agua perfecta
+        ctx.beginPath();
+        // Parte superior (círculo)
+        ctx.arc(x + size, y + size, size * 0.9, Math.PI * 0.75, Math.PI * 2.25);
+        // Punta inferior (lágrima)
+        ctx.quadraticCurveTo(
+          x + size * 2, y + size * 2,
+          x + size, y + size * 2.8
+        );
+        ctx.quadraticCurveTo(
+          x, y + size * 2,
+          x + size * 0.22, y + size * 1.1
+        );
+        ctx.closePath();
+        ctx.fill();
+        
+        // Quitar sombra para brillos
+        ctx.shadowColor = "transparent";
+        
+        // Brillo principal grande (reflejo de luz)
+        ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
+        ctx.beginPath();
+        ctx.ellipse(x + size * 0.65, y + size * 0.75, size * 0.4, size * 0.55, -0.4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Brillo secundario pequeño
+        ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+        ctx.beginPath();
+        ctx.arc(x + size * 1.35, y + size * 1.2, size * 0.22, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Tercer brillo muy pequeño
+        ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+        ctx.beginPath();
+        ctx.arc(x + size * 0.8, y + size * 1.8, size * 0.12, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Reflejo inferior sutil
+        ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
+        ctx.beginPath();
+        ctx.ellipse(x + size, y + size * 2.3, size * 0.3, size * 0.15, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Borde sutil para definir mejor la forma
+        ctx.strokeStyle = "rgba(30, 136, 229, 0.4)";
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(x + size, y + size, size * 0.9, Math.PI * 0.75, Math.PI * 2.25);
+        ctx.quadraticCurveTo(
+          x + size * 2, y + size * 2,
+          x + size, y + size * 2.8
+        );
+        ctx.quadraticCurveTo(
+          x, y + size * 2,
+          x + size * 0.22, y + size * 1.1
+        );
+        ctx.stroke();
+        
+        ctx.restore();
+      });
+    }
+
+    function drawScore() {
+      const scale = canvas.width / 800;
+      const boxWidth = Math.max(150, 220 * scale);
+      const boxHeight = Math.max(70, 90 * scale);
+      const fontSize = Math.max(12, 18 * scale);
+      const padding = Math.max(8, 10 * scale);
+      
+      ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+      ctx.fillRect(10, 10, boxWidth, boxHeight);
+      ctx.strokeStyle = "#2e86c1";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(10, 10, boxWidth, boxHeight);
+
+      ctx.fillStyle = "#2e86c1";
+      ctx.font = `bold ${fontSize}px Comic Sans MS`;
+      ctx.fillText(`Puntos: ${gameState.score}`, 10 + padding, 25 + fontSize);
+      ctx.fillText(`Nivel: ${gameState.level}`, 10 + padding, 25 + fontSize * 2.2);
+      ctx.fillText(`Gotas: ${gameState.dropsCollected}`, 10 + padding, 25 + fontSize * 3.4);
+    }
+
+    function createDrop() {
+      if (!gameState.gameActive || gameState.isPaused) return;
+
+      const scale = canvas.width / 800;
+      const baseSize = Math.max(6, 10 * scale);
+      const size = baseSize + Math.random() * (6 * scale);
+      
+      drops.push({
+        x: Math.random() * (canvas.width - size * 2.5),
+        y: -size * 3,
+        size: size,
+        speed: dropSpeed * scale,
+        wobble: Math.random() * Math.PI * 2
+      });
+
+      if (gameConfig.mode === 'ranked') {
+        const timePlayed = (Date.now() - gameState.startTime) / 1000;
+        if (timePlayed > 30) {
+          dropSpeed = Math.min(8, dropSpeed + 0.01);
+        }
+      }
+
+      dropTimeout = setTimeout(createDrop, dropInterval * (0.8 + Math.random() * 0.4));
+    }
+
+    function updateDrops() {
+      for (let i = drops.length - 1; i >= 0; i--) {
+        const drop = drops[i];
+        drop.y += drop.speed;
+
+        if (drop.y + drop.size * 2.8 > bucket.y && 
+            drop.y < bucket.y + bucket.height && 
+            drop.x + drop.size * 2 > bucket.x && 
+            drop.x < bucket.x + bucket.width) {
+          
+          drops.splice(i, 1);
+          gameState.dropsCollected++;
+          gameState.score += POINTS_PER_DROP;
+          
+          sendMessageToParent('gogo-score-update', {
+            score: gameState.score,
+            level: gameState.level
+          });
+          
+          if (gameState.dropsCollected % DROPS_PER_LEVEL === 0) {
+            gameState.level++;
+            dropSpeed += 0.5;
+            dropInterval = Math.max(400, dropInterval - 100);
+          }
+
+          if (gameConfig.mode === 'normal' && gameState.score >= TARGET_SCORE_NORMAL) {
+            endGame(true);
+            return;
+          }
+          continue;
+        }
+
+        if (drop.y > canvas.height) {
+          endGame(false);
+          return;
+        }
+      }
+    }
+
+    function gameLoop() {
+      if (!gameState.gameActive || gameState.isPaused) return;
+      
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawClouds();
+      drawBucket();
+      drawDrops();
+      drawScore();
+      updateDrops();
+      
+      animationFrame = requestAnimationFrame(gameLoop);
+    }
+
+    function endGame(victory) {
+      gameState.gameActive = false;
+      gameState.isPaused = false;
+      clearTimeout(dropTimeout);
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+
+      const timeMinutes = Math.floor((Date.now() - gameState.startTime) / 60000);
+
+      document.getElementById('final-score').textContent = gameState.score;
+      document.getElementById('final-level').textContent = gameState.level;
+      document.getElementById('final-drops').textContent = gameState.dropsCollected;
+      document.getElementById('final-time').textContent = timeMinutes;
+
+      const victoryMessage = document.getElementById('victory-message');
+      const resultsTitle = document.getElementById('results-title');
+
+      if (gameConfig.mode === 'normal' && victory) {
+        victoryMessage.style.display = 'block';
+        resultsTitle.textContent = '¡Misión Cumplida!';
+      } else if (gameConfig.mode === 'ranked') {
+        victoryMessage.style.display = 'none';
+        resultsTitle.textContent = 'Game Over - Clasificatoria';
+      } else {
+        victoryMessage.style.display = 'none';
+        resultsTitle.textContent = 'Intenta de Nuevo';
+      }
+
+      resultsModal.classList.add('active');
+      pauseOverlay.classList.remove('active');
+
+      sendGameDataToParent(victory);
+
+      if (gameConfig.mode === 'ranked') {
+        updateRanking();
+      }
+    }
+
+    function sendGameDataToParent(victory) {
+      window.parent.postMessage({
+        type: 'gogo-game-over',
+        finalScore: gameState.score,
+        level: gameState.level,
+        dropsCollected: gameState.dropsCollected,
+        timeMinutes: Math.floor((Date.now() - gameState.startTime) / 60000),
+        victory: gameConfig.mode === 'normal' ? victory : false,
+        mode: gameConfig.mode
+      }, '*');
+    }
+
+    function finishActivity() {
+      window.parent.postMessage({
+        type: 'gogo-finish',
+        finalScore: gameState.score,
+        level: gameState.level,
+        dropsCollected: gameState.dropsCollected,
+        completed: gameConfig.mode === 'normal' && gameState.score >= TARGET_SCORE_NORMAL,
+        mode: gameConfig.mode
+      }, '*');
+    }
+
+    async function loadRanking() {
+      try {
+        const response = await fetch('http://localhost:3000/api/ranking-gogo?limite=10');
+        if (!response.ok) throw new Error('Error al cargar ranking');
+        
+        const ranking = await response.json();
+        displayRanking(ranking);
+      } catch (error) {
+        console.error('Error cargando ranking:', error);
+        displayRanking([]);
+      }
+    }
+
+    function displayRanking(ranking) {
+      const rankingList = document.getElementById('ranking-list');
+      
+      if (ranking.length === 0) {
+        rankingList.innerHTML = `
+          <div style="text-align: center; color: #95a5a6; padding: 20px;">
+            <i class="fas fa-trophy" style="font-size: 2rem; margin-bottom: 10px;"></i>
+            <p style="font-size: 0.85rem;">¡Sé el primero en el ranking!</p>
+          </div>
+        `;
+        return;
+      }
+
+      rankingList.innerHTML = ranking.map((player, index) => {
+        let positionClass = 'other';
+        if (index === 0) positionClass = 'top1';
+        else if (index === 1) positionClass = 'top2';
+        else if (index === 2) positionClass = 'top3';
+
+        return `
+          <div class="ranking-item">
+            <div class="ranking-position ${positionClass}">
+              ${index < 3 ? '<i class="fas fa-medal"></i>' : (index + 1)}
+            </div>
+            <div class="ranking-info">
+              <div class="ranking-name">${player.nombreUsuario || 'Jugador ' + player.id_usuario}</div>
+              <div class="ranking-score">
+                <i class="fas fa-star"></i> ${player.puntuacion_maxima} pts 
+                <span style="margin-left: 5px;">
+                  <i class="fas fa-layer-group"></i> Nv.${player.nivel}
+                </span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function updateRanking() {
+      try {
+        const userId = await getUserId();
+        
+        const response = await fetch('http://localhost:3000/api/ranking-gogo', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            idUsuario: userId,
+            puntuacionMaxima: gameState.score,
+            nivel: gameState.level
+          })
+        });
+
+        if (response.ok) {
+          setTimeout(() => loadRanking(), 500);
+        }
+      } catch (error) {
+        console.error('Error actualizando ranking:', error);
+      }
+    }
+
+    function getUserId() {
+      return new Promise((resolve) => {
+        try {
+          const userStr = window.parent.localStorage.getItem('usuario');
+          if (userStr) {
+            const user = JSON.parse(userStr);
+            resolve(user.id || 1);
+          } else {
+            resolve(1);
+          }
+        } catch {
+          resolve(1);
+        }
+      });
+    }
+
+    function sendMessageToParent(type, data) {
+      window.parent.postMessage({ type, ...data }, '*');
+    }
+
+    window.addEventListener('load', init);
+
+    window.addEventListener('message', (event) => {
+      if (event.data.type === 'user-id') {
+        window.currentUserId = event.data.userId;
+      }
+    });
+  </script>
+</body>
+</html>

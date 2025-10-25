@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reutilizable o No - Juego Interactivo</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Pantalla de inicio -->
+        <div id="welcome-screen" class="screen active">
+            <div class="welcome-content">
+                <div class="icon-container">
+                    <i class="fas fa-droplet"></i>
+                </div>
+                <h1>¿Reutilizable o No?</h1>
+                <p>Aprende a clasificar diferentes tipos de aguas según su potencial de reutilización</p>
+              <!--  <img src="https://via.placeholder.com/300x150?text=Aguas+Reutilizables" alt="Agua reutilizable" class="welcome-image">-->
+                <div class="welcome-buttons">
+                    <button class="btn-primary" id="instructions-btn">
+                        <i class="fas fa-book"></i> Instrucciones
+                    </button>
+                    <button class="btn-primary" id="start-btn">
+                        <i class="fas fa-play"></i> Comenzar Juego
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla de instrucciones -->
+        <div id="instructions-screen" class="screen">
+            <div class="instructions-content">
+                <button class="btn-back" onclick="showScreen('welcome')">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </button>
+                <h2>Cómo Jugar</h2>
+                <div class="instructions-grid">
+                    <div class="instruction-card">
+                        <div class="instruction-number">1</div>
+                        <h3>Selecciona un Nivel</h3>
+                        <p>Elige entre Básico, Intermedio o Avanzado según tu experiencia</p>
+                    </div>
+                    <div class="instruction-card">
+                        <div class="instruction-number">2</div>
+                        <h3>Observa el Agua</h3>
+                        <p>Lee cuidadosamente el tipo de agua que se presenta</p>
+                    </div>
+                    <div class="instruction-card">
+                        <div class="instruction-number">3</div>
+                        <h3>Arrastra la Tarjeta</h3>
+                        <p>Haz clic y arrastra la tarjeta azul hacia la categoría correcta</p>
+                    </div>
+                    <div class="instruction-card">
+                        <div class="instruction-number">4</div>
+                        <h3>Confirma tu Respuesta</h3>
+                        <p>Presiona "Confirmar" para validar tu clasificación</p>
+                    </div>
+                    <div class="instruction-card">
+                        <div class="instruction-number">5</div>
+                        <h3>Aprende del Feedback</h3>
+                        <p>Lee la explicación para entender por qué tu respuesta fue correcta o incorrecta</p>
+                    </div>
+                    <div class="instruction-card">
+                        <div class="instruction-number">6</div>
+                        <h3>Continúa Jugando</h3>
+                        <p>Clasifica todas las tarjetas y obtén la mejor puntuación posible</p>
+                    </div>
+                </div>
+
+                <div class="categories-info">
+                    <h3>Las 3 Categorías</h3>
+                    <div class="category-info-box reutilizable">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <h4>Reutilizable Directamente</h4>
+                            <p>Agua limpia que se puede usar inmediatamente sin tratamiento</p>
+                        </div>
+                    </div>
+                    <div class="category-info-box tratamiento">
+                        <i class="fas fa-flask"></i>
+                        <div>
+                            <h4>Reutilizable con Tratamiento</h4>
+                            <p>Agua que necesita filtración o tratamiento básico antes de reutilizarse</p>
+                        </div>
+                    </div>
+                    <div class="category-info-box no-reutilizable">
+                        <i class="fas fa-times-circle"></i>
+                        <div>
+                            <h4>No Reutilizable</h4>
+                            <p>Agua altamente contaminada que no debe reutilizarse sin tratamiento profesional</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-primary" id="begin-game-btn">
+                    <i class="fas fa-play"></i> Empezar a Jugar
+                </button>
+            </div>
+        </div>
+
+        <!-- Pantalla de selección de dificultad -->
+        <div id="difficulty-screen" class="screen">
+            <div class="difficulty-content">
+                <h2>Elige tu Nivel</h2>
+                <div class="difficulty-grid">
+                    <div class="difficulty-card" data-difficulty="basico">
+                        <i class="fas fa-leaf"></i>
+                        <h3>Básico</h3>
+                        <p>Perfecto para empezar</p>
+                        <span class="badge">8 tarjetas</span>
+                    </div>
+                    <div class="difficulty-card" data-difficulty="intermedio">
+                        <i class="fas fa-water"></i>
+                        <h3>Intermedio</h3>
+                        <p>Más desafiante</p>
+                        <span class="badge">10 tarjetas</span>
+                    </div>
+                    <div class="difficulty-card" data-difficulty="avanzado">
+                        <i class="fas fa-flask"></i>
+                        <h3>Avanzado</h3>
+                        <p>Casos complejos</p>
+                        <span class="badge">12 tarjetas</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla del juego -->
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <div class="progress-info">
+                    <span id="current-card">1</span> / <span id="total-cards">8</span>
+                </div>
+                <div class="timer-display">
+                    <i class="fas fa-clock"></i>
+                    <span id="timer">60</span>s
+                </div>
+                <div class="score-display">
+                    <i class="fas fa-star"></i>
+                    <span id="score">0</span> pts
+                </div>
+            </div>
+
+            <div class="game-content">
+                <!-- Tarjeta de agua arrastrable -->
+                <div class="card-container">
+                    <div class="water-card" id="water-card" draggable="true">
+                        <div class="drag-indicator">
+                            <i class="fas fa-grip-vertical"></i>
+                            <span>Arrastra esta tarjeta</span>
+                        </div>
+                        <div class="card-icon">
+                            <i class="fas fa-droplet"></i>
+                        </div>
+                        <h2 id="card-name">Agua de Lluvia</h2>
+                        <p id="card-description">Agua recogida de las canaletas</p>
+                    </div>
+                </div>
+
+                <!-- Área de categorías -->
+                <div class="categories-area">
+                    <div class="category-zone" data-category="reutilizable">
+                        <div class="category-header reutilizable">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Reutilizable Directamente</span>
+                        </div>
+                        <div class="drop-zone" id="zone-reutilizable">
+                            <p class="drop-hint">Arrastra aquí</p>
+                        </div>
+                    </div>
+
+                    <div class="category-zone" data-category="tratamiento">
+                        <div class="category-header tratamiento">
+                            <i class="fas fa-flask"></i>
+                            <span>Reutilizable con Tratamiento</span>
+                        </div>
+                        <div class="drop-zone" id="zone-tratamiento">
+                            <p class="drop-hint">Arrastra aquí</p>
+                        </div>
+                    </div>
+
+                    <div class="category-zone" data-category="no-reutilizable">
+                        <div class="category-header no-reutilizable">
+                            <i class="fas fa-times-circle"></i>
+                            <span>No Reutilizable</span>
+                        </div>
+                        <div class="drop-zone" id="zone-no-reutilizable">
+                            <p class="drop-hint">Arrastra aquí</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-footer">
+                <button class="btn-secondary" id="skip-btn">
+                    <i class="fas fa-forward"></i> Saltar
+                </button>
+                <button class="btn-submit" id="submit-btn" disabled>
+                    <i class="fas fa-check"></i> Confirmar
+                </button>
+            </div>
+        </div>
+
+        <!-- Pantalla de feedback -->
+        <div id="feedback-screen" class="screen">
+            <div class="feedback-content">
+                <div class="feedback-icon" id="feedback-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2 id="feedback-title">¡Correcto!</h2>
+                <p id="feedback-explanation">El agua de lluvia es limpia naturalmente...</p>
+                <button class="btn-primary" id="next-btn">
+                    <i class="fas fa-arrow-right"></i> Siguiente
+                </button>
+            </div>
+        </div>
+
+        <!-- Pantalla de resultados -->
+        <div id="results-screen" class="screen">
+            <div class="results-content">
+                <div class="final-score">
+                    <div class="medal" id="medal">
+                        <i class="fas fa-medal"></i>
+                    </div>
+                    <h1>¡Juego Completado!</h1>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-number" id="final-correct">8</div>
+                        <div class="stat-label">Correctas</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="final-accuracy">100</div>
+                        <div class="stat-label">%</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="final-score">800</div>
+                        <div class="stat-label">Puntos</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="final-time">1m</div>
+                        <div class="stat-label">Tiempo</div>
+                    </div>
+                </div>
+
+                <div class="summary-box" id="summary-box">
+                    <h3>Resumen de Desempeño</h3>
+                    <div id="summary-content"></div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-secondary" id="replay-btn">
+                        <i class="fas fa-redo"></i> Reintentar
+                    </button>
+                    <button class="btn-primary" id="home-btn">
+                        <i class="fas fa-home"></i> Terminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

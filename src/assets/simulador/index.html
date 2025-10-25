@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador Avanzado de Gestión del Agua</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    .slider-container {
+      position: relative;
+      margin: 20px 0;
+    }
+    
+    .water-slider {
+      width: 100%;
+      height: 8px;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #e3f2fd, #2196f3);
+      outline: none;
+      /*-webkit-appearance: none;*/
+    }
+    
+    .water-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #2196f3;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(33, 150, 243, 0.5);
+      transition: all 0.3s ease;
+    }
+    
+    .water-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      box-shadow: 0 4px 12px rgba(33, 150, 243, 0.7);
+    }
+    
+    .water-bubble {
+      position: absolute;
+      top: -40px;
+      background: #2196f3;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+      transition: left 0.1s ease;
+    }
+    
+    .water-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid #2196f3;
+    }
+    
+    .activity-card {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+    
+    .activity-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 12px 30px;
+      border-radius: 25px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, #2ecc71, #27ae60);
+    }
+    
+    .btn-danger {
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+    }
+    
+    .efficiency-bar {
+      height: 30px;
+      background: #e0e0e0;
+      border-radius: 15px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    
+    .efficiency-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4caf50, #8bc34a);
+      transition: width 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+    
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #4caf50;
+      color: white;
+      padding: 15px 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+      transform: translateX(400px);
+      transition: transform 0.3s ease;
+      z-index: 1000;
+    }
+    
+    .toast.show {
+      transform: translateX(0);
+    }
+    
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .modal-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+    
+    .modal-overlay.show .modal-content {
+      transform: scale(1);
+    }
+
+    .tip-card {
+      background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+      padding: 15px;
+      border-radius: 10px;
+      margin: 10px 0;
+      border-left: 4px solid #ff6b6b;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4">
+
+  <!-- Toast Notifications -->
+  <div id="toast" class="toast">
+    <i class="fas fa-check-circle mr-2"></i>
+    <span id="toastMessage">Cambios guardados</span>
+  </div>
+
+  <div class="container mx-auto max-w-7xl">
+    
+    <!-- Header -->
+    <div class="glass-effect p-6 mb-6">
+      <div class="flex justify-between items-center flex-wrap gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+            <i class="fas fa-tint text-blue-500 mr-3"></i>
+            Simulador de Gestión del Agua
+          </h1>
+          <p class="text-gray-600 mt-2">Aprende a gestionar eficientemente el agua en tu hogar</p>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="cargarSimulacion()" class="btn-primary">
+            <i class="fas fa-folder-open mr-2"></i>
+            Cargar Guardado
+          </button>
+          <button onclick="guardarSimulacion()" class="btn-primary btn-success">
+            <i class="fas fa-save mr-2"></i>
+            Guardar
+          </button>
+          <button onclick="reiniciarSimulacion()" class="btn-primary btn-danger">
+            <i class="fas fa-redo mr-2"></i>
+            Reiniciar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estadísticas Principales -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div class="stat-card">
+        <i class="fas fa-water text-4xl mb-2"></i>
+        <div class="text-2xl font-bold" id="consumoTotal">150L</div>
+        <div class="text-sm opacity-90">Consumo Diario</div>
+      </div>
+      <div class="stat-card" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+        <i class="fas fa-piggy-bank text-4xl mb-2"></i>
+        <div class="text-2xl font-bold" id="ahorroTotal">0L</div>
+        <div class="text-sm opacity-90">Ahorro Diario</div>
+      </div>
+      <div class="stat-card" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
+        <i class="fas fa-percentage text-4xl mb-2"></i>
+        <div class="text-2xl font-bold" id="eficienciaGlobal">0%</div>
+        <div class="text-sm opacity-90">Eficiencia</div>
+      </div>
+      <div class="stat-card" style="background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);">
+        <i class="fas fa-star text-4xl mb-2"></i>
+        <div class="text-2xl font-bold" id="puntosActuales">0</div>
+        <div class="text-sm opacity-90">Puntos</div>
+      </div>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Panel de Control -->
+      <div class="lg:col-span-2">
+        <div class="glass-effect p-6">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6">
+            <i class="fas fa-sliders-h mr-2"></i>
+            Distribución del Agua
+          </h2>
+
+          <!-- Ducha -->
+          <div class="activity-card">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <i class="fas fa-shower text-3xl text-blue-500 mr-3"></i>
+                <div>
+                  <h3 class="font-bold text-lg">Ducha</h3>
+                  <p class="text-sm text-gray-600">Consumo promedio: 60L</p>
+                </div>
+              </div>
+              <div class="text-2xl font-bold text-blue-600" id="duchaValor">30L</div>
+            </div>
+            <div class="slider-container">
+              <div class="water-bubble" id="duchaBubble">30L</div>
+              <input type="range" min="10" max="100" value="30" class="water-slider" id="duchaSlider">
+            </div>
+            <div class="efficiency-bar">
+              <div class="efficiency-fill" id="duchaEficiencia" style="width: 50%;">50%</div>
+            </div>
+          </div>
+
+          <!-- Lavadora -->
+          <div class="activity-card">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <i class="fas fa-tshirt text-3xl text-purple-500 mr-3"></i>
+                <div>
+                  <h3 class="font-bold text-lg">Lavadora</h3>
+                  <p class="text-sm text-gray-600">Consumo promedio: 50L</p>
+                </div>
+              </div>
+              <div class="text-2xl font-bold text-purple-600" id="lavadoraValor">25L</div>
+            </div>
+            <div class="slider-container">
+              <div class="water-bubble" id="lavadoraBubble">25L</div>
+              <input type="range" min="5" max="80" value="25" class="water-slider" id="lavadoraSlider">
+            </div>
+            <div class="efficiency-bar">
+              <div class="efficiency-fill" id="lavadoraEficiencia" style="width: 50%;">50%</div>
+            </div>
+          </div>
+
+          <!-- Inodoro -->
+          <div class="activity-card">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <i class="fas fa-toilet text-3xl text-cyan-500 mr-3"></i>
+                <div>
+                  <h3 class="font-bold text-lg">Inodoro</h3>
+                  <p class="text-sm text-gray-600">Consumo promedio: 40L</p>
+                </div>
+              </div>
+              <div class="text-2xl font-bold text-cyan-600" id="inodoroValor">20L</div>
+            </div>
+            <div class="slider-container">
+              <div class="water-bubble" id="inodoroBubble">20L</div>
+              <input type="range" min="5" max="60" value="20" class="water-slider" id="inodoroSlider">
+            </div>
+            <div class="efficiency-bar">
+              <div class="efficiency-fill" id="inodoroEficiencia" style="width: 50%;">50%</div>
+            </div>
+          </div>
+
+          <!-- Riego -->
+          <div class="activity-card">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <i class="fas fa-seedling text-3xl text-green-500 mr-3"></i>
+                <div>
+                  <h3 class="font-bold text-lg">Riego de Plantas</h3>
+                  <p class="text-sm text-gray-600">Consumo promedio: 30L</p>
+                </div>
+              </div>
+              <div class="text-2xl font-bold text-green-600" id="riegoValor">15L</div>
+            </div>
+            <div class="slider-container">
+              <div class="water-bubble" id="riegoBubble">15L</div>
+              <input type="range" min="0" max="50" value="15" class="water-slider" id="riegoSlider">
+            </div>
+            <div class="efficiency-bar">
+              <div class="efficiency-fill" id="riegoEficiencia" style="width: 50%;">50%</div>
+            </div>
+          </div>
+
+          <!-- Cocina -->
+          <div class="activity-card">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <i class="fas fa-utensils text-3xl text-orange-500 mr-3"></i>
+                <div>
+                  <h3 class="font-bold text-lg">Cocina y Lavado</h3>
+                  <p class="text-sm text-gray-600">Consumo promedio: 40L</p>
+                </div>
+              </div>
+              <div class="text-2xl font-bold text-orange-600" id="cocinaValor">20L</div>
+            </div>
+            <div class="slider-container">
+              <div class="water-bubble" id="cocinaBubble">20L</div>
+              <input type="range" min="5" max="70" value="20" class="water-slider" id="cocinaSlider">
+            </div>
+            <div class="efficiency-bar">
+              <div class="efficiency-fill" id="cocinaEficiencia" style="width: 50%;">50%</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Panel de Información -->
+      <div class="lg:col-span-1">
+        <div class="glass-effect p-6 mb-6">
+          <h2 class="text-xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-chart-pie mr-2"></i>
+            Distribución
+          </h2>
+          <div class="chart-container">
+            <canvas id="distribucionChart"></canvas>
+          </div>
+        </div>
+
+        <div class="glass-effect p-6 mb-6">
+          <h2 class="text-xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-calendar-alt mr-2"></i>
+            Proyección de Ahorro
+          </h2>
+          <div class="space-y-3">
+            <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+              <span class="font-semibold">Hoy:</span>
+              <span class="font-bold text-blue-600" id="ahorroDiario">0L</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+              <span class="font-semibold">Semana:</span>
+              <span class="font-bold text-green-600" id="ahorroSemanal">0L</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+              <span class="font-semibold">Mes:</span>
+              <span class="font-bold text-purple-600" id="ahorroMensual">0L</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
+              <span class="font-semibold">Año:</span>
+              <span class="font-bold text-orange-600" id="ahorroAnual">0L</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-effect p-6">
+          <h2 class="text-xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-lightbulb mr-2"></i>
+            Consejos
+          </h2>
+          <div id="consejos" class="space-y-3">
+            <div class="tip-card">
+              <i class="fas fa-info-circle mr-2"></i>
+              Ajusta los controles para optimizar tu consumo
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="glass-effect p-6 mt-6">
+      <div class="flex justify-center gap-4 flex-wrap">
+        <button onclick="generarInforme()" class="btn-primary">
+          <i class="fas fa-file-pdf mr-2"></i>
+          Descargar Informe
+        </button>
+        <button onclick="completarSimulacion()" class="btn-primary btn-success">
+          <i class="fas fa-check-circle mr-2"></i>
+          Completar Simulación
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Completado -->
+  <div id="modalCompletado" class="modal-overlay">
+    <div class="modal-content">
+      <div class="text-center">
+        <i class="fas fa-trophy text-6xl text-yellow-500 mb-4"></i>
+        <h2 class="text-3xl font-bold text-gray-800 mb-4">¡Simulación Completada!</h2>
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div class="p-4 bg-blue-50 rounded-lg">
+            <div class="text-3xl font-bold text-blue-600" id="modalPuntos">0</div>
+            <div class="text-sm text-gray-600">Puntos Obtenidos</div>
+          </div>
+          <div class="p-4 bg-green-50 rounded-lg">
+            <div class="text-3xl font-bold text-green-600" id="modalEficiencia">0%</div>
+            <div class="text-sm text-gray-600">Eficiencia Final</div>
+          </div>
+        </div>
+        <div class="mb-6">
+          <p class="text-lg mb-2">Ahorro Proyectado:</p>
+          <p class="text-2xl font-bold text-purple-600" id="modalAhorro">0L/día</p>
+        </div>
+        <button onclick="cerrarModalCompletado()" class="btn-primary btn-success">
+          <i class="fas fa-check mr-2"></i>
+          Continuar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Estado global
+    let estado = {
+      ducha: 30,
+      lavadora: 25,
+      inodoro: 20,
+      riego: 15,
+      cocina: 20,
+      puntos: 0,
+      tiempoInicio: Date.now()
+    };
+
+    const CONSUMO_PROMEDIO = {
+      ducha: 60,
+      lavadora: 50,
+      inodoro: 40,
+      riego: 30,
+      cocina: 40
+    };
+
+    let chartDistribucion;
+
+    // Inicialización
+    document.addEventListener('DOMContentLoaded', function() {
+      inicializarSliders();
+      inicializarGraficos();
+      cargarSimulacionLocal();
+      calcularTodo();
+    });
+
+    function inicializarSliders() {
+      const sliders = ['ducha', 'lavadora', 'inodoro', 'riego', 'cocina'];
+      
+      sliders.forEach(tipo => {
+        const slider = document.getElementById(`${tipo}Slider`);
+        const bubble = document.getElementById(`${tipo}Bubble`);
+        
+        slider.addEventListener('input', function() {
+          estado[tipo] = parseInt(this.value);
+          actualizarBubble(slider, bubble, this.value);
+          calcularTodo();
+          autoGuardar();
+        });
+        
+        actualizarBubble(slider, bubble, slider.value);
+      });
+    }
+
+    function actualizarBubble(slider, bubble, value) {
+      const min = parseFloat(slider.min);
+      const max = parseFloat(slider.max);
+      const percent = ((value - min) / (max - min)) * 100;
+      bubble.style.left = `calc(${percent}% - 16px)`;
+      bubble.textContent = `${value}L`;
+    }
+
+    function calcularTodo() {
+      calcularConsumoTotal();
+      calcularEficiencias();
+      calcularAhorros();
+      calcularPuntos();
+      actualizarConsejos();
+      actualizarGraficos();
+    }
+
+    function calcularConsumoTotal() {
+      const total = estado.ducha + estado.lavadora + estado.inodoro + estado.riego + estado.cocina;
+      document.getElementById('consumoTotal').textContent = `${total}L`;
+      return total;
+    }
+
+    function calcularEficiencias() {
+      const tipos = ['ducha', 'lavadora', 'inodoro', 'riego', 'cocina'];
+      let eficienciaTotal = 0;
+      
+      tipos.forEach(tipo => {
+        const consumo = estado[tipo];
+        const promedio = CONSUMO_PROMEDIO[tipo];
+        const eficiencia = Math.max(0, Math.min(100, ((promedio - consumo) / promedio * 100) + 50));
+        
+        document.getElementById(`${tipo}Eficiencia`).style.width = `${eficiencia}%`;
+        document.getElementById(`${tipo}Eficiencia`).textContent = `${Math.round(eficiencia)}%`;
+        document.getElementById(`${tipo}Valor`).textContent = `${consumo}L`;
+        
+        eficienciaTotal += eficiencia;
+      });
+      
+      const eficienciaPromedio = Math.round(eficienciaTotal / tipos.length);
+      document.getElementById('eficienciaGlobal').textContent = `${eficienciaPromedio}%`;
+      
+      return eficienciaPromedio;
+    }
+
+    function calcularAhorros() {
+      const consumoActual = calcularConsumoTotal();
+      const consumoPromedio = Object.values(CONSUMO_PROMEDIO).reduce((a, b) => a + b, 0);
+      const ahorro = Math.max(0, consumoPromedio - consumoActual);
+      
+      document.getElementById('ahorroTotal').textContent = `${ahorro}L`;
+      document.getElementById('ahorroDiario').textContent = `${ahorro}L`;
+      document.getElementById('ahorroSemanal').textContent = `${ahorro * 7}L`;
+      document.getElementById('ahorroMensual').textContent = `${ahorro * 30}L`;
+      document.getElementById('ahorroAnual').textContent = `${ahorro * 365}L`;
+      
+      return ahorro;
+    }
+
+    function calcularPuntos() {
+      const eficiencia = parseInt(document.getElementById('eficienciaGlobal').textContent);
+      const ahorro = calcularAhorros();
+      
+      let puntos = Math.round(eficiencia * 2 + ahorro * 0.5);
+      
+      if (eficiencia >= 80) puntos += 50;
+      if (eficiencia >= 90) puntos += 100;
+      if (ahorro >= 50) puntos += 50;
+      if (ahorro >= 100) puntos += 100;
+      
+      estado.puntos = puntos;
+      document.getElementById('puntosActuales').textContent = puntos;
+      
+      return puntos;
+    }
+
+    function actualizarConsejos() {
+      const consejos = [];
+      
+      if (estado.ducha > 40) {
+        consejos.push({
+          icon: 'fas fa-shower',
+          text: 'Reduce el tiempo de ducha a 5-10 minutos para ahorrar más agua'
+        });
+      }
+      
+      if (estado.lavadora > 35) {
+        consejos.push({
+          icon: 'fas fa-tshirt',
+          text: 'Usa la lavadora solo con carga completa para maximizar eficiencia'
+        });
+      }
+      
+      if (estado.inodoro > 30) {
+        consejos.push({
+          icon: 'fas fa-toilet',
+          text: 'Considera instalar un inodoro de doble descarga'
+        });
+      }
+      
+      if (estado.riego > 25) {
+        consejos.push({
+          icon: 'fas fa-seedling',
+          text: 'Riega las plantas temprano en la mañana para evitar evaporación'
+        });
+      }
+      
+      if (estado.cocina > 30) {
+        consejos.push({
+          icon: 'fas fa-utensils',
+          text: 'Lava los platos con el grifo cerrado y usa un recipiente'
+        });
+      }
+      
+      if (consejos.length === 0) {
+        consejos.push({
+          icon: 'fas fa-check-circle',
+          text: '¡Excelente! Tu gestión del agua es muy eficiente'
+        });
+      }
+      
+      const consejosHTML = consejos.map(c => `
+        <div class="tip-card">
+          <i class="${c.icon} mr-2"></i>
+          ${c.text}
+        </div>
+      `).join('');
+      
+      document.getElementById('consejos').innerHTML = consejosHTML;
+    }
+
+    function inicializarGraficos() {
+      const ctx = document.getElementById('distribucionChart').getContext('2d');
+      
+      chartDistribucion = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Ducha', 'Lavadora', 'Inodoro', 'Riego', 'Cocina'],
+          datasets: [{
+            data: [30, 25, 20, 15, 20],
+            backgroundColor: [
+              '#3b82f6',
+              '#a855f7',
+              '#06b6d4',
+              '#22c55e',
+              '#f97316'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+    }
+
+    function actualizarGraficos() {
+      if (chartDistribucion) {
+        chartDistribucion.data.datasets[0].data = [
+          estado.ducha,
+          estado.lavadora,
+          estado.inodoro,
+          estado.riego,
+          estado.cocina
+        ];
+        chartDistribucion.update();
+      }
+    }
+
+    function guardarSimulacion() {
+      const datosGuardado = {
+        ...estado,
+        fechaGuardado: new Date().toISOString()
+      };
+      
+      localStorage.setItem('simulacionAgua', JSON.stringify(datosGuardado));
+      mostrarToast('Simulación guardada correctamente');
+    }
+
+    function cargarSimulacion() {
+      const guardado = localStorage.getItem('simulacionAgua');
+      
+      if (guardado) {
+        const datos = JSON.parse(guardado);
+        estado = { ...estado, ...datos };
+        
+        // Actualizar sliders
+        document.getElementById('duchaSlider').value = estado.ducha;
+        document.getElementById('lavadoraSlider').value = estado.lavadora;
+        document.getElementById('inodoroSlider').value = estado.inodoro;
+        document.getElementById('riegoSlider').value = estado.riego;
+        document.getElementById('cocinaSlider').value = estado.cocina;
+        
+        // Actualizar bubbles
+        ['ducha', 'lavadora', 'inodoro', 'riego', 'cocina'].forEach(tipo => {
+          const slider = document.getElementById(`${tipo}Slider`);
+          const bubble = document.getElementById(`${tipo}Bubble`);
+          actualizarBubble(slider, bubble, estado[tipo]);
+        });
+        
+        calcularTodo();
+        mostrarToast('Simulación cargada correctamente');
+      } else {
+        mostrarToast('No hay simulación guardada', 'warning');
+      }
+    }
+
+    function cargarSimulacionLocal() {
+      const guardado = localStorage.getItem('simulacionAgua');
+      if (guardado) {
+        const datos = JSON.parse(guardado);
+        estado = { ...estado, ...datos };
+        
+        ['ducha', 'lavadora', 'inodoro', 'riego', 'cocina'].forEach(tipo => {
+          const slider = document.getElementById(`${tipo}Slider`);
+          const bubble = document.getElementById(`${tipo}Bubble`);
+          slider.value = estado[tipo];
+          actualizarBubble(slider, bubble, estado[tipo]);
+        });
+      }
+    }
+
+    function autoGuardar() {
+      guardarSimulacion();
+    }
+
+    function reiniciarSimulacion() {
+      if (confirm('¿Estás seguro de reiniciar la simulación? Se perderán los cambios no guardados.')) {
+        estado = {
+          ducha: 30,
+          lavadora: 25,
+          inodoro: 20,
+          riego: 15,
+          cocina: 20,
+          puntos: 0,
+          tiempoInicio: Date.now()
+        };
+        
+        ['ducha', 'lavadora', 'inodoro', 'riego', 'cocina'].forEach(tipo => {
+          const slider = document.getElementById(`${tipo}Slider`);
+          const bubble = document.getElementById(`${tipo}Bubble`);
+          slider.value = estado[tipo];
+          actualizarBubble(slider, bubble, estado[tipo]);
+        });
+        
+        localStorage.removeItem('simulacionAgua');
+        calcularTodo();
+        mostrarToast('Simulación reiniciada');
+      }
+    }
+
+    function generarInforme() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Título
+      doc.setFontSize(20);
+      doc.setTextColor(33, 150, 243);
+      doc.text('Informe de Gestión del Agua', 20, 20);
+      
+      // Fecha
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Fecha: ${new Date().toLocaleDateString('es-ES')}`, 20, 30);
+      
+      // Línea separadora
+      doc.setDrawColor(33, 150, 243);
+      doc.line(20, 35, 190, 35);
+      
+      // Estadísticas principales
+      doc.setFontSize(14);
+      doc.setTextColor(0);
+      doc.text('Resumen de Consumo', 20, 45);
+      
+      doc.setFontSize(11);
+      let y = 55;
+      
+      const consumoTotal = calcularConsumoTotal();
+      const ahorro = calcularAhorros();
+      const eficiencia = parseInt(document.getElementById('eficienciaGlobal').textContent);
+      
+      doc.text(`Consumo Diario Total: ${consumoTotal}L`, 30, y);
+      y += 8;
+      doc.text(`Ahorro Diario: ${ahorro}L`, 30, y);
+      y += 8;
+      doc.text(`Eficiencia Global: ${eficiencia}%`, 30, y);
+      y += 8;
+      doc.text(`Puntos Obtenidos: ${estado.puntos}`, 30, y);
+      
+      // Desglose por actividad
+      y += 15;
+      doc.setFontSize(14);
+      doc.text('Desglose por Actividad', 20, y);
+      
+      y += 10;
+      doc.setFontSize(10);
+      
+      const actividades = [
+        { nombre: 'Ducha', valor: estado.ducha, promedio: CONSUMO_PROMEDIO.ducha },
+        { nombre: 'Lavadora', valor: estado.lavadora, promedio: CONSUMO_PROMEDIO.lavadora },
+        { nombre: 'Inodoro', valor: estado.inodoro, promedio: CONSUMO_PROMEDIO.inodoro },
+        { nombre: 'Riego', valor: estado.riego, promedio: CONSUMO_PROMEDIO.riego },
+        { nombre: 'Cocina', valor: estado.cocina, promedio: CONSUMO_PROMEDIO.cocina }
+      ];
+      
+      actividades.forEach(act => {
+        const dif = act.promedio - act.valor;
+        doc.text(`${act.nombre}: ${act.valor}L (${dif > 0 ? 'Ahorro' : 'Exceso'}: ${Math.abs(dif)}L)`, 30, y);
+        y += 7;
+      });
+      
+      // Proyecciones de ahorro
+      y += 10;
+      doc.setFontSize(14);
+      doc.text('Proyecciones de Ahorro', 20, y);
+      
+      y += 10;
+      doc.setFontSize(10);
+      doc.text(`Ahorro Semanal: ${ahorro * 7}L`, 30, y);
+      y += 7;
+      doc.text(`Ahorro Mensual: ${ahorro * 30}L`, 30, y);
+      y += 7;
+      doc.text(`Ahorro Anual: ${ahorro * 365}L`, 30, y);
+      
+      // Impacto económico (estimado a $0.002 por litro)
+      y += 10;
+      const ahorroEconomico = (ahorro * 365 * 0.002).toFixed(2);
+      doc.setFontSize(12);
+      doc.setTextColor(46, 204, 113);
+      doc.text(`Ahorro Económico Anual Estimado: ${ahorroEconomico}`, 30, y);
+      
+      // Recomendaciones
+      y += 15;
+      doc.setFontSize(14);
+      doc.setTextColor(0);
+      doc.text('Recomendaciones', 20, y);
+      
+      y += 10;
+      doc.setFontSize(9);
+      const recomendaciones = [
+        '- Instala dispositivos ahorradores de agua en grifos y duchas',
+        '- Repara fugas inmediatamente',
+        '- Usa la lavadora y lavavajillas solo con carga completa',
+        '- Recolecta agua de lluvia para regar plantas',
+        '- Cierra el grifo mientras te cepillas los dientes',
+        '- Considera sistemas de reciclaje de aguas grises'
+      ];
+      
+      recomendaciones.forEach(rec => {
+        if (y > 270) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.text(rec, 30, y);
+        y += 6;
+      });
+      
+      // Footer
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text('Generado por Simulador de Gestión del Agua - HydroSave', 20, 285);
+      
+      // Guardar PDF
+      doc.save(`informe_agua_${new Date().getTime()}.pdf`);
+      mostrarToast('Informe descargado correctamente');
+    }
+
+    function completarSimulacion() {
+      const eficiencia = parseInt(document.getElementById('eficienciaGlobal').textContent);
+      const ahorro = calcularAhorros();
+      const puntos = estado.puntos;
+      
+      // Actualizar modal
+      document.getElementById('modalPuntos').textContent = puntos;
+      document.getElementById('modalEficiencia').textContent = `${eficiencia}%`;
+      document.getElementById('modalAhorro').textContent = `${ahorro}L/día`;
+      
+      // Mostrar modal
+      document.getElementById('modalCompletado').classList.add('show');
+      
+      // Enviar resultados al backend
+      enviarResultados(puntos, eficiencia, ahorro);
+    }
+
+    function enviarResultados(puntos, eficiencia, ahorro) {
+      const tiempoTotal = Math.floor((Date.now() - estado.tiempoInicio) / 60000);
+      
+      const datos = {
+        idUsuario: window.parent.getUsuarioId ? window.parent.getUsuarioId() : 1,
+        idActividad: 1,
+        completada: true,
+        progreso: 100,
+        puntuacionMaxima: puntos,
+        intentos: 1,
+        tiempoTotal: tiempoTotal,
+        datosProgreso: {
+          eficiencia: eficiencia,
+          ahorro: ahorro,
+          distribucion: {
+            ducha: estado.ducha,
+            lavadora: estado.lavadora,
+            inodoro: estado.inodoro,
+            riego: estado.riego,
+            cocina: estado.cocina
+          }
+        }
+      };
+      
+      // Enviar mensaje al componente Angular padre
+      window.parent.postMessage({
+        type: 'simulador-completed',
+        puntuacionFinal: puntos,
+        eficienciaFinal: eficiencia,
+        ahorroFinal: ahorro,
+        tiempoTranscurrido: tiempoTotal,
+        configuracionFinal: datos.datosProgreso.distribucion
+      }, '*');
+      
+      console.log('Resultados enviados:', datos);
+    }
+
+    function cerrarModalCompletado() {
+      document.getElementById('modalCompletado').classList.remove('show');
+      
+      // Volver a la página de actividades después de un breve delay
+      setTimeout(() => {
+        if (window.parent !== window) {
+          window.parent.postMessage({ type: 'volver-actividades' }, '*');
+        }
+      }, 500);
+    }
+
+    function mostrarToast(mensaje, tipo = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      
+      toast.className = 'toast';
+      
+      if (tipo === 'warning') {
+        toast.style.background = '#ff9800';
+      } else if (tipo === 'error') {
+        toast.style.background = '#f44336';
+      } else {
+        toast.style.background = '#4caf50';
+      }
+      
+      toastMessage.textContent = mensaje;
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Actualizar cada 30 segundos para mantener la simulación fresca
+    setInterval(() => {
+      if (document.hidden) return;
+      calcularTodo();
+    }, 30000);
+  </script>
+</body>
+</html>

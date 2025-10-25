@@ -1,0 +1,136 @@
+<div class="simulador-container">
+  <!-- Header con botón de regreso -->
+  <div class="header-bar">
+    <button class="btn-back" (click)="volverAActividades()">
+      <i class="fas fa-arrow-left"></i>
+      Volver a Actividades
+    </button>
+    
+    <div class="progreso-actividad">
+      <div class="tiempo-transcurrido">
+        <i class="fas fa-clock"></i>
+        <span>{{tiempoTranscurrido}}:{{segundosTranscurridos.toString().padStart(2, '0')}}</span>
+      </div>
+      
+      <div class="puntuacion-actual" *ngIf="puntuacionActual > 0">
+        <i class="fas fa-star"></i>
+        <span>{{puntuacionActual}} puntos</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor del iframe del simulador -->
+  <div class="simulador-wrapper">
+    <div class="loading-simulator" *ngIf="cargandoSimulador">
+      <div class="spinner"></div>
+      <p>Cargando simulador...</p>
+    </div>
+
+    <iframe 
+      #simuladorFrame
+      [src]="simuladorUrl" 
+      frameborder="0"
+      class="simulador-frame"
+      (load)="onSimuladorCargado()"
+      [style.display]="cargandoSimulador ? 'none' : 'block'">
+    </iframe>
+  </div>
+
+  <!-- Panel de instrucciones -->
+  <div class="instrucciones-panel" [class.visible]="mostrarInstrucciones">
+    <div class="panel-content">
+      <h3>
+        <i class="fas fa-info-circle"></i>
+        Cómo usar el simulador
+      </h3>
+      <ul>
+        <li>Usa los deslizadores para asignar agua a diferentes actividades</li>
+        <li>Observa cómo cambia tu puntuación según tus decisiones</li>
+        <li>Trata de encontrar el equilibrio perfecto para maximizar el ahorro</li>
+        <li>Los consejos te ayudarán a mejorar tu eficiencia</li>
+      </ul>
+      
+      <div class="objetivos">
+        <h4>Objetivos:</h4>
+        <div class="objetivo-item">
+          <i class="fas fa-target"></i>
+          <span>Alcanzar 80% de eficiencia global</span>
+        </div>
+        <div class="objetivo-item">
+          <i class="fas fa-trophy"></i>
+          <span>Ahorrar más de 50L diarios</span>
+        </div>
+      </div>
+      
+      <button class="btn-cerrar" (click)="toggleInstrucciones()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Botón flotante para mostrar instrucciones -->
+  <button class="btn-instrucciones" (click)="toggleInstrucciones()" *ngIf="!mostrarInstrucciones">
+    <i class="fas fa-question-circle"></i>
+  </button>
+
+  <!-- Modal de resultados -->
+  <div class="modal-overlay" *ngIf="mostrarResultados" (click)="cerrarResultados()">
+    <div class="resultados-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>¡Simulación Completada!</h3>
+        <button class="btn-close" (click)="cerrarResultados()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-content">
+        <div class="resultado-principal">
+          <div class="puntuacion-final">
+            <i class="fas fa-star"></i>
+            <span>{{puntuacionFinal}} puntos</span>
+          </div>
+          
+          <div class="eficiencia-alcanzada">
+            <div class="eficiencia-numero">{{eficienciaAlcanzada}}%</div>
+            <div class="eficiencia-label">Eficiencia Global</div>
+          </div>
+        </div>
+
+        <div class="logros-obtenidos" *ngIf="logrosObtenidos.length > 0">
+          <h4>Logros Obtenidos:</h4>
+          <div class="logro" *ngFor="let logro of logrosObtenidos">
+            <i [class]="logro.icono"></i>
+            <span>{{logro.nombre}}</span>
+          </div>
+        </div>
+
+        <div class="resumen-mejorias">
+          <h4>Resumen de tu gestión:</h4>
+          <div class="metrica">
+            <span class="label">Ahorro diario:</span>
+            <span class="valor">{{ahoroDiario}}L</span>
+          </div>
+          <div class="metrica">
+            <span class="label">Tiempo jugado:</span>
+            <span class="valor">{{tiempoTranscurrido}} min</span>
+          </div>
+          <div class="metrica">
+            <span class="label">Decisiones tomadas:</span>
+            <span class="valor">{{decisionesTomadas}}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-continuar" (click)="finalizarActividad()">
+          <i class="fas fa-check"></i>
+          Continuar
+        </button>
+        <button class="btn-reintentar" (click)="reiniciarSimulador()">
+          <i class="fas fa-redo"></i>
+          Intentar de nuevo
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

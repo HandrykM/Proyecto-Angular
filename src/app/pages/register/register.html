@@ -1,0 +1,127 @@
+<div class="page">
+  <div class="rain">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+
+  <div class="card">
+    <div class="brand">
+      <h1><span class="water">Hydro</span>Save</h1>
+      <p class="subtitle">Crea tu cuenta para empezar esta aventura</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="form">
+      <label class="label">Usuario</label>
+      <input 
+        type="text" 
+        [(ngModel)]="nombre" 
+        name="nombre" 
+        required 
+        placeholder="Usuario (3-20 caracteres)" 
+        maxlength="20"
+      />
+      <small class="hint">
+        <i class="fas fa-info-circle"></i>
+        Solo letras, números y guiones bajos. Recuerda: distingue mayúsculas/minúsculas.
+      </small>
+
+      <label class="label">Correo</label>
+      <input 
+        type="email" 
+        [(ngModel)]="correo" 
+        name="correo" 
+        required 
+        placeholder="ejemplo@gmail.com" 
+      />
+
+      <label class="label">Contraseña</label>
+      <div class="password-container">
+        <input 
+          [type]="showPassword ? 'text' : 'password'" 
+          [(ngModel)]="contrasena" 
+          name="contrasena" 
+          required 
+          placeholder="Mínimo 6 caracteres" 
+          (input)="onPasswordChange()"
+        />
+        <button 
+          type="button" 
+          class="toggle-btn" 
+          (click)="togglePassword()">
+          <i class="fas" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+        </button>
+      </div>
+
+      <!-- Indicador de fortaleza de contraseña -->
+      <div class="password-strength-container" *ngIf="contrasena">
+        <div class="strength-bar">
+          <div 
+            class="strength-fill" 
+            [ngClass]="'strength-' + getPasswordStrengthLevel()"
+            [style.width.%]="getPasswordStrengthPercentage()">
+          </div>
+        </div>
+        <p class="strength-text" [ngClass]="'text-' + getPasswordStrengthLevel()">
+          {{ getPasswordStrengthText() }}
+        </p>
+
+        <ul class="strength-checklist">
+          <li [class.valid]="passwordStrength.length">
+            <i class="fas" [ngClass]="passwordStrength.length ? 'fa-check-circle' : 'fa-circle'"></i>
+            Mínimo 6 caracteres
+          </li>
+          <li [class.valid]="passwordStrength.uppercase">
+            <i class="fas" [ngClass]="passwordStrength.uppercase ? 'fa-check-circle' : 'fa-circle'"></i>
+            Una letra mayúscula
+          </li>
+          <li [class.valid]="passwordStrength.lowercase">
+            <i class="fas" [ngClass]="passwordStrength.lowercase ? 'fa-check-circle' : 'fa-circle'"></i>
+            Una letra minúscula
+          </li>
+          <li [class.valid]="passwordStrength.number">
+            <i class="fas" [ngClass]="passwordStrength.number ? 'fa-check-circle' : 'fa-circle'"></i>
+            Un número
+          </li>
+        </ul>
+      </div>
+
+      <label class="label">Confirmar contraseña</label>
+      <div class="password-container">
+        <input 
+          [type]="showConfirm ? 'text' : 'password'" 
+          [(ngModel)]="confirmar" 
+          name="confirmar" 
+          required 
+          placeholder="Repite la contraseña" 
+        />
+        <button 
+          type="button" 
+          class="toggle-btn" 
+          (click)="toggleConfirm()">
+          <i class="fas" [ngClass]="showConfirm ? 'fa-eye-slash' : 'fa-eye'"></i>
+        </button>
+      </div>
+
+      <button class="primary" type="submit" [disabled]="loading">
+        {{ loading ? 'Creando...' : 'Registrarse' }}
+      </button>
+    </form>
+
+    <div class="msgs">
+      <p *ngIf="error" class="error">
+        <i class="fas fa-exclamation-circle"></i> {{ error }}
+      </p>
+      <p *ngIf="success" class="success">
+        <i class="fas fa-check-circle"></i> {{ success }}
+      </p>
+    </div>
+
+    <div class="actions">
+      <button class="ghost" (click)="goToLogin()">Volver al login</button>
+    </div>
+  </div>
+</div>

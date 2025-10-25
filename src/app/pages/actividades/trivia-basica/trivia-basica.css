@@ -1,0 +1,693 @@
+
+
+.resultados-actividad {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	background: linear-gradient(90deg, #f8faff 0%, #e0f7fa 100%);
+	z-index: 200;
+	gap: 2rem;
+}
+
+.resultado-principal {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	grid-template-rows: auto auto;
+	gap: 1.2rem 2rem;
+	align-items: center;
+	justify-items: center;
+		width: 100%;
+		margin-bottom: 1.5rem;
+		box-sizing: border-box;
+}
+.puntuacion-final-trivia {
+	grid-column: 1 / span 3;
+	text-align: center;
+	margin-bottom: 0.5rem;
+}
+.puntuacion-final-trivia .puntos {
+	font-size: 2.8rem;
+	font-weight: 800;
+	color: #00a8e8;
+	margin-bottom: 0.3rem;
+}
+.puntuacion-final-trivia .label {
+	font-size: 1.1rem;
+	color: #0077b6;
+	font-weight: 600;
+}
+
+.metricas-principales {
+	grid-column: 1 / span 3;
+	display: flex;
+	justify-content: center;
+	gap: 2rem;
+	margin-top: 1rem;
+}
+.metrica {
+	background: #fff;
+	border-radius: 12px;
+	box-shadow: 0 2px 8px rgba(0,168,232,0.08);
+	padding: 0.7rem 1.2rem;
+	min-width: 120px;
+	text-align: center;
+}
+.metrica .numero {
+	font-size: 1.3rem;
+	font-weight: 700;
+	color: #0077b6;
+}
+.metrica .label {
+	font-size: 0.95rem;
+	color: #6c757d;
+}
+
+.modal-actions {
+	grid-column: 1 / span 3;
+	display: flex;
+	justify-content: center;
+	gap: 1.2rem;
+	margin-top: 2rem;
+	width: 100%;
+}
+.btn-nueva-dificultad,
+.btn-continuar,
+.btn-reintentar {
+	background: linear-gradient(90deg, #00a8e8 0%, #4cc9f0 100%);
+	color: #fff;
+	border: none;
+	border-radius: 25px;
+	padding: 0.8rem 2rem;
+	font-size: 1.1rem;
+	font-weight: 600;
+	cursor: pointer;
+	box-shadow: 0 2px 8px rgba(0,168,232,0.10);
+	transition: background 0.2s, transform 0.2s;
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+}
+.btn-nueva-dificultad:hover,
+.btn-continuar:hover,
+.btn-reintentar:hover {
+	background: linear-gradient(90deg, #0077b6 0%, #00a8e8 100%);
+	transform: translateY(-2px) scale(1.04);
+}
+
+.detalles-categoria {
+	grid-column: 1 / span 3;
+	margin-top: 1.5rem;
+	text-align: left;
+}
+.categoria-resultado {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	margin-bottom: 0.7rem;
+}
+.categoria-nombre {
+	font-weight: 600;
+	color: #0077b6;
+	min-width: 120px;
+}
+.categoria-barra {
+	flex: 1;
+	background: #e0f7fa;
+	border-radius: 8px;
+	height: 12px;
+	overflow: hidden;
+}
+.categoria-progreso {
+	height: 100%;
+	background: linear-gradient(90deg, #00a8e8, #4cc9f0);
+	border-radius: 8px;
+	transition: width 0.4s;
+}
+.categoria-porcentaje {
+	font-size: 0.95rem;
+	color: #0077b6;
+	font-weight: 700;
+	min-width: 40px;
+}
+
+.recomendaciones {
+	grid-column: 1 / span 3;
+	margin-top: 1.2rem;
+	text-align: left;
+}
+.recomendacion {
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+	background: #e0f7fa;
+	border-radius: 8px;
+	padding: 0.6rem 1rem;
+	margin-bottom: 0.5rem;
+	color: #0077b6;
+	font-weight: 500;
+}
+
+.resultado-principal {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1.2rem 2.5rem;
+	align-items: center;
+	justify-items: center;
+	width: 100%;
+	margin-bottom: 1.5rem;
+}
+.puntuacion-final-trivia {
+	grid-column: 1 / span 2;
+	text-align: center;
+	margin-bottom: 0.5rem;
+}
+.puntuacion-final-trivia .puntos {
+	font-size: 2.8rem;
+	font-weight: 800;
+	color: #00a8e8;
+	margin-bottom: 0.3rem;
+}
+.puntuacion-final-trivia .label {
+	font-size: 1.1rem;
+	color: #0077b6;
+	font-weight: 600;
+}
+
+.metricas-principales {
+	grid-column: 1 / span 2;
+	display: flex;
+	justify-content: center;
+	gap: 2rem;
+	margin-top: 1rem;
+}
+.metrica {
+	background: #fff;
+	border-radius: 12px;
+	box-shadow: 0 2px 8px rgba(0,168,232,0.08);
+	padding: 0.7rem 1.2rem;
+	min-width: 90px;
+	text-align: center;
+}
+.metrica .numero {
+	font-size: 1.3rem;
+	font-weight: 700;
+	color: #0077b6;
+}
+.metrica .label {
+	font-size: 0.95rem;
+	color: #6c757d;
+}
+
+.modal-actions {
+	grid-column: 1 / span 2;
+	display: flex;
+	justify-content: center;
+	gap: 1.2rem;
+	margin-top: 2rem;
+}
+.btn-nueva-dificultad,
+.btn-continuar,
+.btn-reintentar {
+	background: linear-gradient(90deg, #00a8e8 0%, #4cc9f0 100%);
+	color: #fff;
+	border: none;
+	border-radius: 25px;
+	padding: 0.8rem 2rem;
+	font-size: 1.1rem;
+	font-weight: 600;
+	cursor: pointer;
+	box-shadow: 0 2px 8px rgba(0,168,232,0.10);
+	transition: background 0.2s, transform 0.2s;
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+}
+.btn-nueva-dificultad:hover,
+.btn-continuar:hover,
+.btn-reintentar:hover {
+	background: linear-gradient(90deg, #0077b6 0%, #00a8e8 100%);
+	transform: translateY(-2px) scale(1.04);
+}
+
+.detalles-categoria {
+	grid-column: 1 / span 2;
+	margin-top: 1.5rem;
+	text-align: left;
+}
+.categoria-resultado {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	margin-bottom: 0.7rem;
+}
+.categoria-nombre {
+	font-weight: 600;
+	color: #0077b6;
+	min-width: 120px;
+}
+.categoria-barra {
+	flex: 1;
+	background: #e0f7fa;
+	border-radius: 8px;
+	height: 12px;
+	overflow: hidden;
+}
+.categoria-progreso {
+	height: 100%;
+	background: linear-gradient(90deg, #00a8e8, #4cc9f0);
+	border-radius: 8px;
+	transition: width 0.4s;
+}
+.categoria-porcentaje {
+	font-size: 0.95rem;
+	color: #0077b6;
+	font-weight: 700;
+	min-width: 40px;
+}
+
+.recomendaciones {
+	grid-column: 1 / span 2;
+	margin-top: 1.2rem;
+	text-align: left;
+}
+.recomendacion {
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+	background: #e0f7fa;
+	border-radius: 8px;
+	padding: 0.6rem 1rem;
+	margin-bottom: 0.5rem;
+	color: #0077b6;
+	font-weight: 500;
+}
+
+.resultado-principal {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+}
+
+.puntuacion-final-trivia .puntos {
+	font-size: 2.8rem;
+	font-weight: 800;
+	color: #00a8e8;
+	margin-bottom: 0.3rem;
+}
+.puntuacion-final-trivia .label {
+	font-size: 1.1rem;
+	color: #0077b6;
+	font-weight: 600;
+}
+
+.metricas-principales {
+	display: flex;
+	justify-content: center;
+	gap: 2rem;
+	margin-top: 1rem;
+}
+.metrica {
+	background: #fff;
+	border-radius: 12px;
+	box-shadow: 0 2px 8px rgba(0,168,232,0.08);
+	padding: 0.7rem 1.2rem;
+	min-width: 90px;
+}
+.metrica .numero {
+	font-size: 1.3rem;
+	font-weight: 700;
+	color: #0077b6;
+}
+.metrica .label {
+	font-size: 0.95rem;
+	color: #6c757d;
+}
+
+.modal-actions {
+	display: flex;
+	justify-content: center;
+	gap: 1.2rem;
+	margin-top: 2rem;
+}
+.btn-nueva-dificultad,
+.btn-continuar,
+.btn-reintentar {
+	background: linear-gradient(90deg, #00a8e8 0%, #4cc9f0 100%);
+	color: #fff;
+	border: none;
+	border-radius: 25px;
+	padding: 0.8rem 2rem;
+	font-size: 1.1rem;
+	font-weight: 600;
+	cursor: pointer;
+	box-shadow: 0 2px 8px rgba(0,168,232,0.10);
+	transition: background 0.2s, transform 0.2s;
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+}
+.btn-nueva-dificultad:hover,
+.btn-continuar:hover,
+.btn-reintentar:hover {
+	background: linear-gradient(90deg, #0077b6 0%, #00a8e8 100%);
+	transform: translateY(-2px) scale(1.04);
+}
+
+.detalles-categoria {
+	margin-top: 1.5rem;
+	text-align: left;
+}
+.categoria-resultado {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	margin-bottom: 0.7rem;
+}
+.categoria-nombre {
+	font-weight: 600;
+	color: #0077b6;
+	min-width: 120px;
+}
+.categoria-barra {
+	flex: 1;
+	background: #e0f7fa;
+	border-radius: 8px;
+	height: 12px;
+	overflow: hidden;
+}
+.categoria-progreso {
+	height: 100%;
+	background: linear-gradient(90deg, #00a8e8, #4cc9f0);
+	border-radius: 8px;
+	transition: width 0.4s;
+}
+.categoria-porcentaje {
+	font-size: 0.95rem;
+	color: #0077b6;
+	font-weight: 700;
+	min-width: 40px;
+}
+
+.recomendaciones {
+	margin-top: 1.2rem;
+	text-align: left;
+}
+.recomendacion {
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+	background: #e0f7fa;
+	border-radius: 8px;
+	padding: 0.6rem 1rem;
+	margin-bottom: 0.5rem;
+	color: #0077b6;
+	font-weight: 500;
+}
+/* Mini ventana trivia */
+.mini-ventana-trivia {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	background: #fff;
+	border-radius: 12px;
+	box-shadow: 0 4px 18px rgba(0, 168, 232, 0.10);
+	padding: 1rem 1.5rem;
+	z-index: 100;
+	min-width: 220px;
+	text-align: center;
+	font-weight: 600;
+	color: #0077b6;
+}
+
+/* Resultados centrales */
+.resultados-actividad {
+	margin: 0 auto;
+	width: 60%;
+	background-color: white;
+	text-align: center;
+	border-radius: 18px;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+	padding: 2rem 2rem 1.5rem 2rem;
+	position: relative;
+	top: 60px;
+	z-index: 200;
+}
+/* Ajuste de layout para evitar scroll y centrar contenido */
+.trivia-container {
+	min-height: 100vh;
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: stretch;
+	overflow: hidden;
+}
+
+.trivia-wrapper {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 1.5rem 2rem 1rem 2rem;
+	border-radius: 18px;
+	overflow: hidden;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+	background: rgba(255,255,255,0.95);
+}
+
+.trivia-frame {
+	width: 100%;
+	height: 100%;
+	min-height: 500px;
+	max-height: 70vh;
+	border: none;
+	background: white;
+	border-radius: 18px;
+	box-shadow: none;
+}
+
+/* Panel de estadísticas en vivo mejorado */
+.stats-panel {
+	position: absolute;
+	top: 90px;
+	right: 40px;
+	width: 320px;
+	background: rgba(0, 168, 232, 0.12);
+	border-radius: 18px;
+	box-shadow: 0 4px 18px rgba(0, 168, 232, 0.10);
+	padding: 1.5rem 1.2rem 1.2rem 1.2rem;
+	z-index: 10;
+	transition: opacity 0.3s, transform 0.3s;
+	opacity: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 0.7rem;
+}
+.stats-panel:not(.visible) {
+	opacity: 0;
+	pointer-events: none;
+	transform: translateY(-20px);
+}
+.panel-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.5rem;
+}
+.panel-header h3 {
+	font-size: 1.2rem;
+	color: #0077b6;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+.btn-toggle-stats {
+	background: none;
+	border: none;
+	color: #0077b6;
+	font-size: 1.2rem;
+	cursor: pointer;
+	transition: color 0.2s;
+}
+.btn-toggle-stats:hover {
+	color: #00a8e8;
+}
+.stats-content {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+.stat-row {
+	display: flex;
+	justify-content: space-between;
+	font-size: 1rem;
+	color: #222;
+	background: rgba(255,255,255,0.7);
+	border-radius: 10px;
+	padding: 0.4rem 0.8rem;
+	font-weight: 500;
+}
+.stat-label {
+	color: #0077b6;
+	font-weight: 600;
+}
+.stat-value {
+	font-weight: 700;
+}
+.progress-trivia {
+	margin-top: 0.7rem;
+}
+.progress-label {
+	font-size: 0.95rem;
+	color: #0077b6;
+	margin-bottom: 0.2rem;
+}
+.progress-bar-trivia {
+	width: 100%;
+	height: 10px;
+	background: #e0f7fa;
+	border-radius: 6px;
+	overflow: hidden;
+}
+.progress-fill-trivia {
+	height: 100%;
+	background: linear-gradient(90deg, #00a8e8, #4cc9f0);
+	border-radius: 6px;
+	transition: width 0.4s;
+}
+.progress-text {
+	text-align: right;
+	font-size: 0.9rem;
+	color: #0077b6;
+	margin-top: 0.1rem;
+}
+
+@media (max-width: 900px) {
+	.stats-panel {
+		position: static;
+		width: 100%;
+		margin: 1rem 0 0 0;
+		right: 0;
+		top: auto;
+		box-shadow: none;
+		border-radius: 12px;
+		padding: 1rem 0.7rem;
+	}
+	.trivia-wrapper {
+		margin: 1rem 0.5rem;
+	}
+}
+/* Estilo base inspirado en juego-gogo, adaptado para trivia-basica */
+.trivia-container {
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+	background: linear-gradient(135deg, #00a8e8 0%, #0077b6 100%);
+}
+
+.header-bar {
+	background: rgba(255, 255, 255, 0.1);
+	backdrop-filter: blur(10px);
+	padding: 1rem 2rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-back {
+	background: rgba(255, 255, 255, 0.2);
+	border: none;
+	color: white;
+	padding: 0.75rem 1.5rem;
+	border-radius: 25px;
+	cursor: pointer;
+	font-weight: 500;
+	transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+	background: rgba(255, 255, 255, 0.3);
+	transform: translateX(-5px);
+}
+
+.btn-back i {
+	margin-right: 0.5rem;
+}
+
+.progreso-trivia {
+	display: flex;
+	gap: 2rem;
+	color: white;
+}
+
+.dificultad-actual,
+.puntuacion-trivia,
+.tiempo-trivia {
+	display: flex;
+	align-items: center;
+	background: rgba(255, 255, 255, 0.2);
+	padding: 0.5rem 1rem;
+	border-radius: 20px;
+	font-weight: 500;
+}
+
+.dificultad-actual i,
+.puntuacion-trivia i,
+.tiempo-trivia i {
+	margin-right: 0.5rem;
+}
+
+.puntuacion-trivia {
+	background: linear-gradient(45deg, #FFD700, #00a8e8);
+	color: #333;
+}
+
+.trivia-wrapper {
+	flex: 1;
+	position: relative;
+	margin: 1rem;
+	border-radius: 15px;
+	overflow: hidden;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.loading-trivia {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	text-align: center;
+	color: white;
+}
+
+.spinner {
+	width: 50px;
+	height: 50px;
+	border: 4px solid rgba(255, 255, 255, 0.3);
+	border-top-color: white;
+	border-radius: 50%;
+	animation: spin 1s infinite linear;
+	margin: 0 auto 1rem;
+}
+
+.trivia-frame {
+	width: 100%;
+	height: 100%;
+	border: none;
+	background: white;
+}
+
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}

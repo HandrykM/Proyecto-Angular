@@ -1,0 +1,67 @@
+<div class="page">
+  <div class="rain">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+  
+  <div class="card">
+    <div class="brand">
+      <h1><span class="water">Hydro</span>Save</h1>
+      <p class="subtitle">Aprende a reutilizar agua en el hogar</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="form">
+      <label class="label">Usuario</label>
+      <input 
+        type="text" 
+        [(ngModel)]="nombre" 
+        name="nombre" 
+        required 
+        placeholder="Ingresa tu usuario" 
+      />
+      <small class="hint">
+        <i class="fas fa-info-circle"></i>
+        Recuerda: Las mayúsculas y minúsculas
+      </small>
+
+      <label class="label">Contraseña</label>
+      <div class="password-container">
+        <input 
+          [type]="showPassword ? 'text' : 'password'" 
+          [(ngModel)]="contrasena" 
+          name="contrasena" 
+          required 
+          placeholder="Ingresa tu contraseña" 
+        />
+        <button 
+          type="button" 
+          class="toggle-btn" 
+          (click)="togglePassword()">
+          <i class="fas" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+        </button>
+      </div>
+
+      <button type="submit" class="primary" [disabled]="loading">
+        {{ loading ? 'Entrando...' : 'Entrar' }}
+      </button>
+    </form>
+
+    <div class="msgs">
+      <p *ngIf="error" class="error">
+        <i class="fas fa-exclamation-circle"></i> {{ error }}
+      </p>
+      <p *ngIf="success" class="success">
+        <i class="fas fa-check-circle"></i> {{ success }}
+      </p>
+    </div>
+
+    <div class="actions">
+      <button class="ghost" (click)="goToRegister()">Crear cuenta</button>
+      <button class="link" (click)="goToForgot()">¿Olvidaste tu contraseña?</button>
+    </div>
+  </div>
+</div>
