@@ -332,7 +332,7 @@ exports.registrarTiempoEstudio = async (req, res) => {
     const { id_lectura, tiempo_minutos } = req.body;
     const userId = req.user.id;
     
-    if (!id_lectura || !tiempo_minutos || idid_lectura <= 0 || tiempo_minutos <= 0) {
+    if (!id_lectura || !tiempo_minutos || id_lectura <= 0 || tiempo_minutos <= 0) {
       return res.status(400).json({ error: 'Datos de tiempo inválidos' });
     }
 

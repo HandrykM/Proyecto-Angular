@@ -209,11 +209,25 @@ const obtenerHistorialActividad = async (req, res) => {
       WHERE au.id_usuario = ? AND au.tipo_actividad = 'actividad'
       ${tipo === 'actividad' ? '' : tipo ? 'AND 1=0' : ''}
       
+      UNION ALL
+      
+      SELECT 
+        'biblioteca' as tipo,
+        b.titulo,
+        au.fecha_actividad as fecha,
+        CAST(au.puntos_obtenidos AS UNSIGNED) as puntos,
+        CASE WHEN au.resultado = 'Completada' THEN 1 ELSE 0 END as completado,
+        b.nivel as detalles
+      FROM actividad_usuario au
+      JOIN biblioteca b ON au.id_referencia = b.id
+      WHERE au.id_usuario = ? AND au.tipo_actividad = 'biblioteca'
+      ${tipo === 'biblioteca' ? '' : tipo ? 'AND 1=0' : ''}
+      
       ORDER BY fecha DESC
       LIMIT ? OFFSET ?
     `;
 
-    const params = [userId, userId, userId, limite, offset];
+    const params = [userId, userId, userId, userId, limite, offset];
 
     const [historial] = await db.execute(query, params);
 

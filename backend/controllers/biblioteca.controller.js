@@ -21,7 +21,52 @@ exports.getRecurso = async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM biblioteca WHERE id = ?", [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ message: "Recurso no encontrado" });
-    res.json(rows[0]);
+    
+    const recurso = rows[0];
+    
+    // Si es un video, preparar streaming
+    if (recurso.tipo === 'video' && recurso.url && recurso.url.startsWith('/uploads/')) {
+      const filePath = path.join(__dirname, '..', recurso.url);
+      
+      // Verificar que el archivo existe
+      try {
+        await fsPromises.access(filePath);
+      } catch (err) {
+        return res.status(404).json({ message: "Archivo no encontrado" });
+      }
+
+      const stat = await fsPromises.stat(filePath);
+      const fileSize = stat.size;
+      const range = req.headers.range;
+
+      if (range) {
+        const parts = range.replace(/bytes=/, "").split("-");
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+        const chunksize = (end - start) + 1;
+        const file = fs.createReadStream(filePath, {start, end});
+        const head = {
+          'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+          'Accept-Ranges': 'bytes',
+          'Content-Length': chunksize,
+          'Content-Type': 'video/mp4',
+        };
+        res.writeHead(206, head);
+        file.pipe(res);
+      } else {
+        const head = {
+          'Content-Length': fileSize,
+          'Content-Type': 'video/mp4',
+          'Accept-Ranges': 'bytes'
+        };
+        res.writeHead(200, head);
+        fs.createReadStream(filePath).pipe(res);
+      }
+      return;
+    }
+
+    // Para recursos que no son video, devolver JSON normal
+    res.json(recurso);
   } catch (err) {
     console.error("Error al obtener recurso:", err);
     res.status(500).json({ message: "Error al obtener recurso", error: err });

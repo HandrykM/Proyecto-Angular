@@ -33,7 +33,25 @@ app.use('/api', (req, res, next) => {
 });
 
 // Servir archivos estáticos
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Configuración especial para videos y otros archivos
+app.use('/uploads', (req, res, next) => {
+  // Habilitar partial content y rangos para videos
+  res.set({
+    'Accept-Ranges': 'bytes',
+    'Cache-Control': 'public, max-age=3600',
+  });
+  if (req.path.endsWith('.mp4') || req.path.endsWith('.webm')) {
+    const options = {
+      dotfiles: 'deny',
+      headers: {
+        'Content-Type': req.path.endsWith('.mp4') ? 'video/mp4' : 'video/webm'
+      }
+    };
+    express.static(path.join(__dirname, 'uploads'), options)(req, res, next);
+  } else {
+    express.static(path.join(__dirname, 'uploads'))(req, res, next);
+  }
+});
 app.use('/assets', express.static(path.join(__dirname, 'public/assets')));
 
 // Rutas de autenticación
