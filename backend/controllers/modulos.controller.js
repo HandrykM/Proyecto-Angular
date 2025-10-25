@@ -136,7 +136,7 @@ exports.marcarLecturaCompletada = async (req, res) => {
       return res.status(404).json({ error: 'Módulo no encontrado' });
     }
     
-    // Marcar lectura como completada en progreso_lecturas
+    // Marcar lectura como completada
     await db.query(`
       INSERT INTO progreso_lecturas (
         usuario_id, lectura_id, completada, progreso_porcentaje, fecha_completada, fecha_inicio
@@ -148,7 +148,7 @@ exports.marcarLecturaCompletada = async (req, res) => {
         fecha_completada = NOW(),
         ultima_actualizacion = NOW()
     `, [userId, id_lectura]);
-    await logrosController.verificarYOtorgarLogros(userId);
+    
     // Calcular progreso del módulo
     const [progreso] = await db.query(`
       SELECT 
@@ -165,23 +165,26 @@ exports.marcarLecturaCompletada = async (req, res) => {
     
     // ✅ REGISTRAR ACTIVIDAD si módulo está completo
     if (progresoFinal >= 100) {
-  const puntos = modulo[0].puntos || 100;
-  
-  // Verificar si ya existe registro
-  const [existe] = await db.query(`
-    SELECT id FROM actividad_usuario 
-    WHERE id_usuario = ? AND tipo_actividad = 'modulo' AND id_referencia = ?
-    LIMIT 1
-  `, [userId, id_modulo]);
-  
-  if (existe.length === 0) {
-    await db.query(`
-      INSERT INTO actividad_usuario (
-        id_usuario, tipo_actividad, id_referencia, titulo, resultado, puntos_obtenidos, fecha_actividad
-      ) VALUES (?, 'modulo', ?, ?, 'Completada', ?, NOW())
-    `, [userId, id_modulo, modulo[0].titulo, puntos]);
-  }
+      const puntos = modulo[0].puntos || 100;
+      
+      // Verificar si ya existe registro
+      const [existe] = await db.query(`
+        SELECT id FROM actividad_usuario 
+        WHERE id_usuario = ? AND tipo_actividad = 'modulo' AND id_referencia = ?
+        LIMIT 1
+      `, [userId, id_modulo]);
+      
+      if (existe.length === 0) {
+        await db.query(`
+          INSERT INTO actividad_usuario (
+            id_usuario, tipo_actividad, id_referencia, titulo, resultado, puntos_obtenidos, fecha_actividad
+          ) VALUES (?, 'modulo', ?, ?, 'Completada', ?, NOW())
+        `, [userId, id_modulo, modulo[0].titulo, puntos]);
+      }
     }
+    
+    // ✅ VERIFICAR LOGROS DESPUÉS DE COMPLETAR LECTURA/MÓDULO
+    const logrosNuevos = await logrosController.verificarYOtorgarLogros(userId);
     
     res.json({
       success: true,
@@ -189,7 +192,8 @@ exports.marcarLecturaCompletada = async (req, res) => {
       nuevo_progreso: progresoFinal,
       lecturas_completadas: completadas,
       total_lecturas: total,
-      modulo_completado: progresoFinal >= 100
+      modulo_completado: progresoFinal >= 100,
+      logrosNuevos: logrosNuevos // ✅ Devolver logros obtenidos
     });
     
   } catch (error) {
@@ -328,23 +332,32 @@ exports.registrarTiempoEstudio = async (req, res) => {
     const { id_lectura, tiempo_minutos } = req.body;
     const userId = req.user.id;
     
-    if (!id_lectura || !tiempo_minutos || tiempo_minutos < 1) {
-      return res.status(400).json({ error: 'Datos inválidos' });
+    if (!id_lectura || !tiempo_minutos || idid_lectura <= 0 || tiempo_minutos <= 0) {
+      return res.status(400).json({ error: 'Datos de tiempo inválidos' });
     }
-    
+
+    const payload = {
+      id_lectura: id_lectura,
+      tiempo_minutos: Math.round(tiempo_minutos)
+    };
+
     await db.query(`
       INSERT INTO tiempo_estudio (id_usuario, id_lectura, tiempo_minutos, fecha)
       VALUES (?, ?, ?, NOW())
-    `, [userId, id_lectura, tiempo_minutos]);
+    `, [userId, id_lectura, Math.round(tiempo_minutos)]);
+    
+    // ✅ VERIFICAR LOGROS POR TIEMPO DE ESTUDIO
+    const logrosNuevos = await logrosController.verificarYOtorgarLogros(userId);
     
     res.json({
       success: true,
-      mensaje: 'Tiempo de estudio registrado'
+      mensaje: 'Tiempo de estudio registrado',
+      logrosNuevos: logrosNuevos
     });
     
   } catch (error) {
-    console.error('❌ Error en registrarTiempoEstudio:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    console.warn('Error registrando tiempo (continuando):', error);
+    return res.json({ success: false, mensaje: 'Error registrando tiempo' });
   }
 };
 

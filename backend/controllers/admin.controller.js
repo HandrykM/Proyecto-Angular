@@ -20,27 +20,33 @@ exports.obtenerUsuarios = async (req, res) => {
              COALESCE(biblioteca_data.recursos_leidos, 0) as recursos_leidos
       FROM usuarios u
       LEFT JOIN (
-        SELECT 
-          pl.usuario_id,
-          COUNT(DISTINCT l.modulo_id) as modulos_completados
-        FROM progreso_lecturas pl
-        INNER JOIN lecturas l ON pl.lectura_id = l.id
-        INNER JOIN modulos m ON l.modulo_id = m.id
-        WHERE pl.completada = 1 AND l.activa = 1 AND m.activo = 1
-        GROUP BY pl.usuario_id, l.modulo_id
-        HAVING COUNT(DISTINCT l.id) = (
-          SELECT COUNT(id) 
-          FROM lecturas 
-          WHERE modulo_id = l.modulo_id AND activa = 1
-        )
+        /* Para cada usuario contamos los módulos en los que completó todas las lecturas */
+        SELECT
+          t.usuario_id,
+          COUNT(*) as modulos_completados
+        FROM (
+          SELECT
+            pl.usuario_id,
+            l.modulo_id,
+            COUNT(*) as lecturas_completadas,
+            (SELECT COUNT(*) FROM lecturas WHERE modulo_id = l.modulo_id AND activa = 1) as total_lecturas
+          FROM progreso_lecturas pl
+          INNER JOIN lecturas l ON pl.lectura_id = l.id AND l.activa = 1
+          INNER JOIN modulos m ON l.modulo_id = m.id AND m.activo = 1
+          WHERE pl.completada = 1
+          GROUP BY pl.usuario_id, l.modulo_id
+          HAVING lecturas_completadas >= total_lecturas
+        ) t
+        GROUP BY t.usuario_id
       ) as modulos_data ON u.id = modulos_data.usuario_id
       LEFT JOIN (
+        -- Contar solo las entradas de tipo 'actividad' (no contar módulos ni otros tipos)
         SELECT 
           id_usuario,
           COUNT(DISTINCT id) as actividades_completadas,
           SUM(puntos_obtenidos) as puntos_totales
         FROM actividad_usuario
-        WHERE resultado = 'Completada'
+        WHERE resultado = 'Completada' AND tipo_actividad = 'actividad'
         GROUP BY id_usuario
       ) as actividades_data ON u.id = actividades_data.id_usuario
       LEFT JOIN (
@@ -843,15 +849,20 @@ exports.toggleActivoActividad = async (req, res) => {
 
 // ===== GESTIÓN DE ACTIVIDADES =====
 
+// En admin.controller.js - Obtener TODAS las actividades (incluyendo inactivas)
+
 exports.obtenerActividades = async (req, res) => {
   try {
+    // Para admin, mostrar TODAS las actividades (activas e inactivas)
     const [actividades] = await db.query(`
       SELECT a.*,
              COUNT(DISTINCT au.id_usuario) as usuarios_completaron
       FROM actividades a
-      LEFT JOIN actividad_usuario au ON a.id = au.id_referencia AND au.resultado = 'Completada'
+      LEFT JOIN actividad_usuario au ON a.id = au.id_referencia 
+        AND au.tipo_actividad = 'actividad'
+        AND au.resultado = 'Completada'
       GROUP BY a.id
-      ORDER BY a.orden ASC
+      ORDER BY a.orden ASC, a.id ASC
     `);
     
     res.json({

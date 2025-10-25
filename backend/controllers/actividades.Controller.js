@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../config/database'); // Asume que tienes configuración de BD
 const logrosController = require('./logros.controller');
 
+
 // Obtener todas las actividades disponibles
 router.get('/actividades', async (req, res) => {
   try {
@@ -10,10 +11,14 @@ router.get('/actividades', async (req, res) => {
       SELECT 
         id, titulo, descripcion, tipo, nivel, puntos, 
         DATE_FORMAT(fecha_creacion, '%Y-%m-%d %H:%i:%s') as fecha_creacion,
-        icono, color, duracion
+        COALESCE(icono, 'fas fa-gamepad') as icono, 
+        COALESCE(color, '#3498db') as color, 
+        COALESCE(duracion, '10-15 min') as duracion,
+        COALESCE(orden, 1) as orden,
+        COALESCE(activo, 1) as activo
       FROM actividades 
-      WHERE activo = 1
-      ORDER BY orden ASC
+      WHERE COALESCE(activo, 1) = 1
+      ORDER BY COALESCE(orden, id) ASC
     `;
     
     const [actividades] = await db.execute(query);
@@ -21,6 +26,36 @@ router.get('/actividades', async (req, res) => {
     res.json(actividades);
   } catch (error) {
     console.error('Error al obtener actividades:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Ruta para admin (todas las actividades, incluyendo inactivas)
+router.get('/actividades/admin/todas', authenticateToken, async (req, res) => {
+  try {
+    // Verificar que el usuario sea admin
+    if (req.user.rol !== 'admin') {
+      return res.status(403).json({ error: 'Acceso denegado' });
+    }
+
+    const query = `
+      SELECT 
+        id, titulo, descripcion, tipo, nivel, puntos, 
+        DATE_FORMAT(fecha_creacion, '%Y-%m-%d %H:%i:%s') as fecha_creacion,
+        COALESCE(icono, 'fas fa-gamepad') as icono, 
+        COALESCE(color, '#3498db') as color, 
+        COALESCE(duracion, '10-15 min') as duracion,
+        COALESCE(orden, 1) as orden,
+        COALESCE(activo, 1) as activo
+      FROM actividades 
+      ORDER BY COALESCE(orden, id) ASC
+    `;
+    
+    const [actividades] = await db.execute(query);
+    
+    res.json(actividades);
+  } catch (error) {
+    console.error('Error al obtener todas las actividades:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
@@ -93,14 +128,9 @@ router.post('/progreso-actividades', async (req, res) => {
     }
     
     await db.execute(query, params);
-    const logrosNuevos = await logrosController.verificarYOtorgarLogros(userId);
-if (logrosNuevos.length > 0) {
-  // Opcional: enviar logros en la respuesta
-  res.json({ 
-    success: true, 
-    logrosNuevos: logrosNuevos 
-  });
-}
+    
+    // ✅ VERIFICAR LOGROS DESPUÉS DE GUARDAR PROGRESO
+    const logrosNuevos = await logrosController.verificarYOtorgarLogros(idUsuario);
     
     // Registrar actividad en historial
     const actividadQuery = `
@@ -116,7 +146,11 @@ if (logrosNuevos.length > 0) {
       puntuacionMaxima, idActividad
     ]);
     
-    res.json({ message: 'Progreso guardado exitosamente' });
+    res.json({ 
+      success: true,
+      message: 'Progreso guardado exitosamente',
+      logrosNuevos: logrosNuevos // ✅ Devolver logros obtenidos
+    });
     
   } catch (error) {
     console.error('Error al guardar progreso:', error);

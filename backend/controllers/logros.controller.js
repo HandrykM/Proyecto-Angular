@@ -1,6 +1,5 @@
 // backend/controllers/logros.controller.js
 const db = require('../config/db');
-const preferenciasController = require('./preferencias.controller');
 
 class LogrosController {
   /**
@@ -105,6 +104,8 @@ class LogrosController {
             icono: logro.icono,
             puntosRecompensa: logro.puntos_recompensa
           });
+
+         // console.log(`✅ Logro otorgado: ${logro.titulo} a usuario ${userId}`);
         }
       }
 
@@ -152,7 +153,9 @@ class LogrosController {
       const [puntosActividades] = await db.execute(`
         SELECT COALESCE(SUM(CAST(puntos_obtenidos AS UNSIGNED)), 0) as puntos
         FROM actividad_usuario
-        WHERE id_usuario = ? AND resultado = 'Completada' AND puntos_obtenidos > 0
+        WHERE id_usuario = ? 
+          AND resultado = 'Completada' 
+          AND puntos_obtenidos > 0
       `, [userId]);
 
       // Tiempo total
@@ -169,11 +172,12 @@ class LogrosController {
         WHERE id_usuario = ? AND resultado = 'Completada'
       `, [userId]);
 
-      // Racha consecutiva
+      // Racha consecutiva (últimos 30 días)
       const [rachaResult] = await db.execute(`
         SELECT COUNT(DISTINCT DATE(fecha_lectura)) as dias
         FROM progreso_contenido
-        WHERE id_usuario = ? AND fecha_lectura >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        WHERE id_usuario = ? 
+          AND fecha_lectura >= DATE_SUB(NOW(), INTERVAL 30 DAY)
       `, [userId]);
 
       const puntosModulosNum = parseInt(puntosModulos[0]?.puntos) || 0;
@@ -255,7 +259,8 @@ class LogrosController {
    */
   async notificarLogro(userId, logro) {
     try {
-      await preferenciasController.notificarLogro(userId, logro);
+      // Notificación simple por consola
+      console.log(`🏆 Logro obtenido por usuario ${userId}:`, logro.titulo);
     } catch (error) {
       console.error('Error notificando logro:', error);
     }

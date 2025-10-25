@@ -46,7 +46,7 @@ class LecturasController {
     const { id } = req.params;
     const userId = req.user.id;
 
-    console.log('🔍 Obteniendo lectura ID:', id, 'para usuario:', userId);
+    //console.log('🔍 Obteniendo lectura ID:', id, 'para usuario:', userId);
 
     const query = `
       SELECT 
@@ -67,12 +67,12 @@ class LecturasController {
       return res.status(404).json({ error: 'Lectura no encontrada' });
     }
 
-    console.log('✅ Lectura encontrada:', {
+   /* console.log('✅ Lectura encontrada:', {
       id: lectura[0].id,
       titulo: lectura[0].titulo,
       tieneContenido: !!lectura[0].contenido,
       longitudContenido: lectura[0].contenido?.length || 0
-    });
+    });*/
 
     res.json({
       success: true,

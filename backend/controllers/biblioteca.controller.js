@@ -3,6 +3,7 @@ const db = require('../config/db');
 const fs = require('fs');
 const fsPromises = fs.promises;
 const path = require('path');
+const logrosController = require('./logros.controller');
 
 // Obtener todos los recursos
 exports.getRecursos = async (req, res) => {
@@ -192,10 +193,14 @@ exports.registrarLectura = async (req, res) => {
       [id_usuario, id, recurso[0].titulo, puntosObtenidos]
     );
 
+    // ✅ VERIFICAR LOGROS DESPUÉS DE COMPLETAR LECTURA
+    const logrosNuevos = await logrosController.verificarYOtorgarLogros(id_usuario);
+
     res.json({ 
       message: "Lectura registrada exitosamente",
       puntosObtenidos,
-      yaLeido: false
+      yaLeido: false,
+      logrosNuevos: logrosNuevos // ✅ Devolver logros obtenidos
     });
   } catch (err) {
     console.error("Error al registrar lectura:", err);
