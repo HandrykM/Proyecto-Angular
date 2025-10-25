@@ -455,3 +455,88 @@ button:disabled {
 }
 
 
+/* src/styles.css - Agregar al final del archivo */
+
+/* ===================================
+   NOTIFICACIONES DE LOGROS - GLOBALES
+   =================================== */
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.logro-toast {
+  animation: slideInRight 0.5s ease, pulse 0.5s ease 0.5s !important;
+}
+
+/* Estilo para el icono del logro con animación */
+.logro-icon i {
+  animation: pulse 1s infinite;
+}
+
+/* Responsive para notificaciones de logros */
+@media (max-width: 768px) {
+  .logros-container {
+    top: 60px !important;
+    right: 10px !important;
+    left: 10px !important;
+  }
+
+  .logro-toast {
+    min-width: auto !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Efecto de brillo para logros épicos */
+.logro-toast.epico {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  box-shadow: 0 10px 40px rgba(245, 87, 108, 0.5);
+}
+
+.logro-toast.raro {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  box-shadow: 0 10px 40px rgba(0, 242, 254, 0.5);
+}
+
+.logro-toast.legendario {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  box-shadow: 0 10px 40px rgba(254, 225, 64, 0.5);
+  animation: slideInRight 0.5s ease, pulse 0.5s ease 0.5s, glow 2s infinite !important;
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 10px 40px rgba(254, 225, 64, 0.5);
+  }
+  50% {
+    box-shadow: 0 15px 50px rgba(254, 225, 64, 0.8);
+  }
+}
