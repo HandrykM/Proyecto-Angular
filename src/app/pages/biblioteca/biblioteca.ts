@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BibliotecaService } from '../../services/biblioteca.service';
+import { PerfilService } from '../../services/perfil';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Subscription, of } from 'rxjs';
 import { timeout, finalize, catchError } from 'rxjs/operators';
@@ -41,8 +42,9 @@ interface FiltrosBiblioteca {
   standalone: true
 })
 export class Biblioteca implements OnInit, OnDestroy {
-  
-fotoUsuario: string;
+  cargandoVideo: boolean = false;
+  videoError: string | null = null;
+  fotoUsuario: string;
   usuario: { foto?: string; nombre?: string; rol?: string; id?: number } | null = null;
 
   // Estados principales
@@ -65,7 +67,12 @@ previewUrl: SafeResourceUrl | null = null;
 // helper para detectar mp4
 isMp4(url: string | undefined): boolean {
   if (!url) return false;
-  return /\.mp4(\?|$)/i.test(url);
+  
+  // Si es YouTube, definitivamente NO es MP4
+  if (this.obtenerIdYoutube(url)) return false;
+  
+  // Verificar extensión .mp4
+  return /\.mp4(\?|#|$)/i.test(url);
 }
 
   // Filtros y búsqueda
@@ -98,10 +105,35 @@ isMp4(url: string | undefined): boolean {
   // Tamaño máximo (bytes) para previsualizar inline en el navegador (10MB)
   private readonly MAX_PREVIEW_SIZE = 10 * 1024 * 1024;
 
+  onVideoLoad(): void {
+  console.log('Video metadata cargada');
+  this.cargandoVideo = false;
+  this.videoError = null;
+}
+
+  onVideoError(event: any): void {
+  console.error('❌ Error en video element:', event);
+  this.cargandoVideo = false;
+  
+  const videoElement = event.target as HTMLVideoElement;
+  if (videoElement?.error) {
+    switch (videoElement.error.code) {
+      case 1: this.videoError = 'Carga interrumpida'; break;
+      case 2: this.videoError = 'Error de red'; break;
+      case 3: this.videoError = 'Error de decodificación'; break;
+      case 4: this.videoError = 'Formato no soportado'; break;
+      default: this.videoError = 'Error desconocido';
+    }
+  } else {
+    this.videoError = 'No se pudo reproducir el video';
+  }
+}
+
   constructor(
     private sanitizer: DomSanitizer,
     private authService: AuthService,
-    private bibliotecaService: BibliotecaService
+    private bibliotecaService: BibliotecaService,
+    private perfilService: PerfilService
   ) {
     const foto = this.authService.getFotoUsuario();
     this.fotoUsuario = foto !== null ? foto : '';
@@ -257,40 +289,186 @@ isMp4(url: string | undefined): boolean {
 
   // === NAVEGACIÓN Y VISUALIZACIÓN === //
   abrirRecurso(recurso: Recurso): void {
+  console.log('🎬 Abriendo recurso:', { 
+    id: recurso.id, 
+    tipo: recurso.tipo, 
+    url: recurso.url?.substring(0, 50) + '...' 
+  });
+
+  // Resetear estados
   this.recursoSeleccionado = recurso;
   this.mostrandoRecurso = true;
   this.cargandoRecurso = true;
+  this.cargandoVideo = false;
+  this.videoError = null;
   this.puntosGanados = 0;
   this.mostrarPuntos = false;
-  // Debug inmediato (mirar consola)
-  console.log('abrirRecurso ->', { id: recurso.id, tipo: recurso.tipo, url: recurso.url });
 
-  // Precompute sanitized URL for estudio PDFs to avoid calling sanitizarUrl() in template
-  if (recurso.tipo === 'estudio' && recurso.url) {
-    try {
-      this.sanitizedRecursoUrl = this.sanitizarUrl(recurso.url + '#toolbar=1&navpanes=0&scrollbar=1');
-    } catch (e) {
-      console.error('Error sanitizing estudio URL:', e);
-      this.sanitizedRecursoUrl = null;
-    }
-  } else {
-    this.sanitizedRecursoUrl = null;
+  // Limpiar preview anterior
+  if (this.previewObjectUrl) {
+    try { URL.revokeObjectURL(this.previewObjectUrl); } catch(e) {/*ignore*/}
+    this.previewObjectUrl = null;
+  }
+  this.previewUrl = null;
+  this.sanitizedRecursoUrl = null;
+
+  // Registrar lectura/visualización
+  if (this.usuario?.id && !this.esRecursoLeido(recurso.id)) {
+    const tipoEvento: 'leido' | 'visto' = recurso.tipo === 'video' ? 'visto' : 'leido';
+    this.registrarLectura(recurso.id, tipoEvento);
   }
 
-    // Registrar lectura y otorgar puntos
-    if (this.usuario?.id && !this.esRecursoLeido(recurso.id)) {
-    this.registrarLectura(recurso.id);
-  }
-
-  // Si el recurso tiene URL y es un archivo que podemos previsualizar, obtener blob
-  if (recurso.url && (recurso.tipo === 'infografia' || recurso.tipo === 'guia' || recurso.tipo === 'estudio' || this.isMp4(recurso.url))) {
-    this.previsualizarArchivo(recurso);
-  } else {
-    // Si es video de YouTube u otro embed, no necesitamos descargar
-    setTimeout(() => {
+  // CASO 1: VIDEO
+  if (recurso.tipo === 'video') {
+    const youtubeId = this.obtenerIdYoutube(recurso.url);
+    
+    if (youtubeId) {
+      // ES YOUTUBE
+      console.log('✅ Video de YouTube detectado:', youtubeId);
       this.cargandoRecurso = false;
-      if (recurso.tipo === 'video') this.autoReproducirVideo();
-    }, 400);
+      this.cargandoVideo = false;
+      // No hacer nada más, el template maneja YouTube
+    } else if (this.isMp4(recurso.url)) {
+      // ES MP4 LOCAL
+      console.log('✅ Video MP4 local detectado');
+      this.cargarVideoMp4(recurso);
+    } else {
+      // URL desconocida
+      console.warn('⚠️ URL de video no reconocida:', recurso.url);
+      this.cargandoRecurso = false;
+      this.videoError = 'Formato de video no soportado';
+    }
+    return;
+  }
+
+  // CASO 2: PDF/INFOGRAFÍA/GUÍA/ESTUDIO
+  if (['infografia', 'guia', 'estudio'].includes(recurso.tipo)) {
+    if (recurso.tipo === 'estudio' && recurso.url) {
+      try {
+        this.sanitizedRecursoUrl = this.sanitizarUrl(
+          recurso.url + '#toolbar=1&navpanes=0&scrollbar=1'
+        );
+      } catch (e) {
+        console.error('Error sanitizing estudio URL:', e);
+        this.sanitizedRecursoUrl = null;
+      }
+    }
+    
+    if (recurso.url) {
+      this.previsualizarArchivo(recurso);
+    } else {
+      this.cargandoRecurso = false;
+    }
+    return;
+  }
+
+  // CASO 3: OTROS TIPOS
+  this.cargandoRecurso = false;
+}
+
+private cargarVideoMp4(recurso: Recurso): void {
+  console.log('🎥 Cargando video MP4...');
+  this.cargandoVideo = true;
+  
+  const filename = this.obtenerNombreArchivo(recurso.url);
+
+  // Cancelar descarga previa
+  if (this.currentPreviewSub) {
+    try { this.currentPreviewSub.unsubscribe(); } catch(e) {/*ignore*/}
+    this.currentPreviewSub = undefined;
+  }
+
+  // Timeout de 8 segundos para videos
+  this.currentPreviewSub = this.bibliotecaService
+    .descargarArchivo(filename)
+    .pipe(
+      timeout(8000),
+      catchError(err => {
+        console.error('❌ Error descargando video:', err);
+        
+        // FALLBACK: Intentar URL directa
+        console.log('🔄 Intentando URL directa...');
+        try {
+          this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(recurso.url);
+          this.cargandoRecurso = false;
+          this.cargandoVideo = false;
+          
+          // Dar tiempo al navegador para renderizar el video
+          setTimeout(() => {
+            const videoElement = document.querySelector('.video-player') as HTMLVideoElement;
+            if (videoElement) {
+              console.log('✅ Video element encontrado con URL directa');
+              videoElement.load();
+            }
+          }, 200);
+        } catch(e) {
+          console.error('❌ Error con URL directa:', e);
+          this.videoError = 'No se pudo cargar el video';
+          this.cargandoVideo = false;
+        }
+        
+        return of(null as unknown as Blob);
+      }),
+      finalize(() => {
+        this.cargandoRecurso = false;
+      })
+    )
+    .subscribe((blob: Blob | null) => {
+      if (!blob || blob.size === 0) {
+        console.warn('⚠️ Blob vacío o nulo');
+        
+        // Intentar URL directa como último recurso
+        try {
+          this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(recurso.url);
+          this.cargandoVideo = false;
+          
+          setTimeout(() => {
+            const videoElement = document.querySelector('.video-player') as HTMLVideoElement;
+            if (videoElement) {
+              videoElement.load();
+            }
+          }, 200);
+        } catch(e) {
+          this.videoError = 'No se pudo cargar el video';
+          this.cargandoVideo = false;
+        }
+        return;
+      }
+
+      console.log('✅ Blob recibido:', blob.size, 'bytes');
+
+      // Crear objectURL
+      try {
+        if (this.previewObjectUrl) {
+          URL.revokeObjectURL(this.previewObjectUrl);
+        }
+        
+        this.previewObjectUrl = URL.createObjectURL(blob);
+        this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.previewObjectUrl);
+        
+        console.log('✅ ObjectURL creado');
+        
+        // Dar tiempo al DOM para actualizar
+        setTimeout(() => {
+          const videoElement = document.querySelector('.video-player') as HTMLVideoElement;
+          if (videoElement) {
+            console.log('✅ Video element encontrado en DOM');
+            videoElement.load();
+          } else {
+            console.warn('⚠️ Video element no encontrado en DOM');
+          }
+          this.cargandoVideo = false;
+        }, 200);
+        
+      } catch (e) {
+        console.error('❌ Error creando objectURL:', e);
+        this.videoError = 'Error al procesar el video';
+        this.cargandoVideo = false;
+      }
+    });
+
+  if (this.currentPreviewSub) {
+    this.subscriptions.push(this.currentPreviewSub);
   }
 }
 
@@ -302,109 +480,114 @@ previsualizarArchivo(recurso: Recurso): void {
     return;
   }
 
-  console.log('previsualizarArchivo: iniciando para', recurso.url);
+  console.log('📄 Previsualizando archivo PDF/documento:', recurso.url);
   this.cargandoRecurso = true;
 
-  // obtener nombre si tu servicio descarga por filename
   const filename = this.obtenerNombreArchivo(recurso.url);
 
-  // cancelar previsualización previa si existe
   if (this.currentPreviewSub) {
     try { this.currentPreviewSub.unsubscribe(); } catch(e) {/*ignore*/}
     this.currentPreviewSub = undefined;
   }
 
-  // Añadir timeout para evitar spinner infinito (10s) y finalize para limpiar
   this.currentPreviewSub = this.bibliotecaService
     .descargarArchivo(filename)
     .pipe(
-      timeout(10000), // 10 segundos
+      timeout(10000),
       catchError(err => {
-        console.error('Error en descarga/previsualización:', err);
+        console.error('Error en descarga de archivo:', err);
         this.mostrarError('No se pudo previsualizar el archivo. Puedes descargarlo.');
         return of(null as unknown as Blob);
       }),
       finalize(() => {
         this.cargandoRecurso = false;
-        console.log('previsualizarArchivo: finalize para', recurso.url);
       })
     )
     .subscribe((blob: Blob | null) => {
-      console.log('previsualizarArchivo: respuesta recibida para', recurso.url, 'blob=', blob);
-      if (!blob) {
+      if (!blob || blob.size === 0) {
         this.previewUrl = null;
         return;
       }
 
-      if (blob.size === 0) {
-        console.warn('previsualizarArchivo: blob vacío (size=0) para', recurso.url);
-        this.mostrarError('No se pudo previsualizar el archivo (respuesta vacía). Intenta descargarlo.');
+      if (blob.size > this.MAX_PREVIEW_SIZE) {
+        console.warn(`Archivo muy grande: ${blob.size} bytes`);
+        this.mostrarError('El archivo es muy grande. Descárgalo para verlo.');
         this.previewUrl = null;
         return;
       }
 
-      // Si el blob es demasiado grande, no intentamos renderizar inline
-      if (blob.size && blob.size > this.MAX_PREVIEW_SIZE) {
-        console.warn(`Blob demasiado grande para previsualizar (${blob.size} bytes)`);
-        this.mostrarError('El archivo es demasiado grande para previsualizar. Descárgalo para verlo.');
-        this.previewUrl = null;
-        return;
-      }
-
-      // revocar si existe uno anterior
       if (this.previewObjectUrl) {
         try { URL.revokeObjectURL(this.previewObjectUrl); } catch(e) {/*ignore*/}
-        this.previewObjectUrl = null;
-        this.previewUrl = null;
       }
 
-      // crear objectURL y sanitizar
       try {
         this.previewObjectUrl = URL.createObjectURL(blob);
         this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.previewObjectUrl);
       } catch (e) {
-        console.error('Error creando objectURL para previsualizar:', e);
+        console.error('Error creando objectURL:', e);
         this.previewUrl = null;
-      }
-
-      // Si es video mp4, autoload/play opcional
-      if (recurso.tipo === 'video' && this.isMp4(recurso.url)) {
-        this.autoReproducirVideo();
       }
     });
 
-  if (this.currentPreviewSub) this.subscriptions.push(this.currentPreviewSub);
-}
+  if (this.currentPreviewSub) {
+    this.subscriptions.push(this.currentPreviewSub);
+  }
+} 
 
   private autoReproducirVideo(): void {
-    setTimeout(() => {
+  setTimeout(() => {
+    if (this.isMp4(this.recursoSeleccionado?.url)) {
+      const videoElement = document.querySelector('.video-player') as HTMLVideoElement;
+      if (videoElement) {
+        console.log('Video element encontrado, configurando...');
+        videoElement.preload = 'auto';
+        videoElement.playsInline = true;
+        
+        // Intentar reproducir
+        videoElement.play().catch(error => {
+          console.warn('Autoplay no permitido:', error);
+        });
+      } else {
+        console.warn('Video element no encontrado en DOM');
+      }
+    } else {
       const iframe = document.querySelector('.video-container iframe') as HTMLIFrameElement;
       if (iframe && iframe.src) {
-        // Agregar autoplay al src si no lo tiene
         if (!iframe.src.includes('autoplay=1')) {
           iframe.src = iframe.src.includes('?') 
             ? iframe.src + '&autoplay=1' 
             : iframe.src + '?autoplay=1';
         }
       }
-    }, 100);
-  }
+    }
+  }, 100);
+}
 
-  private registrarLectura(idRecurso: number): void {
+
+  private registrarLectura(idRecurso: number, tipo: 'leido' | 'visto' = 'leido'): void {
     if (!this.usuario?.id) return;
 
-    const sub = this.bibliotecaService.registrarLectura(idRecurso, this.usuario.id).subscribe({
+    const sub = this.bibliotecaService.registrarLectura(idRecurso, this.usuario.id, tipo).subscribe({
       next: (response) => {
-        if (!response.yaLeido) {
+        if (!response.yaLeido && tipo === 'leido') {
+          // solo agregamos a recursosLeidos los que son tipo 'leido' (infografías/guías/estudios)
           this.recursosLeidos.add(idRecurso);
-          this.puntosGanados = response.puntosObtenidos || 0;
-          
-          if (this.puntosGanados > 0) {
-            this.mostrarPuntos = true;
-            setTimeout(() => {
-              this.mostrarPuntos = false;
-            }, 5000);
-          }
+        }
+
+        this.puntosGanados = response.puntosObtenidos || 0;
+
+        if (this.puntosGanados > 0) {
+          this.mostrarPuntos = true;
+          setTimeout(() => {
+            this.mostrarPuntos = false;
+          }, 5000);
+        }
+
+        // Refrescar historial de actividad en Perfil si existe (para que aparezca inmediatamente)
+        try {
+          this.perfilService.refreshHistorial();
+        } catch (e) {
+          console.warn('No fue posible refrescar historial en PerfilService:', e);
         }
       },
       error: (err) => console.error('Error registrando lectura:', err)
@@ -415,27 +598,42 @@ previsualizarArchivo(recurso: Recurso): void {
 
   // MODIFICAR cerrarRecurso para revocar objectURL
 cerrarRecurso(): void {
-  this.mostrandoRecurso = false;
-  this.recursoSeleccionado = null;
-  this.mostrarPuntos = false;
-  this.puntosGanados = 0;
-  // cancelar descarga/previsualización en curso
+  console.log('🚪 Cerrando modal de recurso');
+  
+  // Cancelar cualquier operación en curso
   if (this.currentPreviewSub) {
-    try { this.currentPreviewSub.unsubscribe(); } catch(e) {/*ignore*/}
+    try { 
+      this.currentPreviewSub.unsubscribe();
+      console.log('✅ Subscripción cancelada');
+    } catch(e) {
+      console.error('Error cancelando subscripción:', e);
+    }
     this.currentPreviewSub = undefined;
   }
 
+  // Limpiar objectURL
   if (this.previewObjectUrl) {
-    try { URL.revokeObjectURL(this.previewObjectUrl); } catch(e){/*ignore*/ }
+    try { 
+      URL.revokeObjectURL(this.previewObjectUrl);
+      console.log('✅ ObjectURL revocado');
+    } catch(e) {
+      console.error('Error revocando objectURL:', e);
+    }
     this.previewObjectUrl = null;
-    this.previewUrl = null;
   }
 
-  // limpiar cualquier URL pre-sanitizada
+  // Resetear TODOS los estados
+  this.mostrandoRecurso = false;
+  this.recursoSeleccionado = null;
+  this.previewUrl = null;
   this.sanitizedRecursoUrl = null;
-
-  // asegurar estado de carga
+  this.mostrarPuntos = false;
+  this.puntosGanados = 0;
+  this.cargandoVideo = false;
+  this.videoError = null;
   this.cargandoRecurso = false;
+  
+  console.log('Modal cerrado completamente');
 }
   // === DESCARGA DE ARCHIVOS === //
   descargarArchivo(): void {
@@ -488,10 +686,23 @@ cerrarRecurso(): void {
   }
 
   obtenerIdYoutube(url: string): string {
-    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
-    const coincidencia = url.match(regex);
-    return coincidencia?.[1] || '';
+  if (!url) return '';
+  
+  // Patrones de YouTube
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/,
+    /youtube\.com\/watch\?.*v=([^&\s]+)/
+  ];
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
   }
+  
+  return '';
+}
 
   sanitizarUrl(url: string): SafeResourceUrl {
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);

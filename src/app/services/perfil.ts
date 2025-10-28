@@ -1,7 +1,7 @@
 // src/app/services/perfil.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, BehaviorSubject, of } from 'rxjs';
+import { Observable, BehaviorSubject, of, Subject } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { AuthService } from './auth';
 import { 
@@ -20,6 +20,9 @@ export class PerfilService {
   private apiUrl = 'http://localhost:3000/api';
   private usuarioActualSubject = new BehaviorSubject<Usuario | null>(null);
   public usuarioActual$ = this.usuarioActualSubject.asObservable();
+  // Subject para emitir actualizaciones del historial de actividad
+  private historialSubject = new Subject<any[]>();
+  public historial$ = this.historialSubject.asObservable();
 
   constructor(
     private http: HttpClient,
@@ -188,6 +191,25 @@ export class PerfilService {
         return of([]);
       })
     );
+  }
+
+  /**
+   * Refrescar y emitir historial de actividad (útil para que componentes se sincronicen)
+   */
+  refreshHistorial(limite: number = 50, offset: number = 0, tipo?: string): void {
+    this.obtenerHistorialActividad(limite, offset, tipo).subscribe({
+      next: (hist) => {
+        try {
+          this.historialSubject.next(hist || []);
+        } catch (e) {
+          console.warn('Error emitiendo historial:', e);
+        }
+      },
+      error: (err) => {
+        console.error('Error refrescando historial:', err);
+        this.historialSubject.next([]);
+      }
+    });
   }
 
   // === CUENTA === //

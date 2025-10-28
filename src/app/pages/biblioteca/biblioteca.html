@@ -240,11 +240,17 @@
   </div>
 </div>
 
+<!-- SECCIÓN DEL MODAL - REEMPLAZAR EN biblioteca.html -->
+
 <!-- Modal de recurso -->
-<div class="recurso-modal" *ngIf="mostrandoRecurso && recursoSeleccionado">
-  <div class="modal-overlay" (click)="cerrarRecurso()"></div>
+<div class="recurso-modal" 
+     *ngIf="mostrandoRecurso && recursoSeleccionado" 
+     (click)="cerrarRecurso()"
+     style="z-index: 9999;">
   
-  <div class="modal-contenido">
+  <div class="modal-overlay"></div>
+  
+  <div class="modal-contenido" (click)="$event.stopPropagation()">
     
     <!-- Header del modal -->
     <div class="modal-header">
@@ -265,13 +271,13 @@
       <div class="modal-acciones">
         <button 
           class="btn-modal-favorito"
-          (click)="alternarFavorito(recursoSeleccionado)">
+          (click)="alternarFavorito(recursoSeleccionado); $event.stopPropagation()">
           <i 
             class="fas fa-star"
             [style.color]="esFavorito(recursoSeleccionado.id) ? '#f39c12' : '#bdc3c7'">
           </i>
         </button>
-        <button class="btn-modal-cerrar" (click)="cerrarRecurso()">
+        <button class="btn-modal-cerrar" (click)="cerrarRecurso(); $event.stopPropagation()">
           <i class="fas fa-times"></i>
         </button>
       </div>
@@ -280,57 +286,141 @@
     <!-- Puntos ganados -->
     <div class="puntos-ganados" *ngIf="mostrarPuntos && puntosGanados > 0">
       <i class="fas fa-trophy"></i>
-      ¡Has ganado {{puntosGanados}} puntos por leer este recurso!
+      ¡Has ganado {{puntosGanados}} puntos por ver este recurso!
     </div>
     
     <!-- Cuerpo del modal -->
     <div class="modal-body">
-  <div class="loading-container" *ngIf="cargandoRecurso">
-    <div class="loading-spinner">
-      <i class="fas fa-spinner fa-spin"></i>
-      <p>Cargando recurso...</p>
-    </div>
-  </div>
       
-      <div class="recurso-visor" *ngIf="!cargandoRecurso && recursoSeleccionado">
-    <!-- VIDEO: si es mp4 subido mostramos <video>, si es YouTube hacemos embed -->
-    <div class="video-container" *ngIf="recursoSeleccionado.tipo === 'video'">
-      <ng-container *ngIf="isMp4(recursoSeleccionado.url); else youtubeEmbed">
-        <video *ngIf="previewUrl" [src]="previewUrl" controls playsinline style="width:100%; height:auto;"></video>
-        <p *ngIf="!previewUrl">No se puede previsualizar el video. <button class="btn-descargar" (click)="descargarArchivo()">Descargar</button></p>
-      </ng-container>
-      <ng-template #youtubeEmbed>
-        <iframe 
-          [src]="sanitizarUrl('https://www.youtube.com/embed/' + obtenerIdYoutube(recursoSeleccionado.url) + '?autoplay=1')"
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen>
-        </iframe>
-      </ng-template>
-    </div>
-        
-        <!-- Infografía/PDF/Guía -->
-        <div class="pdf-container" *ngIf="['infografia','guia','estudio'].includes(recursoSeleccionado.tipo)">
-      <div class="pdf-toolbar">
-        <h4>{{recursoSeleccionado.titulo}}</h4>
-        <button class="btn-descargar" (click)="descargarArchivo()">
-          <i class="fas fa-download"></i> Descargar
-        </button>
+      <!-- Loading general -->
+      <div class="loading-container" *ngIf="cargandoRecurso && !recursoSeleccionado">
+        <div class="loading-spinner">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Cargando recurso...</p>
+        </div>
       </div>
-
-      <iframe *ngIf="previewUrl" class="pdf-viewer" [src]="previewUrl" frameborder="0" style="width:100%; height:70vh;"></iframe>
-
-      <div *ngIf="!previewUrl">
-        <p>No se pudo generar la vista previa. Intenta descargar el archivo.</p>
-        <button class="btn-descargar" (click)="descargarArchivo()">Descargar</button>
-      </div>
-    </div>
+      
+      <!-- Contenido del recurso -->
+      <div class="recurso-visor" *ngIf="recursoSeleccionado">
         
-        <!-- Estudio/Artículo -->
+        <!-- ========== VIDEOS ========== -->
+        <div class="video-container" *ngIf="recursoSeleccionado.tipo === 'video'">
+          
+          <!-- CASO 1: Video MP4 Local -->
+          <ng-container *ngIf="isMp4(recursoSeleccionado.url)">
+            <div class="video-wrapper-mp4">
+              
+              <!-- Loading del video -->
+              <div class="video-loading" *ngIf="cargandoVideo">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Cargando video...</p>
+                <button class="btn-cancelar-carga" (click)="cerrarRecurso(); $event.stopPropagation()">
+                  Cancelar
+                </button>
+              </div>
+              
+              <!-- Video Player -->
+              <video 
+                #videoPlayer 
+                class="video-player-mp4" 
+                *ngIf="previewUrl && !cargandoVideo && !videoError"
+                [src]="previewUrl" 
+                controls 
+                controlsList="nodownload"
+                playsinline
+                preload="metadata"
+                (loadedmetadata)="onVideoLoad()"
+                (error)="onVideoError($event)"
+                (canplay)="cargandoVideo = false">
+                Tu navegador no soporta la reproducción de videos HTML5.
+              </video>
+              
+              <!-- Error en video -->
+              <div class="video-error" *ngIf="videoError">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>No se pudo cargar el video</h3>
+                <p>{{videoError}}</p>
+                <div class="error-actions">
+                  <button class="btn-descargar" (click)="descargarArchivo(); $event.stopPropagation()">
+                    <i class="fas fa-download"></i> 
+                    Descargar video
+                  </button>
+                  <button class="btn-cerrar-modal" (click)="cerrarRecurso(); $event.stopPropagation()">
+                    <i class="fas fa-times"></i>
+                    Cerrar
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Fallback si no hay preview ni error -->
+              <div class="video-error" *ngIf="!previewUrl && !cargandoVideo && !videoError">
+                <i class="fas fa-video-slash"></i>
+                <h3>Video no disponible</h3>
+                <p>No se pudo generar vista previa del video</p>
+                <button class="btn-descargar" (click)="descargarArchivo(); $event.stopPropagation()">
+                  <i class="fas fa-download"></i> 
+                  Descargar para reproducir
+                </button>
+              </div>
+            </div>
+          </ng-container>
+          
+          <!-- CASO 2: Video de YouTube -->
+          <ng-container *ngIf="!isMp4(recursoSeleccionado.url)">
+            <div class="youtube-wrapper">
+              <ng-container *ngIf="obtenerIdYoutube(recursoSeleccionado.url) as youtubeId; else urlError">
+                <iframe 
+                  class="youtube-embed"
+                  [src]="sanitizarUrl('https://www.youtube.com/embed/' + youtubeId + '?autoplay=0&rel=0&modestbranding=1')"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen>
+                </iframe>
+              </ng-container>
+              
+              <ng-template #urlError>
+                <div class="video-error">
+                  <i class="fas fa-link-slash"></i>
+                  <h3>URL de video no válida</h3>
+                  <p>La URL proporcionada no es un enlace válido de YouTube</p>
+                  <p style="font-size: 0.9em; color: #666; margin-top: 1rem;">
+                    URL: {{recursoSeleccionado.url}}
+                  </p>
+                </div>
+              </ng-template>
+            </div>
+          </ng-container>
+          
+        </div>
+        
+        <!-- ========== PDFs / INFOGRAFÍAS / GUÍAS ========== -->
+        <div class="pdf-container" *ngIf="['infografia','guia'].includes(recursoSeleccionado.tipo)">
+          <div class="pdf-toolbar">
+            <h4>{{recursoSeleccionado.titulo}}</h4>
+            <button class="btn-descargar" (click)="descargarArchivo(); $event.stopPropagation()">
+              <i class="fas fa-download"></i> Descargar
+            </button>
+          </div>
+
+          <iframe 
+            *ngIf="previewUrl" 
+            class="pdf-viewer" 
+            [src]="previewUrl" 
+            frameborder="0">
+          </iframe>
+
+          <div *ngIf="!previewUrl && !cargandoRecurso" class="pdf-error">
+            <i class="fas fa-file-pdf"></i>
+            <p>No se pudo generar vista previa</p>
+            <button class="btn-descargar" (click)="descargarArchivo(); $event.stopPropagation()">
+              <i class="fas fa-download"></i> Descargar archivo
+            </button>
+          </div>
+        </div>
+        
+        <!-- ========== ESTUDIOS ========== -->
         <div class="articulo-container" *ngIf="recursoSeleccionado.tipo === 'estudio'">
           
-          
-          <!-- Vista previa del PDF -->
           <div class="pdf-preview" *ngIf="recursoSeleccionado.url">
             <iframe 
               class="pdf-viewer"
@@ -340,12 +430,10 @@
             </iframe>
           </div>
           
-          <!-- Contenido del artículo -->
           <div class="articulo-contenido" *ngIf="recursoSeleccionado.contenido">
-            <div class="texto-principal" [innerHTML]="recursoSeleccionado.contenido  "></div>
+            <div class="texto-principal" [innerHTML]="recursoSeleccionado.contenido"></div>
           </div>
           
-          <!-- Información adicional -->
           <div class="articulo-footer">
             <p><strong>Autor:</strong> {{recursoSeleccionado.autor}}</p>
             <p *ngIf="recursoSeleccionado.categoria">
@@ -356,6 +444,7 @@
             </p>
           </div>
         </div>
+        
       </div>
     </div>
   </div>

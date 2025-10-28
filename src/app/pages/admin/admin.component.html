@@ -196,33 +196,54 @@
 
       <!-- Filtros -->
       <div class="filters-bar">
-        <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input 
-            type="text" 
-            [(ngModel)]="busqueda"
-            (keyup.enter)="aplicarFiltros()"
-            placeholder="Buscar por nombre o correo...">
-        </div>
+  <div class="search-box">
+    <i class="fas fa-search"></i>
+    <input 
+      type="text" 
+      [value]="busqueda"
+      (input)="onBusquedaChange($event)"
+      placeholder="Buscar por nombre o correo...">
+  </div>
 
-        <select [(ngModel)]="filtroRol" (change)="aplicarFiltros()" class="filter-select">
-          <option value="">Todos los roles</option>
-          <option value="usuario">Usuario</option>
-          <option value="admin">Admin</option>
-        </select>
+  <select [(ngModel)]="filtroRol" (change)="aplicarFiltros()" class="filter-select">
+    <option value="">Todos los roles</option>
+    <option value="usuario">Usuario</option>
+    <option value="admin">Admin</option>
+  </select>
 
-        <select [(ngModel)]="ordenUsuarios" (change)="aplicarFiltros()" class="filter-select">
-          <option value="fecha_desc">Más recientes</option>
-          <option value="fecha_asc">Más antiguos</option>
-          <option value="nombre_asc">A-Z</option>
-          <option value="nombre_desc">Z-A</option>
-        </select>
+  <select [(ngModel)]="ordenUsuarios" (change)="aplicarFiltros()" class="filter-select">
+    <option value="fecha_desc">Más recientes</option>
+    <option value="fecha_asc">Más antiguos</option>
+    <option value="nombre_asc">A-Z</option>
+    <option value="nombre_desc">Z-A</option>
+  </select>
 
-        <button class="btn-secondary" (click)="aplicarFiltros()">
-          <i class="fas fa-filter"></i>
-          Filtrar
-        </button>
-      </div>
+  <!-- ✅ BOTÓN REFRESCAR (reemplaza al botón Filtrar) -->
+  <button class="btn-primary" (click)="refrescarUsuarios()" title="Refrescar lista de usuarios">
+    <i class="fas fa-sync-alt"></i>
+    Refrescar
+  </button>
+</div>
+
+<!-- CSS adicional para animación del botón refrescar -->
+<style>
+  .btn-primary:active i.fa-sync-alt {
+    animation: spin 0.5s linear;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  .search-box input {
+    transition: all 0.3s ease;
+  }
+  
+  .search-box input:focus {
+    box-shadow: 0 0 0 3px rgba(0, 168, 232, 0.15);
+  }
+</style>
 
       <!-- Tabla de usuarios -->
       <div class="table-container">
@@ -715,63 +736,110 @@
 
       <!-- Materiales Adicionales -->
       <div style="border-top: 2px solid #e0e0e0; margin-top: 2rem; padding-top: 1.5rem;">
-        <h4 style="color: #00a8e8; margin-bottom: 1rem;">
-          <i class="fas fa-download"></i>
-          Materiales Adicionales
-        </h4>
+  <h4 style="color: #00a8e8; margin-bottom: 1rem;">
+    <i class="fas fa-download"></i>
+    Materiales Adicionales
+  </h4>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-          <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-infografia')">
-            <i class="fas fa-image"></i>
-            Infografía
-          </button>
-          <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-guia')">
-            <i class="fas fa-file-pdf"></i>
-            Guía
-          </button>
-          <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-video')">
-            <i class="fas fa-video"></i>
-            Video
-          </button>
-          <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-otro')">
-            <i class="fas fa-file"></i>
-            Otro
-          </button>
-        </div>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+    <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-infografia')">
+      <i class="fas fa-image"></i>
+      Infografía
+    </button>
+    <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-guia')">
+      <i class="fas fa-file-pdf"></i>
+      Guía
+    </button>
+    <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-video')">
+      <i class="fas fa-video"></i>
+      Video
+    </button>
+    <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-otro')">
+      <i class="fas fa-file"></i>
+      Estudio
+    </button>
+  </div>
 
         <!-- Inputs ocultos -->
         <input type="file" id="input-infografia" (change)="onMaterialSeleccionado($event, 'infografia')" style="display: none;">
-        <input type="file" id="input-guia" (change)="onMaterialSeleccionado($event, 'guia')" style="display: none;">
-        <input type="file" id="input-video" (change)="onMaterialSeleccionado($event, 'video')" style="display: none;">
-        <input type="file" id="input-otro" (change)="onMaterialSeleccionado($event, 'otro')" style="display: none;">
+  <input type="file" id="input-guia" (change)="onMaterialSeleccionado($event, 'guia')" style="display: none;">
+  <input type="file" id="input-video" (change)="onMaterialSeleccionado($event, 'video')" style="display: none;">
+  <input type="file" id="input-otro" (change)="onMaterialSeleccionado($event, 'otro')" style="display: none;">
 
         <!-- Lista de materiales -->
-        <div *ngIf="materialesSeleccionados.length > 0" style="margin-top: 1rem;">
-          <h5 style="color: #333; margin-bottom: 1rem;">Materiales Subidos ({{materialesSeleccionados.length}})</h5>
-          <div class="materiales-list">
-            <div *ngFor="let material of materialesSeleccionados; let i = index" class="material-item" 
-              style="display: grid; grid-template-columns: auto 1fr auto; gap: 1rem; align-items: center; padding: 1rem; background: #f5f5f5; border-radius: 8px; margin-bottom: 0.8rem;">
-              
-              <div style="width: 50px; height: 50px; border-radius: 8px; background: #ddd; display: flex; align-items: center; justify-content: center; color: #666;">
-                <i class="fas fa-file-alt" style="font-size: 1.5rem;"></i>
-              </div>
-
-              <div>
-                <p style="margin: 0 0 0.5rem 0; font-weight: 600; color: #333;">{{material.titulo}}</p>
-                <p style="margin: 0; font-size: 0.85rem; color: #666;">
-                  <span style="background: #e3f2fd; padding: 0.2rem 0.6rem; border-radius: 4px; text-transform: uppercase; font-size: 0.75rem;">
-                    {{material.tipo}}
-                  </span>
-                </p>
-              </div>
-
-              <button type="button" class="btn-icon danger" (click)="eliminarMaterial(i)" style="width: 40px; height: 40px;">
-                <i class="fas fa-trash"></i>
-              </button>
+        <div *ngIf="materialesSeleccionados.length > 0" style="margin-top: 1.5rem;">
+    <h5 style="color: #333; margin-bottom: 1rem;">Materiales Subidos ({{materialesSeleccionados.length}})</h5>
+    <div class="materiales-list">
+      <div *ngFor="let material of materialesSeleccionados; let i = index" class="material-item-editable" 
+        style="padding: 1.5rem; background: #f5f5f5; border-radius: 8px; margin-bottom: 1rem;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+          <div style="flex: 1; margin-right: 1rem;">
+            <!-- Título editable -->
+            <div class="form-group" style="margin-bottom: 0.8rem;">
+              <label style="font-size: 0.85rem; color: #666; margin-bottom: 0.3rem; display: block;">
+                Título del material
+              </label>
+              <input 
+                type="text"
+                class="form-control"
+                [(ngModel)]="material.titulo"
+                [ngModelOptions]="{standalone: true}"
+                placeholder="Título del material"
+                style="font-size: 0.95rem;">
             </div>
+
+            <!-- Descripción editable -->
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+              <label style="font-size: 0.85rem; color: #666; margin-bottom: 0.3rem; display: block;">
+                Descripción del material
+              </label>
+              <textarea
+                class="form-control"
+                [(ngModel)]="material.descripcion"
+                [ngModelOptions]="{standalone: true}"
+                placeholder="Describe brevemente este material..."
+                rows="2"
+                style="font-size: 0.9rem; resize: vertical;"></textarea>
+            </div>
+
+            <!-- Info del archivo -->
+            <p style="margin: 0.5rem 0 0 0; font-size: 0.8rem; color: #999;">
+              <i class="fas fa-file"></i>
+              Archivo: {{material.archivo?.name || 'Sin archivo'}}
+              <span style="background: #e3f2fd; padding: 0.2rem 0.6rem; border-radius: 4px; text-transform: uppercase; font-size: 0.7rem; margin-left: 0.5rem;">
+                {{material.tipo}}
+              </span>
+            </p>
           </div>
+
+          <button type="button" class="btn-icon danger" (click)="eliminarMaterial(i)" 
+            style="width: 40px; height: 40px; flex-shrink: 0;">
+            <i class="fas fa-trash"></i>
+          </button>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- CSS adicional para los estilos -->
+<style>
+  .material-item-editable {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+  
+  .material-item-editable:hover {
+    border-color: #00a8e8;
+    box-shadow: 0 4px 12px rgba(0, 168, 232, 0.1);
+  }
+  
+  .material-item-editable .form-control:focus {
+    border-color: #00a8e8;
+    box-shadow: 0 0 0 3px rgba(0, 168, 232, 0.1);
+  }
+</style>
 
       <!-- Acciones -->
       <div class="modal-actions" style="margin-top: 2rem;">

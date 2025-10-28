@@ -145,19 +145,21 @@
         
         <!-- Estadísticas del módulo -->
         <div class="modulo-stats">
-          <div class="stat">
-            <i class="fas fa-book"></i>
-            <span>{{modulo.lecturas.length || 0}} lecturas</span>
-          </div>
-          <div class="stat">
-            <i class="fas fa-download"></i>
-            <span>{{modulo.materialesAdicionales.length || 0}} recursos</span>
-          </div>
-          <div class="stat">
-            <i class="fas fa-star"></i>
-            <span>{{modulo.puntos}} puntos</span>
-          </div>
-        </div>
+  <div class="stat">
+    <i class="fas fa-book"></i>
+    <!-- ✅ CORRECCIÓN: Usar total_lecturas en vez de lecturas.length -->
+    <span>{{modulo.total_lecturas || 0}} lecturas</span>
+  </div>
+  <div class="stat">
+    <i class="fas fa-download"></i>
+    <!-- ✅ CORRECCIÓN: Usar total_materiales en vez de materialesAdicionales.length -->
+    <span>{{modulo.total_materiales || 0}} recursos</span>
+  </div>
+  <div class="stat">
+    <i class="fas fa-star"></i>
+    <span>{{modulo.puntos}} puntos</span>
+  </div>
+</div>
         
         <!-- Barra de progreso -->
         <div class="modulo-progreso">
@@ -313,38 +315,40 @@
       </div>
 
       <!-- Materiales adicionales -->
-      <div class="seccion-materiales">
-        <h2 class="seccion-titulo">
-          <i class="fas fa-download"></i>
-          Materiales Adicionales ({{moduloSeleccionado.materialesAdicionales.length || 0}})
-        </h2>
-        
-        <div class="materiales-grid" *ngIf="moduloSeleccionado.materialesAdicionales && moduloSeleccionado.materialesAdicionales.length > 0">
-          <div 
-            class="material-item"
-            *ngFor="let material of moduloSeleccionado.materialesAdicionales"
-            (click)="descargarMaterial(material)">
-            
-            <div class="material-icono">
-              <i [class]="material.icono"></i>
-            </div>
-            <div class="material-info">
-              <h4>{{material.titulo}}</h4>
-              <p>{{material.descripcion}}</p>
-              <span class="material-tipo">{{material.tipo | uppercase}}</span>
-            </div>
-            <div class="material-accion">
-              <i class="fas fa-download"></i>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Mensaje cuando no hay materiales -->
-        <div class="no-materiales" *ngIf="!moduloSeleccionado.materialesAdicionales || moduloSeleccionado.materialesAdicionales.length === 0">
-          <i class="fas fa-file-alt"></i>
-          <p>No hay materiales adicionales para este módulo</p>
-        </div>
+      <!-- Materiales adicionales -->
+<div class="seccion-materiales">
+  <h2 class="seccion-titulo">
+    <i class="fas fa-download"></i>
+    Materiales Adicionales ({{moduloSeleccionado.materialesAdicionales.length || 0}})
+  </h2>
+  
+  <div class="materiales-grid" *ngIf="moduloSeleccionado.materialesAdicionales && moduloSeleccionado.materialesAdicionales.length > 0">
+    <div 
+      class="material-item"
+      *ngFor="let material of moduloSeleccionado.materialesAdicionales"
+      (click)="descargarMaterial(material)">
+      
+      <div class="material-icono">
+        <i [class]="material.icono || 'fas fa-file'"></i>
       </div>
+      <div class="material-info">
+        <!-- ✅ CORRECCIÓN: Mostrar solo el título, NO el filename -->
+        <h4>{{material.titulo}}</h4>
+        <p>{{material.descripcion}}</p>
+        <span class="material-tipo">{{material.tipo | uppercase}}</span>
+      </div>
+      <div class="material-accion">
+        <i class="fas fa-download"></i>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Mensaje cuando no hay materiales -->
+  <div class="no-materiales" *ngIf="!moduloSeleccionado.materialesAdicionales || moduloSeleccionado.materialesAdicionales.length === 0">
+    <i class="fas fa-file-alt"></i>
+    <p>No hay materiales adicionales para este módulo</p>
+  </div>
+</div>
     </div>
   </div>
 </div>

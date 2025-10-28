@@ -1,4 +1,4 @@
-// src/app/services/preferencias.service.ts - ACTUALIZADO
+// src/app/services/preferencias.service.ts - VERSIÓN MEJORADA
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
@@ -27,6 +27,7 @@ export class PreferenciasService {
   public preferencias$ = this.preferenciasSubject.asObservable();
 
   private readonly STORAGE_KEY = 'user_preferences';
+  private syncInProgress = false;
 
   constructor(
     private http: HttpClient,
@@ -51,9 +52,11 @@ export class PreferenciasService {
   private sincronizarIdiomaConI18n(): void {
     // Escuchar cambios de idioma desde I18nService
     this.i18nService.currentLanguage$.subscribe(lang => {
+      if (this.syncInProgress) return; // Evitar loops infinitos
+      
       const preferenciasActuales = this.preferenciasSubject.value;
       if (preferenciasActuales && preferenciasActuales.idioma !== lang) {
-        // Actualizar preferencias si el idioma cambió
+        console.log('🔄 PreferenciasService - Sincronizando con I18nService:', lang);
         this.actualizarIdioma(lang);
       }
     });
@@ -72,7 +75,9 @@ export class PreferenciasService {
         
         // Sincronizar idioma con I18nService
         if (preferencias.idioma) {
+          this.syncInProgress = true;
           this.i18nService.setLanguage(preferencias.idioma as Language);
+          setTimeout(() => this.syncInProgress = false, 100);
         }
       } catch (error) {
         console.error('Error al parsear preferencias:', error);
@@ -113,7 +118,9 @@ export class PreferenciasService {
         
         // Sincronizar idioma
         if (preferencias.idioma) {
+          this.syncInProgress = true;
           this.i18nService.setLanguage(preferencias.idioma as Language);
+          setTimeout(() => this.syncInProgress = false, 100);
         }
       })
     );
@@ -133,7 +140,9 @@ export class PreferenciasService {
         
         // Sincronizar idioma
         if (preferencias.idioma) {
+          this.syncInProgress = true;
           this.i18nService.setLanguage(preferencias.idioma as Language);
+          setTimeout(() => this.syncInProgress = false, 100);
         }
       })
     );
@@ -197,29 +206,35 @@ export class PreferenciasService {
     document.documentElement.lang = idioma;
     localStorage.setItem('app_language', idioma);
     
-    // Sincronizar con I18nService
-    this.i18nService.setLanguage(idioma as Language);
+    // Sincronizar con I18nService (sin crear loop)
+    if (!this.syncInProgress) {
+      this.syncInProgress = true;
+      this.i18nService.setLanguage(idioma as Language);
+      setTimeout(() => this.syncInProgress = false, 100);
+    }
   }
 
   /**
-   * Cambiar idioma - MEJORADO
+   * Cambiar idioma - MEJORADO con mejor sincronización
    */
   cambiarIdioma(idioma: Language): void {
+    console.log('🌍 PreferenciasService - Cambiando idioma a:', idioma);
+    
     const preferenciasActuales = this.preferenciasSubject.value;
     if (preferenciasActuales) {
       const nuevasPreferencias = { ...preferenciasActuales, idioma };
       
-      // Aplicar inmediatamente
+      // Aplicar inmediatamente en la UI
+      this.syncInProgress = true;
       this.i18nService.setLanguage(idioma);
       this.aplicarIdioma(idioma);
+      setTimeout(() => this.syncInProgress = false, 100);
       
-      // Guardar en servidor
+      // Guardar en el servidor (en segundo plano)
       this.guardarPreferencias(nuevasPreferencias).subscribe({
-        next: () => {
-          console.log('✅ Idioma cambiado y guardado:', idioma);
-        },
+        next: () => console.log('✅ Idioma guardado en servidor:', idioma),
         error: (error) => {
-          console.error('❌ Error al cambiar idioma:', error);
+          console.error('❌ Error al guardar idioma:', error);
           // Revertir si falla
           if (preferenciasActuales.idioma) {
             this.i18nService.setLanguage(preferenciasActuales.idioma as Language);
@@ -241,8 +256,11 @@ export class PreferenciasService {
         }
       };
       
+      this.syncInProgress = true;
       this.i18nService.setLanguage(idioma);
       this.aplicarIdioma(idioma);
+      setTimeout(() => this.syncInProgress = false, 100);
+      
       this.guardarPreferencias(nuevasPreferencias).subscribe();
     }
   }

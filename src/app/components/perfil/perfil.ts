@@ -1,4 +1,4 @@
-// src/app/components/perfil/perfil.component.ts
+// src/app/components/perfil/perfil.component.ts - CORREGIDO
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, NgIf, NgForOf } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
@@ -10,8 +10,8 @@ import { PreferenciasService } from '../../services/preferencias.service';
 import { I18nService } from '../../services/i18n.service';
 import { LogrosService, Logro } from '../../services/logros.service';
 import { Upload } from '../../services/upload';
-import { LanguageSelectorComponent } from '../language-selector/language-selector.component';
-import { TranslatePipe } from '../../pipes/translate.pipe'; // ✅ Corregido
+import { LanguageSelectorComponent } from '../language-selector/language-selector.component'; // ✅ AGREGADO
+import { TranslatePipe } from '../../pipes/translate.pipe';
 import { 
   Usuario, 
   HistorialSesion, 
@@ -27,14 +27,14 @@ import { Preferencias } from '../../interfaces/preferencias';
   styleUrls: ['./perfil.css'],
   standalone: true,
   imports: [
-  CommonModule,
-  NgIf,
-  NgForOf,
+    CommonModule,
+    NgIf,
+    NgForOf,
     RouterModule, 
     FormsModule, 
     ReactiveFormsModule,
-    
-    TranslatePipe // ✅ Corregido LanguageSelectorComponent,
+    LanguageSelectorComponent, // ✅ AGREGADO
+    TranslatePipe
   ]
 })
 export class Perfil implements OnInit, OnDestroy {
@@ -120,6 +120,14 @@ export class Perfil implements OnInit, OnDestroy {
       this.actualizarIdiomaFormulario(lang);
     });
     this.subscriptions.push(langSub);
+
+    // Suscribirse a emisiones de historial
+    const historialSub = this.perfilService.historial$.subscribe(hist => {
+      if (hist && Array.isArray(hist)) {
+        this.historialActividad = hist;
+      }
+    });
+    this.subscriptions.push(historialSub);
   }
 
   ngOnDestroy(): void {
@@ -131,9 +139,6 @@ export class Perfil implements OnInit, OnDestroy {
     return !!user && user.rol === 'admin';
   }
 
-  /**
-   * Actualizar idioma en el formulario cuando cambia
-   */
   private actualizarIdiomaFormulario(lang: string): void {
     if (this.formConfiguracion) {
       this.formConfiguracion.patchValue({ idioma: lang }, { emitEvent: false });
@@ -507,7 +512,7 @@ export class Perfil implements OnInit, OnDestroy {
     if (!control?.errors || !control.touched) return '';
 
     const errores = control.errors;
-    if (errores['required']) return this.i18nService.translate('messages.errorOccurred');
+    if (errores['required']) return this.i18nService.translate('messages.required');
     if (errores['email']) return 'Email inválido';
     if (errores['minlength']) return `Mínimo ${errores['minlength'].requiredLength} caracteres`;
     if (errores['pattern']) return 'Formato inválido';
@@ -536,29 +541,59 @@ export class Perfil implements OnInit, OnDestroy {
   }
 
   verificarElegibilidadCertificado(): void {
-    this.verificandoCertificado = true;
-    this.elegibilidadCertificado = null;
-    
-    const sub = this.perfilService.verificarElegibilidadCertificado().subscribe({
-      next: (response) => {
-        this.elegibilidadCertificado = response;
-        
-        if (response.elegible) {
-          this.descargarCertificado();
-        } else {
-          this.mostrarError(`Debes completar todos los módulos. Progreso: ${response.modulosCompletados}/${response.modulosTotal}`);
-          this.verificandoCertificado = false;
-        }
-      },
-      error: (error) => {
-        console.error('Error al verificar elegibilidad:', error);
-        this.mostrarError('Error al verificar elegibilidad para certificado');
+  this.verificandoCertificado = true;
+  this.elegibilidadCertificado = null;
+  
+  const sub = this.perfilService.verificarElegibilidadCertificado().subscribe({
+    next: (response) => {
+      console.log('✅ Respuesta de elegibilidad:', response);
+      this.elegibilidadCertificado = response;
+      
+      // ✅ CORRECCIÓN: Verificar si es elegible ANTES de intentar generar
+      if (response.elegible === true) {
+        console.log('✅ Usuario elegible, generando certificado...');
+        this.generarCertificado();
+      } else {
+        console.log('❌ Usuario NO elegible:', response);
+        this.mostrarError(
+          `Debes completar todos los módulos. Progreso: ${response.modulosCompletados}/${response.modulosTotal} (${response.porcentaje}%)`
+        );
         this.verificandoCertificado = false;
       }
-    });
+    },
+    error: (error) => {
+      console.error('Error al verificar elegibilidad:', error);
+      this.mostrarError('Error al verificar elegibilidad para certificado');
+      this.verificandoCertificado = false;
+    }
+  });
 
-    this.subscriptions.push(sub);
-  }
+  this.subscriptions.push(sub);
+}
+
+// ✅ Método separado para generar el certificado
+private generarCertificado(): void {
+  const sub = this.perfilService.generarCertificado().subscribe({
+    next: (response) => {
+      console.log('✅ Certificado generado:', response);
+      if (response.certificado?.url) {
+        this.descargarCertificadoDirecto(response.certificado.url);
+        this.mostrarExito('Certificado generado y descargado correctamente');
+        this.cargarCertificados();
+      } else {
+        this.mostrarError('URL del certificado no disponible');
+      }
+      this.verificandoCertificado = false;
+    },
+    error: (error) => {
+      console.error('Error al generar certificado:', error);
+      this.mostrarError(error.error?.mensaje || 'Error al generar certificado');
+      this.verificandoCertificado = false;
+    }
+  });
+  
+  this.subscriptions.push(sub);
+}
 
   descargarCertificado(): void {
     const sub = this.perfilService.generarCertificado().subscribe({

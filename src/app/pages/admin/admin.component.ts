@@ -8,6 +8,8 @@ import { AdminService } from '../../services/admin.service';
 import { AuthService } from '../../services/auth';
 import { BibliotecaService } from '../../services/biblioteca.service';
 import { IconSelectorComponent } from '../../components/icon-selector/icon-selector.component';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 interface Lectura {
   titulo: string;
@@ -99,6 +101,7 @@ interface EstadisticasGenerales {
 })
 export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   
+  private busquedaSubject = new Subject<string>();
 
   seccionActiva: string = 'dashboard';
   cargando = false;
@@ -186,16 +189,52 @@ subiendoArchivo: boolean = false;
 
   
 
-  ngOnInit(): void {
-    this.verificarAccesoAdmin();
-    this.cargarDatosUsuario();
-    this.cargarDashboard();
-  }
+   ngOnInit(): void {
+  this.verificarAccesoAdmin();
+  this.cargarDatosUsuario();
+  this.cargarDashboard();
+  
+  // ✅ Configurar búsqueda automática con debounce
+  this.busquedaSubject.pipe(
+    debounceTime(500),
+    distinctUntilChanged()
+  ).subscribe(termino => {
+    this.busqueda = termino;
+    this.paginaActual = 1;
+    this.cargarUsuarios();
+  });
+}
 
   ngAfterViewInit(): void {}
 
   ngOnDestroy(): void {
+   // this.limpiarRecursos();
+  // ✅ Completar subject de búsqueda
+  this.busquedaSubject.complete();
     this.subscriptions.forEach(sub => sub.unsubscribe());
+    
+  }
+
+  // ✅ Búsqueda en tiempo real
+onBusquedaChange(event: any): void {
+  const termino = event.target.value;
+  this.busquedaSubject.next(termino);
+}
+
+// ✅ Refrescar usuarios
+refrescarUsuarios(): void {
+  this.mostrarNotificacion({
+    mensaje: 'Actualizando lista de usuarios...',
+    tipo: 'info',
+    duracion: 2000
+  });
+  
+  this.cargarUsuarios();
+}
+
+  private mostrarNotificacion(notificacion: any): void {
+    // Implementación de notificación visual
+    console.log(`[${notificacion.tipo}] ${notificacion.mensaje}`);
   }
 
   // Actualizar el FormGroup de recurso:
@@ -317,22 +356,28 @@ async guardarModulo(): Promise<void> {
     const materialesConUrl = [];
     for (const material of this.materialesSeleccionados) {
       if (material.archivo) {
-        // Subir el archivo
         const formData = new FormData();
         formData.append('archivo', material.archivo);
         
         const response = await this.adminService.subirArchivo(formData).toPromise();
         
+        // ⬇️ GUARDAR HASH Y SIZE
         materialesConUrl.push({
           titulo: material.titulo,
           descripcion: material.descripcion,
           tipo: material.tipo,
           url: response.data.url,
           filename: response.data.filename,
+          hash: response.data.hash,        // ✅ NUEVO
+          size: response.data.size,        // ✅ NUEVO
           icono: this.obtenerIconoPorTipo(material.tipo)
         });
+
+        // Mostrar si fue reutilizado
+        if (response.reutilizado) {
+          console.log(`♻️ Archivo "${material.archivo.name}" ya existía, se reutilizó`);
+        }
       } else {
-        // Si ya tiene URL (edición)
         materialesConUrl.push(material);
       }
     }
@@ -398,16 +443,32 @@ onMaterialSeleccionado(event: any, tipo: string) {
   if (!archivo) return;
 
   const nuevoMaterial: MaterialAdicional = {
-    titulo: archivo.name,
-    descripcion: '',
-    tipo: tipo as 'infografia' | 'guia' | 'video' | 'otro', // ✅ conversión segura
+    titulo: archivo.name.split('.')[0], // Nombre sin extensión
+    descripcion: '', // Iniciar vacío para que el usuario lo complete
+    tipo: tipo as 'infografia' | 'guia' | 'video' | 'otro',
     archivo
   };
 
   this.materialesSeleccionados.push(nuevoMaterial);
   console.log('Material agregado:', nuevoMaterial);
+  
+  // Limpiar input
+  (event.target as HTMLInputElement).value = '';
 }
 
+// Función para editar descripción de material
+editarDescripcionMaterial(index: number, nuevaDescripcion: string) {
+  if (this.materialesSeleccionados[index]) {
+    this.materialesSeleccionados[index].descripcion = nuevaDescripcion;
+  }
+}
+
+// Función para editar título de material
+editarTituloMaterial(index: number, nuevoTitulo: string) {
+  if (this.materialesSeleccionados[index]) {
+    this.materialesSeleccionados[index].titulo = nuevoTitulo;
+  }
+}
 
 
 

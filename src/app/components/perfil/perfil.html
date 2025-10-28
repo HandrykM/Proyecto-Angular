@@ -1,7 +1,5 @@
-<!-- src/app/components/perfil/perfil.component.html -->
+<!-- src/app/components/perfil/perfil.component.html - CON TRADUCCIONES -->
 
-<!-- Barra de navegación principal -->
-<!-- src/app/components/perfil/perfil.component.html -->
 <nav class="main-nav">
   <div class="nav-container">
     <div class="nav-brand">
@@ -12,36 +10,32 @@
     <div class="nav-menu">
       <a routerLink="/inicio" class="nav-link">
         <i class="fas fa-home"></i>
-        <span data-i18n="nav.home">{{ 'nav.home' | translate }}</span>
+        <span>{{ 'nav.home' | translate }}</span>
       </a>
       <a routerLink="/modulos" class="nav-link">
         <i class="fas fa-graduation-cap"></i>
-        <span data-i18n="nav.modules">{{ 'nav.modules' | translate }}</span>
+        <span>{{ 'nav.modules' | translate }}</span>
       </a>
       <a routerLink="/biblioteca" class="nav-link">
         <i class="fa-solid fa-book"></i>
-        <span data-i18n="nav.library">{{ 'nav.library' | translate }}</span>
+        <span>{{ 'nav.library' | translate }}</span>
       </a>
       <a routerLink="/actividades" class="nav-link">
         <i class="fas fa-tasks"></i>
-        {{ 'nav.activities' | translate }}
+        <span>{{ 'nav.activities' | translate }}</span>
       </a>
     </div>
     
-    <!-- ✅ Agregar contenedor para idioma y perfil 
     <div class="nav-right" style="display: flex; align-items: center; gap: 1rem;">
-       Selector de idioma 
-      <app-language-selector></app-language-selector>-->
-    
-    <div class="nav-profile-container">
-        <a routerLink="/perfil" class="nav-profile active">
-          <img *ngIf="usuario?.foto" [src]="usuario?.foto" class="profile-img" [alt]="usuario?.nombre">
-            <i *ngIf="!usuario?.foto" class="fas fa-user"></i>
-            <span>{{ usuario?.nombre || ('nav.profile' | translate) }}</span>
-        </a>
-      </div>
+      <app-language-selector></app-language-selector>
+      
+      <a routerLink="/perfil" class="nav-profile active">
+        <img *ngIf="usuario?.foto" [src]="usuario?.foto" class="profile-img" [alt]="usuario?.nombre">
+        <i *ngIf="!usuario?.foto" class="fas fa-user"></i>
+        <span>{{ usuario?.nombre || ('nav.profile' | translate) }}</span>
+      </a>
     </div>
-  
+  </div>
 </nav>
 
 <!-- Mensaje de error global -->
@@ -59,7 +53,7 @@
 <div class="loading-container" *ngIf="cargando">
   <div class="loading-spinner">
     <i class="fas fa-spinner fa-spin"></i>
-    <p>Cargando perfil...</p>
+    <p>{{ 'common.loading' | translate }}...</p>
   </div>
 </div>
 
@@ -85,15 +79,15 @@
       <div class="perfil-stats">
         <div class="stat-item">
           <i class="fas fa-graduation-cap"></i>
-          <span>{{usuario.estadisticas.modulosCompletados}} Módulos</span>
+          <span>{{usuario.estadisticas.modulosCompletados}} {{ 'modules.title' | translate }}</span>
         </div>
         <div class="stat-item">
           <i class="fas fa-star"></i>
-          <span>{{formatearNumero(usuario.estadisticas.puntosTotal)}} Puntos</span>
+          <span>{{formatearNumero(usuario.estadisticas.puntosTotal)}} {{ 'modules.points' | translate }}</span>
         </div>
         <div class="stat-item">
           <i class="fas fa-fire"></i>
-          <span>{{usuario.estadisticas.racha}} días</span>
+          <span>{{usuario.estadisticas.racha}} {{ 'profile.days' | translate }}</span>
         </div>
       </div>
     </div>
@@ -102,11 +96,11 @@
     <div class="foto-acciones" *ngIf="previewFoto">
       <button class="btn-guardar-foto" (click)="subirFoto()" [disabled]="subiendoFoto">
         <i class="fas fa-check"></i>
-        Guardar
+        {{ 'common.save' | translate }}
       </button>
       <button class="btn-cancelar-foto" (click)="limpiarPreviewFoto()">
         <i class="fas fa-times"></i>
-        Cancelar
+        {{ 'common.cancel' | translate }}
       </button>
     </div>
   </div>
@@ -118,7 +112,7 @@
       [class.active]="seccionActiva === 'informacion'"
       (click)="cambiarSeccion('informacion')">
       <i class="fas fa-user-edit"></i>
-      <span>Información Personal</span>
+      <span>{{ 'profile.personalInfo' | translate }}</span>
     </button>
     
     <button 
@@ -126,7 +120,7 @@
       [class.active]="seccionActiva === 'seguridad'"
       (click)="cambiarSeccion('seguridad')">
       <i class="fas fa-shield-alt"></i>
-      <span>Seguridad</span>
+      <span>{{ 'profile.security' | translate }}</span>
     </button>
     
     <button 
@@ -134,7 +128,7 @@
       [class.active]="seccionActiva === 'preferencias'"
       (click)="cambiarSeccion('preferencias')">
       <i class="fas fa-cog"></i>
-      <span>Preferencias</span>
+      <span>{{ 'profile.preferences' | translate }}</span>
     </button>
     
     <button 
@@ -142,7 +136,7 @@
       [class.active]="seccionActiva === 'estadisticas'"
       (click)="cambiarSeccion('estadisticas')">
       <i class="fas fa-chart-bar"></i>
-      <span>Estadísticas</span>
+      <span>{{ 'profile.statistics' | translate }}</span>
     </button>
     
     <button 
@@ -150,7 +144,7 @@
       [class.active]="seccionActiva === 'logros'"
       (click)="cambiarSeccion('logros')">
       <i class="fas fa-trophy"></i>
-      <span>Logros</span>
+      <span>{{ 'profile.achievements' | translate }}</span>
     </button>
     
     <button 
@@ -158,18 +152,17 @@
       [class.active]="seccionActiva === 'cuenta'"
       (click)="cambiarSeccion('cuenta')">
       <i class="fas fa-user-cog"></i>
-      <span>Cuenta</span>
+      <span>{{ 'profile.account' | translate }}</span>
     </button>
 
     <a 
-  *ngIf="esAdmin()" 
-  routerLink="/admin" 
-  class="nav-section-btn"
-  [class.active]="seccionActiva === 'admin'"
-  (click)="cambiarSeccion('admin')">
-  <i class="fas fa-shield-alt"></i>
-  <span>Admin</span>
-</a>
+      *ngIf="esAdmin()" 
+      routerLink="/admin" 
+      class="nav-section-btn"
+      [class.active]="seccionActiva === 'admin'">
+      <i class="fas fa-shield-alt"></i>
+      <span>{{ 'nav.admin' | translate }}</span>
+    </a>
   </div>
 
   <!-- Contenido de las secciones -->
@@ -180,59 +173,59 @@
       <div class="section-header">
         <h2>
           <i class="fas fa-user-edit"></i>
-          Información Personal
+          {{ 'profile.personalInfo' | translate }}
         </h2>
-        <p>Actualiza tu información personal y de contacto</p>
+        <p>{{ 'profile.personalInfo' | translate }}</p>
       </div>
 
       <form [formGroup]="formInformacion" (ngSubmit)="guardarInformacion()" class="form-grid">
         <div class="form-group">
-          <label for="nombre">Nombre de usuario *</label>
+          <label for="nombre">{{ 'profile.name' | translate }} *</label>
           <input 
             type="text" 
             id="nombre" 
             formControlName="nombre"
             class="form-control"
-            placeholder="Tu nombre completo">
+            [placeholder]="'profile.name' | translate">
           <span class="error-text" *ngIf="obtenerErrorCampo('nombre', formInformacion)">
             {{obtenerErrorCampo('nombre', formInformacion)}}
           </span>
         </div>
 
         <div class="form-group">
-          <label for="nombreUsuario">Nombre completo</label>
+          <label for="nombreUsuario">{{ 'profile.fullName' | translate }}</label>
           <input 
             type="text" 
             id="nombreUsuario" 
             formControlName="nombreUsuario"
             class="form-control"
-            placeholder="Nombre de usuario único">
+            [placeholder]="'profile.fullName' | translate">
           <span class="error-text" *ngIf="obtenerErrorCampo('nombreUsuario', formInformacion)">
             {{obtenerErrorCampo('nombreUsuario', formInformacion)}}
           </span>
         </div>
 
         <div class="form-group">
-          <label for="correo">Correo electrónico *</label>
+          <label for="correo">{{ 'profile.email' | translate }} *</label>
           <input 
             type="email" 
             id="correo" 
             formControlName="correo"
             class="form-control"
-            placeholder="tu@email.com">
+            [placeholder]="'profile.email' | translate">
           <span class="error-text" *ngIf="obtenerErrorCampo('correo', formInformacion)">
             {{obtenerErrorCampo('correo', formInformacion)}}
           </span>
         </div>
 
         <div class="form-group">
-          <label for="telefono">Teléfono</label>
+          <label for="telefono">{{ 'profile.phone' | translate }}</label>
           <input 
             type="tel" 
             id="telefono" 
             formControlName="telefono"
             class="form-control"
-            placeholder="+57 300 123 4567">
+            [placeholder]="'profile.phone' | translate">
           <span class="error-text" *ngIf="obtenerErrorCampo('telefono', formInformacion)">
             {{obtenerErrorCampo('telefono', formInformacion)}}
           </span>
@@ -245,7 +238,7 @@
             [disabled]="formInformacion.invalid || guardando">
             <i class="fas fa-save" *ngIf="!guardando"></i>
             <i class="fas fa-spinner fa-spin" *ngIf="guardando"></i>
-            {{guardando ? 'Guardando...' : 'Guardar cambios'}}
+            {{guardando ? ('common.loading' | translate) : ('profile.saveChanges' | translate)}}
           </button>
         </div>
       </form>
@@ -256,47 +249,47 @@
       <div class="section-header">
         <h2>
           <i class="fas fa-shield-alt"></i>
-          Seguridad y Privacidad
+          {{ 'profile.security' | translate }}
         </h2>
-        <p>Gestiona la seguridad de tu cuenta</p>
+        <p>{{ 'profile.accountManagement' | translate }}</p>
       </div>
 
       <!-- Cambiar contraseña -->
       <div class="security-card">
         <h3>
           <i class="fas fa-key"></i>
-          Cambiar contraseña
+          {{ 'profile.changePassword' | translate }}
         </h3>
         
         <form [formGroup]="formContrasena" (ngSubmit)="cambiarContrasena()" class="form-grid">
           <div class="form-group">
-            <label for="contrasenaActual">Contraseña actual *</label>
+            <label for="contrasenaActual">{{ 'profile.currentPassword' | translate }} *</label>
             <input 
               type="password" 
               id="contrasenaActual" 
               formControlName="contrasenaActual"
               class="form-control"
-              placeholder="Tu contraseña actual">
+              [placeholder]="'profile.currentPassword' | translate">
           </div>
 
           <div class="form-group">
-            <label for="nuevaContrasena">Nueva contraseña *</label>
+            <label for="nuevaContrasena">{{ 'profile.newPassword' | translate }} *</label>
             <input 
               type="password" 
               id="nuevaContrasena" 
               formControlName="nuevaContrasena"
               class="form-control"
-              placeholder="Nueva contraseña (mín. 6 caracteres)">
+              [placeholder]="'profile.newPassword' | translate">
           </div>
 
           <div class="form-group">
-            <label for="confirmarContrasena">Confirmar contraseña *</label>
+            <label for="confirmarContrasena">{{ 'profile.confirmPassword' | translate }} *</label>
             <input 
               type="password" 
               id="confirmarContrasena" 
               formControlName="confirmarContrasena"
               class="form-control"
-              placeholder="Confirma la nueva contraseña">
+              [placeholder]="'profile.confirmPassword' | translate">
           </div>
 
           <div class="form-actions full-width">
@@ -306,7 +299,7 @@
               [disabled]="formContrasena.invalid || guardando">
               <i class="fas fa-key" *ngIf="!guardando"></i>
               <i class="fas fa-spinner fa-spin" *ngIf="guardando"></i>
-              {{guardando ? 'Cambiando...' : 'Cambiar contraseña'}}
+              {{guardando ? ('common.loading' | translate) : ('profile.changePassword' | translate)}}
             </button>
           </div>
         </form>
@@ -316,7 +309,7 @@
       <div class="security-card">
         <h3>
           <i class="fas fa-history"></i>
-          Historial de sesiones
+          {{ 'profile.sessionHistory' | translate }}
         </h3>
         
         <div class="sessions-list" *ngIf="historialSesiones.length > 0; else noSessions">
@@ -329,7 +322,7 @@
               <div class="session-device">
                 <i [class]="sesion.dispositivo.includes('Mobile') ? 'fas fa-mobile-alt' : 'fas fa-desktop'"></i>
                 <span>{{sesion.dispositivo}}</span>
-                <span class="session-status" *ngIf="sesion.activo">Actual</span>
+                <span class="session-status" *ngIf="sesion.activo">{{ 'profile.currentSession' | translate }}</span>
               </div>
               <div class="session-details">
                 <span>{{formatearFecha(sesion.fechaAcceso)}}</span>
@@ -343,13 +336,13 @@
               *ngIf="!sesion.activo"
               (click)="cerrarSesionRemota(sesion.id)">
               <i class="fas fa-sign-out-alt"></i>
-              Cerrar
+              {{ 'profile.closeSession' | translate }}
             </button>
           </div>
         </div>
         
         <ng-template #noSessions>
-          <p class="no-data">No hay historial de sesiones disponible</p>
+          <p class="no-data">{{ 'common.noResults' | translate }}</p>
         </ng-template>
       </div>
     </div>
@@ -359,9 +352,9 @@
       <div class="section-header">
         <h2>
           <i class="fas fa-cog"></i>
-          Preferencias del Usuario
+          {{ 'profile.preferences' | translate }}
         </h2>
-        <p>Personaliza tu experiencia en la plataforma</p>
+        <p>{{ 'profile.preferences' | translate }}</p>
       </div>
 
       <form [formGroup]="formConfiguracion" (ngSubmit)="guardarConfiguracion()" class="preferences-form">
@@ -370,20 +363,20 @@
         <div class="preference-card">
           <h3>
             <i class="fas fa-globe"></i>
-            Configuración General
+            {{ 'profile.preferences' | translate }}
           </h3>
           
           <div class="preference-row">
-            <label for="idioma">Idioma de la plataforma</label>
+            <label for="idioma">{{ 'profile.language' | translate }}</label>
             <select id="idioma" formControlName="idioma" class="form-control">
               <option *ngFor="let idioma of idiomas" [value]="idioma.codigo">
-                {{idioma.nombre}}
+                {{idioma.bandera}} {{idioma.nombre}}
               </option>
             </select>
           </div>
 
           <div class="preference-row">
-            <label for="tamanoFuente">Tamaño de fuente</label>
+            <label for="tamanoFuente">{{ 'profile.fontSize' | translate }}</label>
             <select id="tamanoFuente" formControlName="tamanoFuente" class="form-control">
               <option *ngFor="let tamano of tamanosFuente" [value]="tamano.valor">
                 {{tamano.etiqueta}}
@@ -398,7 +391,7 @@
                   type="checkbox" 
                   formControlName="modoOscuro"
                   class="switch-input">
-                <span class="switch-text">Modo oscuro</span>
+                <span class="switch-text">{{ 'profile.darkMode' | translate }}</span>
               </label>
             </div>
           </div>
@@ -408,14 +401,14 @@
         <div class="preference-card" formGroupName="notificaciones">
           <h3>
             <i class="fas fa-bell"></i>
-            Notificaciones
+            {{ 'profile.notifications' | translate }}
           </h3>
           
           <div class="preference-row">
             <div class="switch-container">
               <label class="switch-label">
                 <input type="checkbox" formControlName="email" class="switch-input">
-                <span class="switch-text">Notificaciones por email</span>
+                <span class="switch-text">{{ 'profile.emailNotifications' | translate }}</span>
               </label>
             </div>
           </div>
@@ -424,7 +417,7 @@
             <div class="switch-container">
               <label class="switch-label">
                 <input type="checkbox" formControlName="sms" class="switch-input">
-                <span class="switch-text">Notificaciones por SMS</span>
+                <span class="switch-text">{{ 'profile.smsNotifications' | translate }}</span>
               </label>
             </div>
           </div>
@@ -433,7 +426,7 @@
             <div class="switch-container">
               <label class="switch-label">
                 <input type="checkbox" formControlName="push" class="switch-input">
-                <span class="switch-text">Notificaciones push</span>
+                <span class="switch-text">{{ 'profile.pushNotifications' | translate }}</span>
               </label>
             </div>
           </div>
@@ -442,7 +435,7 @@
             <div class="switch-container">
               <label class="switch-label">
                 <input type="checkbox" formControlName="recordatorios" class="switch-input">
-                <span class="switch-text">Recordatorios de estudio</span>
+                <span class="switch-text">{{ 'profile.reminders' | translate }}</span>
               </label>
             </div>
           </div>
@@ -451,7 +444,7 @@
             <div class="switch-container">
               <label class="switch-label">
                 <input type="checkbox" formControlName="logros" class="switch-input">
-                <span class="switch-text">Notificaciones de logros</span>
+                <span class="switch-text">{{ 'profile.achievementNotifs' | translate }}</span>
               </label>
             </div>
           </div>
@@ -464,7 +457,7 @@
             [disabled]="formConfiguracion.invalid || guardando">
             <i class="fas fa-save" *ngIf="!guardando"></i>
             <i class="fas fa-spinner fa-spin" *ngIf="guardando"></i>
-            {{guardando ? 'Guardando...' : 'Guardar preferencias'}}
+            {{guardando ? ('common.loading' | translate) : ('profile.saveChanges' | translate)}}
           </button>
         </div>
       </form>
@@ -475,9 +468,9 @@
       <div class="section-header">
         <h2>
           <i class="fas fa-chart-bar"></i>
-          Estadísticas y Progreso
+          {{ 'profile.statistics' | translate }}
         </h2>
-        <p>Tu actividad y progreso en la plataforma</p>
+        <p>{{ 'profile.activityHistory' | translate }}</p>
       </div>
 
       <div class="stats-grid" *ngIf="usuario">
@@ -487,7 +480,7 @@
           </div>
           <div class="stat-content">
             <h3>{{formatearTiempo(usuario.estadisticas.tiempoTotalEstudio)}}</h3>
-            <p>Tiempo total de estudio</p>
+            <p>{{ 'profile.totalStudyTime' | translate }}</p>
           </div>
         </div>
 
@@ -497,7 +490,7 @@
           </div>
           <div class="stat-content">
             <h3>{{usuario.estadisticas.modulosCompletados}}</h3>
-            <p>Módulos completados</p>
+            <p>{{ 'profile.completedModules' | translate }}</p>
           </div>
         </div>
 
@@ -507,7 +500,7 @@
           </div>
           <div class="stat-content">
             <h3>{{usuario.estadisticas.actividadesCompletadas}}</h3>
-            <p>Actividades completadas</p>
+            <p>{{ 'profile.completedActivities' | translate }}</p>
           </div>
         </div>
 
@@ -517,7 +510,7 @@
           </div>
           <div class="stat-content">
             <h3>{{formatearNumero(usuario.estadisticas.puntosTotal)}}</h3>
-            <p>Puntos totales</p>
+            <p>{{ 'profile.totalPoints' | translate }}</p>
           </div>
         </div>
 
@@ -527,7 +520,7 @@
           </div>
           <div class="stat-content">
             <h3>{{usuario.estadisticas.racha}}</h3>
-            <p>Días consecutivos</p>
+            <p>{{ 'profile.currentStreak' | translate }}</p>
           </div>
         </div>
 
@@ -537,7 +530,7 @@
           </div>
           <div class="stat-content">
             <h3>{{formatearFecha(usuario.estadisticas.ultimaActividad)}}</h3>
-            <p>Última actividad</p>
+            <p>{{ 'profile.lastActivity' | translate }}</p>
           </div>
         </div>
       </div>
@@ -546,7 +539,7 @@
       <div class="historial-section" style="margin-top: 3rem;">
         <h3 style="display: flex; align-items: center; gap: 0.5rem; font-size: 1.4rem; color: var(--primary-dark); margin-bottom: 1.5rem;">
           <i class="fas fa-history"></i>
-          Historial de Actividad
+          {{ 'profile.activityHistory' | translate }}
         </h3>
         
         <div class="historial-filtros" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
@@ -554,25 +547,25 @@
             class="filtro-btn" 
             [class.active]="filtroHistorial === 'todo'"
             (click)="filtrarHistorial('todo')">
-            Todos
+            {{ 'profile.all' | translate }}
           </button>
           <button 
             class="filtro-btn" 
             [class.active]="filtroHistorial === 'modulo'"
             (click)="filtrarHistorial('modulo')">
-            Módulos
+            {{ 'profile.module' | translate }}
           </button>
           <button 
             class="filtro-btn" 
             [class.active]="filtroHistorial === 'actividad'"
             (click)="filtrarHistorial('actividad')">
-            Actividades
+            {{ 'profile.activity' | translate }}
           </button>
           <button 
             class="filtro-btn" 
             [class.active]="filtroHistorial === 'biblioteca'"
             (click)="filtrarHistorial('biblioteca')">
-            Biblioteca
+            {{ 'profile.library' | translate }}
           </button>
         </div>
 
@@ -602,7 +595,7 @@
                 </span>
                 <span *ngIf="item.puntos > 0">
                   <i class="fas fa-star"></i>
-                  +{{item.puntos}} puntos
+                  +{{item.puntos}} {{ 'modules.points' | translate }}
                 </span>
               </div>
             </div>
@@ -611,12 +604,12 @@
               class="historial-estado" 
               [style.background]="item.completado ? 'rgba(46, 204, 113, 0.1)' : 'rgba(243, 156, 18, 0.1)'"
               [style.color]="item.completado ? '#2ecc71' : '#f39c12'">
-              {{item.completado ? 'Completado' : 'En progreso'}}
+              {{item.completado ? ('modules.completed' | translate) : ('modules.progress' | translate)}}
             </div>
           </div>
 
           <div *ngIf="historialActividad.length === 0" class="no-data">
-            No hay actividad registrada aún
+            {{ 'common.noResults' | translate }}
           </div>
         </div>
       </div>
@@ -627,16 +620,16 @@
       <div class="section-header">
         <h2>
           <i class="fas fa-trophy"></i>
-          Logros y Certificados
+          {{ 'profile.achievements' | translate }}
         </h2>
-        <p>Tus logros conseguidos y certificados obtenidos</p>
+        <p>{{ 'profile.achievementsObtained' | translate }}</p>
       </div>
 
       <!-- Logros -->
       <div class="achievements-section">
         <h3>
           <i class="fas fa-medal"></i>
-          Logros obtenidos
+          {{ 'profile.achievementsObtained' | translate }}
         </h3>
         
         <div class="achievements-grid" *ngIf="logros.length > 0; else noAchievements">
@@ -656,73 +649,73 @@
         </div>
         
         <ng-template #noAchievements>
-          <p class="no-data">Aún no tienes logros. ¡Sigue estudiando para conseguir tus primeros logros!</p>
+          <p class="no-data">{{ 'profile.noAchievements' | translate }}</p>
         </ng-template>
       </div>
 
       <!-- Certificados -->
-<div class="certificates-section">
-  <h3>
-    <i class="fas fa-certificate"></i>
-    Certificados obtenidos
-  </h3>
-  
-  <div class="certificates-list" *ngIf="certificados.length > 0; else noCertificates">
-    <div class="certificate-card" *ngFor="let certificado of certificados">
-      <div class="certificate-icon">
-        <i class="fas fa-award"></i>
-      </div>
-      <div class="certificate-content">
-        <h4>{{certificado.titulo}}</h4>
-        <p>{{certificado.descripcion}}</p>
-        <div class="certificate-details">
-          <span><i class="fas fa-book"></i> {{certificado.modulo}}</span>
-          <span><i class="fas fa-calendar"></i> {{formatearFecha(certificado.fechaEmision)}}</span>
-        </div>
-      </div>
-      <div class="certificate-actions">
-        <button class="btn-download" (click)="descargarCertificadoDirecto(certificado.urlCertificado)">
-          <i class="fas fa-download"></i>
-          Descargar
-        </button>
-        <span class="verification-badge" [class.verificado]="certificado.verificado">
-          <i [class]="certificado.verificado ? 'fas fa-check-circle' : 'fas fa-clock'"></i>
-          {{certificado.verificado ? 'Verificado' : 'No verificado'}}
-        </span>
-      </div>
-    </div>
-  </div>
-  
-  <ng-template #noCertificates>
-    <div class="certificado-bloqueado">
-      <i class="fas fa-lock"></i>
-      <h3>Certificado Bloqueado</h3>
-      <p>
-        Completa todos los módulos del programa para desbloquear tu certificado de finalización
-      </p>
-      
-      <div class="progreso-info" *ngIf="elegibilidadCertificado">
-        <div class="progreso-bar">
-          <div class="progreso-fill" [style.width.%]="elegibilidadCertificado.porcentaje">
-            {{elegibilidadCertificado.porcentaje}}%
+      <div class="certificates-section">
+        <h3>
+          <i class="fas fa-certificate"></i>
+          {{ 'profile.certificatesObtained' | translate }}
+        </h3>
+        
+        <div class="certificates-list" *ngIf="certificados.length > 0; else noCertificates">
+          <div class="certificate-card" *ngFor="let certificado of certificados">
+            <div class="certificate-icon">
+              <i class="fas fa-award"></i>
+            </div>
+            <div class="certificate-content">
+              <h4>{{certificado.titulo}}</h4>
+              <p>{{certificado.descripcion}}</p>
+              <div class="certificate-details">
+                <span><i class="fas fa-book"></i> {{certificado.modulo}}</span>
+                <span><i class="fas fa-calendar"></i> {{formatearFecha(certificado.fechaEmision)}}</span>
+              </div>
+            </div>
+            <div class="certificate-actions">
+              <button class="btn-download" (click)="descargarCertificadoDirecto(certificado.urlCertificado)">
+                <i class="fas fa-download"></i>
+                {{ 'profile.download' | translate }}
+              </button>
+              <span class="verification-badge" [class.verificado]="certificado.verificado">
+                <i [class]="certificado.verificado ? 'fas fa-check-circle' : 'fas fa-clock'"></i>
+                {{certificado.verificado ? ('profile.verified' | translate) : ('profile.notVerified' | translate)}}
+              </span>
+            </div>
           </div>
         </div>
-        <p class="progreso-texto">
-          Módulos completados: {{elegibilidadCertificado.modulosCompletados}} / {{elegibilidadCertificado.modulosTotal}}
-        </p>
+        
+        <ng-template #noCertificates>
+          <div class="certificado-bloqueado">
+            <div class="icon-wrap">
+              <i class="fas fa-lock"></i>
+            </div>
+            <h3>{{ 'profile.certificateLocked' | translate }}</h3>
+            <p>{{ 'profile.completeAllModules' | translate }}</p>
+            
+            <div class="progreso-info" *ngIf="elegibilidadCertificado">
+              <div class="progreso-bar">
+                <div class="progreso-fill" [style.width.%]="elegibilidadCertificado.porcentaje">
+                  {{elegibilidadCertificado.porcentaje}}%
+                </div>
+              </div>
+              <p class="progreso-texto">
+                {{ 'profile.modulesCompleted' | translate }}: {{elegibilidadCertificado.modulosCompletados}} / {{elegibilidadCertificado.modulosTotal}}
+              </p>
+            </div>
+            
+            <button 
+              class="btn-primary" 
+              (click)="verificarElegibilidadCertificado()"
+              [disabled]="verificandoCertificado">
+              <i class="fas fa-check" *ngIf="!verificandoCertificado"></i>
+              <i class="fas fa-spinner fa-spin" *ngIf="verificandoCertificado"></i>
+              {{verificandoCertificado ? ('profile.checking' | translate) : ('profile.checkEligibility' | translate)}}
+            </button>
+          </div>
+        </ng-template>
       </div>
-      
-      <button 
-        class="btn-primary" 
-        (click)="verificarElegibilidadCertificado()"
-        [disabled]="verificandoCertificado">
-        <i class="fas fa-check" *ngIf="!verificandoCertificado"></i>
-        <i class="fas fa-spinner fa-spin" *ngIf="verificandoCertificado"></i>
-        {{verificandoCertificado ? 'Verificando...' : 'Verificar Elegibilidad'}}
-      </button>
-    </div>
-  </ng-template>
-</div>
     </div>
 
     <!-- CUENTA -->
@@ -730,9 +723,9 @@
       <div class="section-header">
         <h2>
           <i class="fas fa-user-cog"></i>
-          Gestión de Cuenta
+          {{ 'profile.accountManagement' | translate }}
         </h2>
-        <p>Opciones avanzadas de tu cuenta</p>
+        <p>{{ 'profile.accountManagement' | translate }}</p>
       </div>
 
       <div class="account-actions">
@@ -742,13 +735,13 @@
           <div class="action-info">
             <h3>
               <i class="fas fa-sign-out-alt"></i>
-              Cerrar sesión
+              {{ 'nav.logout' | translate }}
             </h3>
-            <p>Cierra tu sesión actual en este dispositivo</p>
+            <p>{{ 'profile.logoutDescription' | translate }}</p>
           </div>
           <button class="btn-secondary" (click)="cerrarSesion()">
             <i class="fas fa-sign-out-alt"></i>
-            Cerrar sesión
+            {{ 'nav.logout' | translate }}
           </button>
         </div>
 
@@ -757,19 +750,18 @@
           <div class="action-info">
             <h3>
               <i class="fas fa-trash-alt"></i>
-              Eliminar cuenta
+              {{ 'profile.deleteAccount' | translate }}
             </h3>
-            <p>Elimina permanentemente tu cuenta y todos tus datos. Esta acción no se puede deshacer.</p>
+            <p>{{ 'profile.deleteAccountDescription' | translate }}</p>
             <div class="danger-warning">
               <i class="fas fa-exclamation-triangle"></i>
-              <strong>¡Advertencia!</strong> Se perderán todos tus datos, progreso y certificados.
+              <strong>{{ 'profile.deleteWarning' | translate }}</strong>
             </div>
           </div>
           <button class="btn-danger-custom" (click)="eliminarCuenta()">
-  <i class="fas fa-trash-alt"></i>
-  Eliminar cuenta
-</button>
-
+            <i class="fas fa-trash-alt"></i>
+            {{ 'profile.deleteAccount' | translate }}
+          </button>
         </div>
       </div>
     </div>

@@ -219,7 +219,7 @@ obtenerMaterialesSeguras(): MaterialAdicional[] {
 
   if (modulo.bloqueado) {
     this.mostrarNotificacion({
-      mensaje: 'Este módulo esta¡ bloqueado. Completa el anterior primero.',
+      mensaje: 'Este módulo está bloqueado. Completa el anterior primero.',
       tipo: 'warning'
     });
     return;
@@ -228,13 +228,21 @@ obtenerMaterialesSeguras(): MaterialAdicional[] {
   console.log('Cargando módulo:', modulo.titulo);
   this.cargando = true;
 
-  // Cargar detalles COMPLETOS del módulo (con lecturas y materiales)
+  // ✅ CORRECCIÓN: Cargar detalles COMPLETOS del módulo
   const sub = this.modulosService.obtenerModulo(modulo.id).subscribe({
     next: (moduloCompleto) => {
       console.log('Módulo cargado con:', {
         lecturas: moduloCompleto.lecturas?.length,
         materiales: moduloCompleto.materialesAdicionales?.length
       });
+      
+      // ✅ Asegurar que los arrays existan
+      if (!moduloCompleto.lecturas) {
+        moduloCompleto.lecturas = [];
+      }
+      if (!moduloCompleto.materialesAdicionales) {
+        moduloCompleto.materialesAdicionales = [];
+      }
       
       this.moduloSeleccionado = moduloCompleto;
       this.mostrandoLectura = false;
@@ -333,45 +341,60 @@ private actualizarModuloSeleccionado(idModulo: number, nuevoProgreso: number): v
   // === FUNCIONES DE PROGRESO === //
 
   marcarLecturaCompletada(lectura: Lectura, modulo: Modulo): void {
-    if (!lectura || !modulo || this.completandoLectura) {
-      return;
-    }
+  if (!lectura || !modulo || this.completandoLectura) {
+    return;
+  }
 
-    if (lectura.completado) {
-      this.mostrarNotificacion({
-        mensaje: 'Esta lectura ya está completada.',
-        tipo: 'info'
-      });
-      return;
-    }
+  if (lectura.completado) {
+    this.mostrarNotificacion({
+      mensaje: 'Esta lectura ya está completada.',
+      tipo: 'info'
+    });
+    return;
+  }
 
-    console.log('Marcando lectura como completada:', lectura.titulo);
-    this.completandoLectura = true;
+  console.log('Marcando lectura como completada:', lectura.titulo);
+  this.completandoLectura = true;
 
-    // Registrar tiempo antes de marcar como completada
-    if (this.tiempoInicioLectura) {
-      this.registrarTiempoLectura();
-    }
+  if (this.tiempoInicioLectura) {
+    this.registrarTiempoLectura();
+  }
 
-    const subscription = this.modulosService.marcarLecturaCompletada(lectura.id, modulo.id)
+  const subscription = this.modulosService.marcarLecturaCompletada(lectura.id, modulo.id)
     .subscribe({
       next: (response: ProgresoResponse) => {
         console.log('Lectura completada exitosamente:', response);
         
-        // Actualizar estado local inmediatamente
+        // ✅ CORRECCIÓN 1: Actualizar estado local INMEDIATAMENTE
         if (this.lecturaActual) {
           this.lecturaActual.completado = true;
         }
         
-        // ✅ ACTUALIZAR MÓDULO SELECCIONADO
+        // ✅ CORRECCIÓN 2: Actualizar la lectura en la lista del módulo seleccionado
+        if (this.moduloSeleccionado && this.moduloSeleccionado.lecturas) {
+          const lecturaIndex = this.moduloSeleccionado.lecturas.findIndex(l => l.id === lectura.id);
+          if (lecturaIndex !== -1) {
+            this.moduloSeleccionado.lecturas[lecturaIndex].completado = true;
+          }
+        }
+        
+        // ✅ CORRECCIÓN 3: Actualizar módulo seleccionado con nuevo progreso
         this.actualizarModuloSeleccionado(modulo.id, response.nuevo_progreso);
         
-        // Actualizar en la lista de módulos
+        // ✅ CORRECCIÓN 4: Actualizar en la lista de módulos
         const moduloEnLista = this.modulos.find(m => m.id === modulo.id);
         if (moduloEnLista) {
           moduloEnLista.progreso = Math.round(response.nuevo_progreso);
           moduloEnLista.progreso_porcentaje = Math.round(response.nuevo_progreso);
           moduloEnLista.completado = response.modulo_completado;
+          
+          // ✅ Actualizar lectura en el módulo de la lista
+          if (moduloEnLista.lecturas) {
+            const lecturaEnLista = moduloEnLista.lecturas.find(l => l.id === lectura.id);
+            if (lecturaEnLista) {
+              lecturaEnLista.completado = true;
+            }
+          }
         }
         
         this.mostrarFeedbackProgreso(response, modulo);
@@ -385,7 +408,7 @@ private actualizarModuloSeleccionado(idModulo: number, nuevoProgreso: number): v
     });
 
   this.subscriptions.push(subscription);
-  }
+}
 
   private mostrarFeedbackProgreso(response: ProgresoResponse, modulo: Modulo): void {
     if (response.modulo_completado) {

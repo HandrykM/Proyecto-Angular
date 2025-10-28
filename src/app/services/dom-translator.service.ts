@@ -1,3 +1,4 @@
+// src/app/services/dom-translator.service.ts
 import { Injectable, OnDestroy } from '@angular/core';
 import { I18nService } from './i18n.service';
 import { Subscription } from 'rxjs';
@@ -39,7 +40,6 @@ export class DomTranslatorService implements OnDestroy {
     try {
       this.observer.observe(document.body, { childList: true, subtree: true, attributes: true });
     } catch (e) {
-      // En entornos donde document.body no existe aún, ignorar
       console.warn('DomTranslatorService: no se pudo iniciar MutationObserver todavía', e);
     }
   }
@@ -52,7 +52,6 @@ export class DomTranslatorService implements OnDestroy {
           this.translateElement(el);
         }
 
-        // también buscar descendientes con data-i18n
         const descendants = el.querySelectorAll('[data-i18n]');
         descendants.forEach(d => this.translateElement(d as HTMLElement));
       }
@@ -63,7 +62,7 @@ export class DomTranslatorService implements OnDestroy {
     const nodes = document.querySelectorAll('[data-i18n]');
     nodes.forEach(n => this.translateElement(n as HTMLElement));
 
-    // atributos: soportar data-i18n-title, data-i18n-placeholder, data-i18n-value
+    // Soportar atributos: data-i18n-title, data-i18n-placeholder, data-i18n-value
     const attrSelectors = ['data-i18n-title', 'data-i18n-placeholder', 'data-i18n-value'];
     attrSelectors.forEach(sel => {
       document.querySelectorAll('[' + sel + ']').forEach(n => {
@@ -87,8 +86,6 @@ export class DomTranslatorService implements OnDestroy {
 
     const translated = this.i18n.translate(key);
 
-    // Si el elemento tiene contenido vacío o solo espacios, insertar texto traducido
-    // Si tiene marcador especial {{--no-replace--}} no tocar
     if (el.hasAttribute('data-i18n-html')) {
       el.innerHTML = translated;
     } else {

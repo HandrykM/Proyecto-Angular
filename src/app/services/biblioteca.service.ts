@@ -64,11 +64,12 @@ export class BibliotecaService {
     });
   }
 
-  // Registrar lectura de recurso
-  registrarLectura(idRecurso: number, idUsuario: number): Observable<any> {
-    return this.http.post(`${this.baseUrl}/${idRecurso}/lectura`, { 
-      id_usuario: idUsuario 
-    }).pipe(
+  // Registrar lectura de recurso. Opcionalmente pasar tipo: 'leido' | 'visto'
+  registrarLectura(idRecurso: number, idUsuario: number, tipo?: 'leido' | 'visto'): Observable<any> {
+    const payload: any = { id_usuario: idUsuario };
+    if (tipo) payload.tipo = tipo;
+
+    return this.http.post(`${this.baseUrl}/${idRecurso}/lectura`, payload).pipe(
       tap((response: any) => {
         // ✅ NOTIFICAR LOGROS OBTENIDOS
         if (response.logrosNuevos && response.logrosNuevos.length > 0) {

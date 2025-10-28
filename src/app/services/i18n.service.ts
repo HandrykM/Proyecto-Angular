@@ -1,6 +1,6 @@
-// src/app/services/i18n.service.ts
+// src/app/services/i18n.service.ts - VERSIÓN COMPLETA
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 export type Language = 'es' | 'en' | 'pt';
 
@@ -27,63 +27,91 @@ export class I18nService {
         admin: 'Admin',
         logout: 'Cerrar sesión'
       },
-      
-      // Home
-      home: {
-        welcome: 'Bienvenido a HydroSave',
-        subtitle: 'Aprende sobre reutilización del agua',
-        getStarted: 'Comenzar',
-        login: 'Iniciar sesión',
-        register: 'Registrarse',
-        features: {
-          title: 'Características',
-          interactive: 'Aprendizaje Interactivo',
-          interactiveDesc: 'Aprende con módulos dinámicos y actividades prácticas',
-          certified: 'Certificaciones',
-          certifiedDesc: 'Obtén certificados al completar los cursos',
-          community: 'Comunidad',
-        // Notas y textos específicos
-        profileNotes: {
-          notesTitle: 'Mis Notas Personales',
-          notesDesc: 'Escribe tus reflexiones, ideas clave o preguntas sobre esta lectura'
-        },
-          communityDesc: 'Únete a miles de estudiantes comprometidos'
-        }
-      },
 
-      // Auth
-      auth: {
-        login: 'Iniciar sesión',
-        register: 'Registrarse',
+      // Perfil - NUEVAS TRADUCCIONES
+      profile: {
+        title: 'Mi Perfil',
+        personalInfo: 'Información Personal',
+        security: 'Seguridad',
+        preferences: 'Preferencias',
+        statistics: 'Estadísticas',
+        achievements: 'Logros',
+        certificates: 'Certificados',
+        account: 'Cuenta',
+        
+        // Información Personal
+        name: 'Nombre de usuario',
+        fullName: 'Nombre completo',
         email: 'Correo electrónico',
-        password: 'Contraseña',
+        phone: 'Teléfono',
+        username: 'Nombre de usuario',
+        editPhoto: 'Cambiar foto',
+        saveChanges: 'Guardar cambios',
+        
+        // Seguridad
+        changePassword: 'Cambiar contraseña',
+        currentPassword: 'Contraseña actual',
+        newPassword: 'Nueva contraseña',
         confirmPassword: 'Confirmar contraseña',
-        name: 'Nombre',
-        forgotPassword: '¿Olvidaste tu contraseña?',
-        rememberMe: 'Recordarme',
-        noAccount: '¿No tienes cuenta?',
-        hasAccount: '¿Ya tienes cuenta?',
-        resetPassword: 'Restablecer contraseña',
-        sendResetLink: 'Enviar enlace',
-        backToLogin: 'Volver al inicio de sesión'
-      },
-
-      // Dashboard
-      dashboard: {
-        welcome: 'Bienvenido de nuevo',
-        myProgress: 'Mi Progreso',
-        completedModules: 'Módulos Completados',
-        totalPoints: 'Puntos Totales',
-        currentStreak: 'Racha Actual',
+        sessionHistory: 'Historial de sesiones',
+        activeSessions: 'Sesiones activas',
+        currentSession: 'Actual',
+        closeSession: 'Cerrar',
+        
+        // Preferencias
+        language: 'Idioma',
+        darkMode: 'Modo oscuro',
+        fontSize: 'Tamaño de fuente',
+        notifications: 'Notificaciones',
+        emailNotifications: 'Notificaciones por email',
+        smsNotifications: 'Notificaciones por SMS',
+        pushNotifications: 'Notificaciones push',
+        reminders: 'Recordatorios de estudio',
+        achievementNotifs: 'Notificaciones de logros',
+        
+        // Estadísticas
+        totalStudyTime: 'Tiempo total de estudio',
+        completedModules: 'Módulos completados',
+        completedActivities: 'Actividades completadas',
+        totalPoints: 'Puntos totales',
+        currentStreak: 'Racha actual',
+        lastActivity: 'Última actividad',
         days: 'días',
-        continueWhere: 'Continuar donde lo dejaste',
-        recommendedActivities: 'Actividades Recomendadas',
-        recentAchievements: 'Logros Recientes'
+        activityHistory: 'Historial de Actividad',
+        
+        // Filtros
+        all: 'Todos',
+        module: 'Módulo',
+        activity: 'Actividad',
+        library: 'Biblioteca',
+        
+        // Logros
+        achievementsObtained: 'Logros obtenidos',
+        noAchievements: 'Aún no tienes logros. ¡Sigue estudiando para conseguir tus primeros logros!',
+        
+        // Certificados
+        certificatesObtained: 'Certificados obtenidos',
+        certificateLocked: 'Certificado Bloqueado',
+        completeAllModules: 'Completa todos los módulos del programa para desbloquear tu certificado de finalización',
+        modulesCompleted: 'Módulos completados',
+        download: 'Descargar',
+        verified: 'Verificado',
+        notVerified: 'No verificado',
+        checkEligibility: 'Verificar Elegibilidad',
+        checking: 'Verificando...',
+        
+        // Cuenta
+        accountManagement: 'Gestión de Cuenta',
+        logoutDescription: 'Cierra tu sesión actual en este dispositivo',
+        deleteAccount: 'Eliminar cuenta',
+        deleteAccountDescription: 'Elimina permanentemente tu cuenta y todos tus datos. Esta acción no se puede deshacer.',
+        deleteWarning: '¡Advertencia! Se perderán todos tus datos, progreso y certificados.',
+        confirmDelete: 'Para eliminar tu cuenta, escribe "ELIMINAR" en mayúsculas:'
       },
 
       // Módulos
       modules: {
-        title: 'Módulos de Aprendizaje',
+        title: 'Módulos',
         subtitle: 'Explora nuestros cursos',
         level: {
           basic: 'Básico',
@@ -96,7 +124,13 @@ export class I18nService {
         completed: 'Completado',
         lessons: 'lecciones',
         points: 'puntos',
-        duration: 'Duración estimada'
+        duration: 'Duración estimada',
+        materials: 'Materiales',
+        readingNotes: 'Mis Notas',
+        notesPlaceholder: 'Escribe tus notas aquí...',
+        saveNote: 'Guardar nota',
+        notesSaved: 'Nota guardada correctamente',
+        markAsRead: 'Marcar como leída'
       },
 
       // Actividades
@@ -113,7 +147,10 @@ export class I18nService {
         completedBy: 'Completado por',
         users: 'usuarios',
         startActivity: 'Iniciar actividad',
-        viewResults: 'Ver resultados'
+        viewResults: 'Ver resultados',
+        score: 'Puntuación',
+        timeSpent: 'Tiempo empleado',
+        attempts: 'Intentos'
       },
 
       // Biblioteca
@@ -121,6 +158,7 @@ export class I18nService {
         title: 'Biblioteca de Recursos',
         subtitle: 'Materiales de apoyo',
         search: 'Buscar recursos',
+        searchPlaceholder: 'Buscar recursos, autores, categorías...',
         filterBy: 'Filtrar por',
         all: 'Todos',
         videos: 'Videos',
@@ -130,53 +168,9 @@ export class I18nService {
         download: 'Descargar',
         view: 'Ver',
         author: 'Autor',
-        readTime: 'Tiempo de lectura'
-      },
-
-      // Perfil
-      profile: {
-        title: 'Mi Perfil',
-        personalInfo: 'Información Personal',
-        security: 'Seguridad',
-        preferences: 'Preferencias',
-        statistics: 'Estadísticas',
-        achievements: 'Logros',
-        certificates: 'Certificados',
-        account: 'Cuenta',
-        editPhoto: 'Cambiar foto',
-        saveChanges: 'Guardar cambios',
-        changePassword: 'Cambiar contraseña',
-    // Placeholder y textos auxiliares
-    librarySearch: {
-      placeholder: 'Buscar recursos, autores, categorías...'
-    },
-        currentPassword: 'Contraseña actual',
-        newPassword: 'Nueva contraseña',
-        language: 'Idioma',
-        darkMode: 'Modo oscuro',
-        fontSize: 'Tamaño de fuente',
-        notifications: 'Notificaciones',
-        emailNotifications: 'Notificaciones por email',
-        deleteAccount: 'Eliminar cuenta',
-        logoutAllDevices: 'Cerrar sesión en todos los dispositivos'
-      },
-
-      // Admin
-      admin: {
-        dashboard: 'Panel de Control',
-        users: 'Usuarios',
-        modules: 'Módulos',
-        activities: 'Actividades',
-        library: 'Biblioteca',
-        statistics: 'Estadísticas',
-        totalUsers: 'Total de Usuarios',
-        activeModules: 'Módulos Activos',
-        completedActivities: 'Actividades Completadas',
-        addNew: 'Agregar Nuevo',
-        edit: 'Editar',
-        delete: 'Eliminar',
-        save: 'Guardar',
-        cancel: 'Cancelar'
+        readTime: 'Tiempo de lectura',
+        category: 'Categoría',
+        level: 'Nivel'
       },
 
       // Común
@@ -200,7 +194,9 @@ export class I18nService {
         viewAll: 'Ver todo',
         viewMore: 'Ver más',
         noResults: 'No se encontraron resultados',
-        comingSoon: 'Próximamente'
+        comingSoon: 'Próximamente',
+        yes: 'Sí',
+        no: 'No'
       },
 
       // Mensajes
@@ -213,7 +209,12 @@ export class I18nService {
         updateSuccess: 'Actualizado correctamente',
         errorOccurred: 'Ocurrió un error',
         confirmDelete: '¿Estás seguro de que deseas eliminar?',
-        unsavedChanges: 'Tienes cambios sin guardar'
+        unsavedChanges: 'Tienes cambios sin guardar',
+        required: 'Este campo es obligatorio',
+        invalidEmail: 'Email inválido',
+        passwordMismatch: 'Las contraseñas no coinciden',
+        minLength: 'Mínimo {0} caracteres',
+        invalidFormat: 'Formato inválido'
       }
     },
 
@@ -227,54 +228,77 @@ export class I18nService {
         admin: 'Admin',
         logout: 'Logout'
       },
-      
-      home: {
-        welcome: 'Welcome to HydroSave',
-        subtitle: 'Learn about water reuse',
-        getStarted: 'Get Started',
-        login: 'Login',
-        register: 'Register',
-        features: {
-          title: 'Features',
-          interactive: 'Interactive Learning',
-          interactiveDesc: 'Learn with dynamic modules and practical activities',
-          certified: 'Certifications',
-          certifiedDesc: 'Get certificates upon completing courses',
-          community: 'Community',
-        profileNotes: {
-          notesTitle: 'My Personal Notes',
-          notesDesc: 'Write your reflections, key ideas or questions about this reading'
-        },
-          communityDesc: 'Join thousands of committed students'
-        }
-      },
 
-      auth: {
-        login: 'Login',
-        register: 'Register',
+      profile: {
+        title: 'My Profile',
+        personalInfo: 'Personal Information',
+        security: 'Security',
+        preferences: 'Preferences',
+        statistics: 'Statistics',
+        achievements: 'Achievements',
+        certificates: 'Certificates',
+        account: 'Account',
+        
+        name: 'Username',
+        fullName: 'Full name',
         email: 'Email',
-        password: 'Password',
-        confirmPassword: 'Confirm Password',
-        name: 'Name',
-        forgotPassword: 'Forgot password?',
-        rememberMe: 'Remember me',
-        noAccount: "Don't have an account?",
-        hasAccount: 'Already have an account?',
-        resetPassword: 'Reset Password',
-        sendResetLink: 'Send Reset Link',
-        backToLogin: 'Back to Login'
-      },
-
-      dashboard: {
-        welcome: 'Welcome back',
-        myProgress: 'My Progress',
-        completedModules: 'Completed Modules',
-        totalPoints: 'Total Points',
-        currentStreak: 'Current Streak',
+        phone: 'Phone',
+        username: 'Username',
+        editPhoto: 'Change photo',
+        saveChanges: 'Save changes',
+        
+        changePassword: 'Change password',
+        currentPassword: 'Current password',
+        newPassword: 'New password',
+        confirmPassword: 'Confirm password',
+        sessionHistory: 'Session history',
+        activeSessions: 'Active sessions',
+        currentSession: 'Current',
+        closeSession: 'Close',
+        
+        language: 'Language',
+        darkMode: 'Dark mode',
+        fontSize: 'Font size',
+        notifications: 'Notifications',
+        emailNotifications: 'Email notifications',
+        smsNotifications: 'SMS notifications',
+        pushNotifications: 'Push notifications',
+        reminders: 'Study reminders',
+        achievementNotifs: 'Achievement notifications',
+        
+        totalStudyTime: 'Total study time',
+        completedModules: 'Completed modules',
+        completedActivities: 'Completed activities',
+        totalPoints: 'Total points',
+        currentStreak: 'Current streak',
+        lastActivity: 'Last activity',
         days: 'days',
-        continueWhere: 'Continue where you left off',
-        recommendedActivities: 'Recommended Activities',
-        recentAchievements: 'Recent Achievements'
+        activityHistory: 'Activity History',
+        
+        all: 'All',
+        module: 'Module',
+        activity: 'Activity',
+        library: 'Library',
+        
+        achievementsObtained: 'Achievements obtained',
+        noAchievements: "You don't have achievements yet. Keep studying to earn your first achievements!",
+        
+        certificatesObtained: 'Certificates obtained',
+        certificateLocked: 'Certificate Locked',
+        completeAllModules: 'Complete all program modules to unlock your completion certificate',
+        modulesCompleted: 'Modules completed',
+        download: 'Download',
+        verified: 'Verified',
+        notVerified: 'Not verified',
+        checkEligibility: 'Check Eligibility',
+        checking: 'Checking...',
+        
+        accountManagement: 'Account Management',
+        logoutDescription: 'Close your current session on this device',
+        deleteAccount: 'Delete account',
+        deleteAccountDescription: 'Permanently delete your account and all your data. This action cannot be undone.',
+        deleteWarning: 'Warning! All your data, progress and certificates will be lost.',
+        confirmDelete: 'To delete your account, type "DELETE" in capital letters:'
       },
 
       modules: {
@@ -291,7 +315,13 @@ export class I18nService {
         completed: 'Completed',
         lessons: 'lessons',
         points: 'points',
-        duration: 'Estimated duration'
+        duration: 'Estimated duration',
+        materials: 'Materials',
+        readingNotes: 'My Notes',
+        notesPlaceholder: 'Write your notes here...',
+        saveNote: 'Save note',
+        notesSaved: 'Note saved successfully',
+        markAsRead: 'Mark as read'
       },
 
       activities: {
@@ -307,13 +337,17 @@ export class I18nService {
         completedBy: 'Completed by',
         users: 'users',
         startActivity: 'Start activity',
-        viewResults: 'View results'
+        viewResults: 'View results',
+        score: 'Score',
+        timeSpent: 'Time spent',
+        attempts: 'Attempts'
       },
 
       library: {
         title: 'Resource Library',
         subtitle: 'Support materials',
         search: 'Search resources',
+        searchPlaceholder: 'Search resources, authors, categories...',
         filterBy: 'Filter by',
         all: 'All',
         videos: 'Videos',
@@ -322,51 +356,10 @@ export class I18nService {
         guides: 'Guides',
         download: 'Download',
         view: 'View',
-    librarySearch: {
-      placeholder: 'Search resources, authors, categories...'
-    },
         author: 'Author',
-        readTime: 'Read time'
-      },
-
-      profile: {
-        title: 'My Profile',
-        personalInfo: 'Personal Information',
-        security: 'Security',
-        preferences: 'Preferences',
-        statistics: 'Statistics',
-        achievements: 'Achievements',
-        certificates: 'Certificates',
-        account: 'Account',
-        editPhoto: 'Change photo',
-        saveChanges: 'Save changes',
-        changePassword: 'Change password',
-        currentPassword: 'Current password',
-        newPassword: 'New password',
-        language: 'Language',
-        darkMode: 'Dark mode',
-        fontSize: 'Font size',
-        notifications: 'Notifications',
-        emailNotifications: 'Email notifications',
-        deleteAccount: 'Delete account',
-        logoutAllDevices: 'Logout from all devices'
-      },
-
-      admin: {
-        dashboard: 'Dashboard',
-        users: 'Users',
-        modules: 'Modules',
-        activities: 'Activities',
-        library: 'Library',
-        statistics: 'Statistics',
-        totalUsers: 'Total Users',
-        activeModules: 'Active Modules',
-        completedActivities: 'Completed Activities',
-        addNew: 'Add New',
-        edit: 'Edit',
-        delete: 'Delete',
-        save: 'Save',
-        cancel: 'Cancel'
+        readTime: 'Read time',
+        category: 'Category',
+        level: 'Level'
       },
 
       common: {
@@ -389,7 +382,9 @@ export class I18nService {
         viewAll: 'View all',
         viewMore: 'View more',
         noResults: 'No results found',
-        comingSoon: 'Coming soon'
+        comingSoon: 'Coming soon',
+        yes: 'Yes',
+        no: 'No'
       },
 
       messages: {
@@ -401,7 +396,12 @@ export class I18nService {
         updateSuccess: 'Updated successfully',
         errorOccurred: 'An error occurred',
         confirmDelete: 'Are you sure you want to delete?',
-        unsavedChanges: 'You have unsaved changes'
+        unsavedChanges: 'You have unsaved changes',
+        required: 'This field is required',
+        invalidEmail: 'Invalid email',
+        passwordMismatch: 'Passwords do not match',
+        minLength: 'Minimum {0} characters',
+        invalidFormat: 'Invalid format'
       }
     },
 
@@ -415,50 +415,77 @@ export class I18nService {
         admin: 'Admin',
         logout: 'Sair'
       },
-      
-      home: {
-        welcome: 'Bem-vindo ao HydroSave',
-        subtitle: 'Aprenda sobre reutilização de água',
-        getStarted: 'Começar',
-        login: 'Entrar',
-        register: 'Registrar',
-        features: {
-          title: 'Recursos',
-          interactive: 'Aprendizagem Interativa',
-          interactiveDesc: 'Aprenda com módulos dinâmicos e atividades práticas',
-          certified: 'Certificações',
-          certifiedDesc: 'Obtenha certificados ao concluir os cursos',
-          community: 'Comunidade',
-          communityDesc: 'Junte-se a milhares de estudantes comprometidos'
-        }
-      },
 
-      auth: {
-        login: 'Entrar',
-        register: 'Registrar',
+      profile: {
+        title: 'Meu Perfil',
+        personalInfo: 'Informações Pessoais',
+        security: 'Segurança',
+        preferences: 'Preferências',
+        statistics: 'Estatísticas',
+        achievements: 'Conquistas',
+        certificates: 'Certificados',
+        account: 'Conta',
+        
+        name: 'Nome de usuário',
+        fullName: 'Nome completo',
         email: 'E-mail',
-        password: 'Senha',
+        phone: 'Telefone',
+        username: 'Nome de usuário',
+        editPhoto: 'Alterar foto',
+        saveChanges: 'Salvar alterações',
+        
+        changePassword: 'Alterar senha',
+        currentPassword: 'Senha atual',
+        newPassword: 'Nova senha',
         confirmPassword: 'Confirmar senha',
-        name: 'Nome',
-        forgotPassword: 'Esqueceu a senha?',
-        rememberMe: 'Lembrar-me',
-        noAccount: 'Não tem uma conta?',
-        hasAccount: 'Já tem uma conta?',
-        resetPassword: 'Redefinir senha',
-        sendResetLink: 'Enviar link',
-        backToLogin: 'Voltar ao login'
-      },
-
-      dashboard: {
-        welcome: 'Bem-vindo de volta',
-        myProgress: 'Meu Progresso',
-        completedModules: 'Módulos Concluídos',
-        totalPoints: 'Pontos Totais',
-        currentStreak: 'Sequência Atual',
+        sessionHistory: 'Histórico de sessões',
+        activeSessions: 'Sessões ativas',
+        currentSession: 'Atual',
+        closeSession: 'Fechar',
+        
+        language: 'Idioma',
+        darkMode: 'Modo escuro',
+        fontSize: 'Tamanho da fonte',
+        notifications: 'Notificações',
+        emailNotifications: 'Notificações por e-mail',
+        smsNotifications: 'Notificações por SMS',
+        pushNotifications: 'Notificações push',
+        reminders: 'Lembretes de estudo',
+        achievementNotifs: 'Notificações de conquistas',
+        
+        totalStudyTime: 'Tempo total de estudo',
+        completedModules: 'Módulos concluídos',
+        completedActivities: 'Atividades concluídas',
+        totalPoints: 'Pontos totais',
+        currentStreak: 'Sequência atual',
+        lastActivity: 'Última atividade',
         days: 'dias',
-        continueWhere: 'Continue de onde parou',
-        recommendedActivities: 'Atividades Recomendadas',
-        recentAchievements: 'Conquistas Recentes'
+        activityHistory: 'Histórico de Atividades',
+        
+        all: 'Todos',
+        module: 'Módulo',
+        activity: 'Atividade',
+        library: 'Biblioteca',
+        
+        achievementsObtained: 'Conquistas obtidas',
+        noAchievements: 'Você ainda não tem conquistas. Continue estudando para conseguir suas primeiras conquistas!',
+        
+        certificatesObtained: 'Certificados obtidos',
+        certificateLocked: 'Certificado Bloqueado',
+        completeAllModules: 'Complete todos os módulos do programa para desbloquear seu certificado de conclusão',
+        modulesCompleted: 'Módulos concluídos',
+        download: 'Baixar',
+        verified: 'Verificado',
+        notVerified: 'Não verificado',
+        checkEligibility: 'Verificar Elegibilidade',
+        checking: 'Verificando...',
+        
+        accountManagement: 'Gerenciamento de Conta',
+        logoutDescription: 'Feche sua sessão atual neste dispositivo',
+        deleteAccount: 'Excluir conta',
+        deleteAccountDescription: 'Exclua permanentemente sua conta e todos os seus dados. Esta ação não pode ser desfeita.',
+        deleteWarning: 'Aviso! Todos os seus dados, progresso e certificados serão perdidos.',
+        confirmDelete: 'Para excluir sua conta, digite "EXCLUIR" em letras maiúsculas:'
       },
 
       modules: {
@@ -475,7 +502,13 @@ export class I18nService {
         completed: 'Concluído',
         lessons: 'lições',
         points: 'pontos',
-        duration: 'Duração estimada'
+        duration: 'Duração estimada',
+        materials: 'Materiais',
+        readingNotes: 'Minhas Notas',
+        notesPlaceholder: 'Escreva suas notas aqui...',
+        saveNote: 'Salvar nota',
+        notesSaved: 'Nota salva com sucesso',
+        markAsRead: 'Marcar como lida'
       },
 
       activities: {
@@ -491,13 +524,17 @@ export class I18nService {
         completedBy: 'Concluído por',
         users: 'usuários',
         startActivity: 'Iniciar atividade',
-        viewResults: 'Ver resultados'
+        viewResults: 'Ver resultados',
+        score: 'Pontuação',
+        timeSpent: 'Tempo gasto',
+        attempts: 'Tentativas'
       },
 
       library: {
         title: 'Biblioteca de Recursos',
         subtitle: 'Materiais de apoio',
         search: 'Buscar recursos',
+        searchPlaceholder: 'Buscar recursos, autores, categorias...',
         filterBy: 'Filtrar por',
         all: 'Todos',
         videos: 'Vídeos',
@@ -507,47 +544,9 @@ export class I18nService {
         download: 'Baixar',
         view: 'Ver',
         author: 'Autor',
-        readTime: 'Tempo de leitura'
-      },
-
-      profile: {
-        title: 'Meu Perfil',
-        personalInfo: 'Informações Pessoais',
-        security: 'Segurança',
-        preferences: 'Preferências',
-        statistics: 'Estatísticas',
-        achievements: 'Conquistas',
-        certificates: 'Certificados',
-        account: 'Conta',
-        editPhoto: 'Alterar foto',
-        saveChanges: 'Salvar alterações',
-        changePassword: 'Alterar senha',
-        currentPassword: 'Senha atual',
-        newPassword: 'Nova senha',
-        language: 'Idioma',
-        darkMode: 'Modo escuro',
-        fontSize: 'Tamanho da fonte',
-        notifications: 'Notificações',
-        emailNotifications: 'Notificações por e-mail',
-        deleteAccount: 'Excluir conta',
-        logoutAllDevices: 'Sair de todos os dispositivos'
-      },
-
-      admin: {
-        dashboard: 'Painel de Controle',
-        users: 'Usuários',
-        modules: 'Módulos',
-        activities: 'Atividades',
-        library: 'Biblioteca',
-        statistics: 'Estatísticas',
-        totalUsers: 'Total de Usuários',
-        activeModules: 'Módulos Ativos',
-        completedActivities: 'Atividades Concluídas',
-        addNew: 'Adicionar Novo',
-        edit: 'Editar',
-        delete: 'Excluir',
-        save: 'Salvar',
-        cancel: 'Cancelar'
+        readTime: 'Tempo de leitura',
+        category: 'Categoria',
+        level: 'Nível'
       },
 
       common: {
@@ -570,7 +569,9 @@ export class I18nService {
         viewAll: 'Ver tudo',
         viewMore: 'Ver mais',
         noResults: 'Nenhum resultado encontrado',
-        comingSoon: 'Em breve'
+        comingSoon: 'Em breve',
+        yes: 'Sim',
+        no: 'Não'
       },
 
       messages: {
@@ -582,13 +583,17 @@ export class I18nService {
         updateSuccess: 'Atualizado com sucesso',
         errorOccurred: 'Ocorreu um erro',
         confirmDelete: 'Tem certeza de que deseja excluir?',
-        unsavedChanges: 'Você tem alterações não salvas'
+        unsavedChanges: 'Você tem alterações não salvas',
+        required: 'Este campo é obrigatório',
+        invalidEmail: 'E-mail inválido',
+        passwordMismatch: 'As senhas não coincidem',
+        minLength: 'Mínimo {0} caracteres',
+        invalidFormat: 'Formato inválido'
       }
     }
   };
 
   constructor() {
-    // Cargar idioma guardado
     const savedLang = localStorage.getItem('app_language') as Language;
     if (savedLang && ['es', 'en', 'pt'].includes(savedLang)) {
       this.currentLanguageSubject.next(savedLang);
@@ -601,6 +606,7 @@ export class I18nService {
   }
 
   setLanguage(lang: Language): void {
+    console.log('🌍 I18nService - Cambiando idioma a:', lang);
     this.currentLanguageSubject.next(lang);
     localStorage.setItem('app_language', lang);
     this.setHtmlLang(lang);
@@ -610,7 +616,7 @@ export class I18nService {
     document.documentElement.lang = lang;
   }
 
-  translate(key: string): string {
+  translate(key: string, params?: any[]): string {
     const lang = this.getCurrentLanguage();
     const keys = key.split('.');
     let value: any = this.translations[lang];
@@ -624,10 +630,21 @@ export class I18nService {
       }
     }
 
+    // Reemplazar parámetros si existen
+    if (typeof value === 'string' && params) {
+      return this.replaceParams(value, params);
+    }
+
     return typeof value === 'string' ? value : key;
   }
 
-  t(key: string): string {
-    return this.translate(key);
+  private replaceParams(text: string, params: any[]): string {
+    return text.replace(/\{(\d+)\}/g, (match, index) => {
+      return params[index] !== undefined ? params[index] : match;
+    });
+  }
+
+  t(key: string, params?: any[]): string {
+    return this.translate(key, params);
   }
 }

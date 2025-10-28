@@ -479,6 +479,75 @@ body {
 
 /* === CONTAINER PRINCIPAL === */
 
+/* === VIDEO PLAYER === */
+.video-container {
+  /* Allow the video container to expand inside the modal */
+  position: relative;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 360px; /* reasonable minimum */
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Wrapper para videos MP4 */
+.video-wrapper-mp4 {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+/* VIDEO PLAYER MP4 - CRÍTICO */
+.video-player-mp4 {
+  position: relative;
+  width: 100% !important;
+  height: 100% !important; /* fill the container */
+  min-height: 360px;
+  background: #000;
+  display: block;
+  margin: 0 auto;
+  z-index: 1;
+  object-fit: contain;
+}
+
+/* Remove custom darkening of native media controls so the video doesn't look dark on hover */
+.video-player-mp4::-webkit-media-controls-panel {
+  background-color: transparent !important;
+}
+
+.video-player-mp4::-webkit-media-controls {
+  background-color: transparent !important;
+}
+
+
+/* YouTube wrapper styles moved/declared later to allow flexible sizing inside the modal */
+
+
+.modal-close-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid white;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 1100;
+}
+
+.modal-close-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: scale(1.1);
+}
 
 .modulos-header {
   text-align: center;
@@ -592,6 +661,7 @@ body {
 .modal-overlay {
   position: absolute;
   inset: 0;
+  cursor: pointer;
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(5px);
 }
@@ -696,39 +766,62 @@ body {
 }
 
 .btn-modal-cerrar {
-  background: rgba(241, 75, 57, 0.781); /* Fondo rojo suave */
-  color: white;
-   /* Borde rojo */
+  background: rgba(231, 76, 60, 0.95) !important;
+  z-index: 999;
+  position: relative;
+  border: 2px solid white !important;
 }
 
 .btn-modal-cerrar:hover {
-  background: rgba(241, 75, 57, 0.979); /* Fondo rojo más intenso al hacer hover */
-  transform: scale(1.1);
-   /* Borde más destacado al hacer hover */
+  background: rgb(192, 57, 43) !important;
+  transform: scale(1.2) !important;
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.6);
 }
 
+/* Animación de spin */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 
 .modal-body {
+  /* Use flex layout so the viewer (video/pdf) can expand to fill available space */
   flex-grow: 1;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* let inner sections scroll if needed */
   max-height: calc(90vh - 120px);
 }
 
 /* === VISORES DE CONTENIDO === */
 .recurso-visor {
   width: 100%;
+  /* fill the modal body area */
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
   height: 100%;
 }
 
 .video-container {
+  /* Ensure the video container fills the available area in the modal */
   width: 100%;
-  height: 0;
-  padding-bottom: 56.25%; /* Aspect ratio 16:9 */
+  flex: 1 1 auto;
   position: relative;
   background: #000;
 }
 
-.video-container iframe {
+.youtube-wrapper {
+  /* ensure youtube iframe fills the video container */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+.youtube-embed {
   position: absolute;
   top: 0;
   left: 0;
@@ -739,9 +832,9 @@ body {
 
 .pdf-container {
   width: 100%;
-  height: 70vh;
+  flex: 1 1 auto;
+  min-height: 480px;
   position: relative;
-  
 }
 
 .pdf-toolbar {
@@ -782,11 +875,15 @@ body {
 }
 
 .pdf-viewer {
+  /* position the iframe to fill the pdf-container below the toolbar */
+  position: absolute;
+  top: 60px; /* toolbar height */
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: calc(100% - 60px);
-  margin-top: 60px;
   border: none;
-  
 }
 
 
@@ -845,7 +942,9 @@ body {
 ================================ */
 .articulo-container {
   padding: 2rem;
-  max-height: 70vh;
+  /* allow article viewer to expand inside modal and scroll its content */
+  flex: 1 1 auto;
+  min-height: 320px;
   overflow-y: auto;
 }
 
@@ -864,14 +963,44 @@ body {
 }
 
 .articulo-contenido {
-  max-width: 800px;
-  margin: 0 auto;
+  /* make article content use full width inside modal for better readability */
+  max-width: 100%;
+  margin: 0;
 }
 
 .texto-principal {
   font-size: 1rem;
   line-height: 1.8;
   color: var(--dark-color);
+}
+
+/* Ensure images inside articles/infografias scale responsively */
+.texto-principal img,
+.pdf-preview img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0.5rem auto;
+}
+
+/* PDF preview block inside article (used by 'estudio' and similar) */
+.pdf-preview {
+  position: relative;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 480px;
+  margin-bottom: 1rem;
+}
+
+/* When the iframe is used inside .pdf-preview or .articulo-container (estudio),
+   avoid the toolbar offset used on pdf-container; make it fill the container */
+.articulo-container .pdf-viewer,
+.pdf-preview .pdf-viewer {
+  position: static;
+  width: 100%;
+  height: 100%;
+  min-height: 60vh;
+  border: none;
 }
 
 .texto-principal h2,
@@ -935,6 +1064,191 @@ body {
   text-decoration: underline;
 }
 
+/* ========================================
+   RESPONSIVE - VIDEOS
+======================================== */
+
+@media (max-width: 1024px) {
+  .video-container {
+    min-height: 400px;
+  }
+  
+  .video-wrapper-mp4 {
+    min-height: 400px;
+  }
+  
+  .video-player-mp4 {
+    min-height: 400px;
+    max-height: 60vh;
+  }
+}
+
+@media (max-width: 768px) {
+  .video-container {
+    min-height: 300px;
+  }
+  
+  .video-wrapper-mp4 {
+    min-height: 300px;
+  }
+  
+  .video-player-mp4 {
+    min-height: 300px;
+    max-height: 50vh;
+  }
+  
+  .video-loading,
+  .video-error {
+    min-height: 300px;
+    padding: 2rem 1rem;
+  }
+  
+  .video-loading i,
+  .video-error i {
+    font-size: 2.5rem;
+  }
+  
+  .video-error h3 {
+    font-size: 1.2rem;
+  }
+  
+  .video-loading p,
+  .video-error p {
+    font-size: 0.95rem;
+  }
+  
+  .modal-contenido {
+    width: 98vw;
+    max-height: 95vh;
+  }
+  
+  .error-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .btn-cancelar-carga,
+  .btn-cerrar-modal,
+  .btn-descargar {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .recurso-modal {
+    padding: 0.5rem;
+  }
+  
+  .modal-contenido {
+    border-radius: 15px;
+  }
+  
+  .video-container {
+    min-height: 250px;
+  }
+  
+  .video-player-mp4 {
+    min-height: 250px;
+  }
+}
+
+/* ========================================
+   FIXES ESPECÍFICOS PARA NAVEGADORES
+======================================== */
+
+/* Safari */
+@supports (-webkit-appearance: none) {
+  .video-player-mp4::-webkit-media-controls {
+    z-index: 999999 !important;
+  }
+}
+
+/* Firefox */
+@-moz-document url-prefix() {
+  .video-player-mp4::-moz-media-controls {
+    z-index: 999999 !important;
+  }
+}
+
+/* Edge/IE */
+@supports (-ms-ime-align: auto) {
+  .video-player-mp4::-ms-media-controls {
+    z-index: 999999 !important;
+  }
+}
+
+/* ========================================
+   PREVENIR PROBLEMAS DE Z-INDEX
+======================================== */
+
+/* Asegurar que nada tape el modal */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* Cuando el modal está abierto */
+.recurso-modal ~ * {
+  pointer-events: none;
+}
+
+.recurso-modal {
+  pointer-events: all;
+}
+
+/* ========================================
+   MEJORAS DE ACCESIBILIDAD
+======================================== */
+
+/* Focus visible en botones */
+.btn-modal-cerrar:focus,
+.btn-descargar:focus,
+.btn-cancelar-carga:focus,
+.btn-cerrar-modal:focus {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Contraste mejorado para lectores de pantalla */
+.video-loading p,
+.video-error p {
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* ========================================
+   TRANSICIONES SUAVES
+======================================== */
+
+.modal-contenido {
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.recurso-modal.closing .modal-contenido {
+  animation: modalFadeOut 0.2s ease-in;
+}
+
+@keyframes modalFadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+}
 /* === RESPONSIVE DESIGN === */
 @media (max-width: 1024px) {
   .recursos-grid {
@@ -1121,4 +1435,130 @@ body {
 
 .btn-guardar:hover {
   background: #219150;
+}
+
+
+/* === VIDEO ERROR Y LOADING STATES === */
+
+
+.video-loading,
+.video-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+  padding: 3rem 2rem;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  text-align: center;
+}
+
+.video-error i {
+  font-size: 3.5rem;
+  color: var(--danger-color);
+  margin-bottom: 1.5rem;
+}
+
+.video-loading i {
+  font-size: 3.5rem;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+  animation: spin 1s linear infinite;
+}
+
+.video-error h3 {
+  color: white;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.video-loading p,
+.video-error p {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  max-width: 500px;
+  line-height: 1.6;
+}
+
+.video-player {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  border-radius: 8px;
+}
+
+/* Botones de acción en errores */
+.error-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.btn-cancelar-carga,
+.btn-cerrar-modal {
+  padding: 0.8rem 1.5rem;
+  border: 2px solid white;
+  border-radius: 10px;
+  background: transparent;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancelar-carga:hover {
+  background: white;
+  color: #000;
+}
+
+.btn-cerrar-modal {
+  background: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+.btn-cerrar-modal:hover {
+  background: #c0392b;
+  border-color: #c0392b;
+  transform: translateY(-2px);
+}
+
+/* Modal más accesible */
+.recurso-modal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 9999 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  cursor: pointer;
+  z-index: 1;
+}
+
+.modal-contenido {
+  position: relative;
+  z-index: 2;
+  background: white;
+  border-radius: 20px;
+  width: 95vw;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
 }
