@@ -53,7 +53,7 @@ router.get('/descargar/:id', requireAuth, async (req, res) => {
   try {
     const materialId = req.params.id;
     
-    console.log('📥 Solicitud de descarga para material ID:', materialId);
+    //console.log('📥 Solicitud de descarga para material ID:', materialId);
     
     const { filePath, filename } = await materialesService.descargarMaterial(materialId);
     
@@ -62,7 +62,7 @@ router.get('/descargar/:id', requireAuth, async (req, res) => {
         console.error('❌ Error descargando:', err);
         res.status(500).json({ error: 'Error descargando archivo' });
       } else {
-        console.log('✅ Archivo descargado:', filename);
+      //  console.log('✅ Archivo descargado:', filename);
       }
     });
     

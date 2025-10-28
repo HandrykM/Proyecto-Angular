@@ -436,10 +436,19 @@ exports.cambiarRol = async (req, res) => {
 exports.obtenerModulos = async (req, res) => {
   try {
     const [modulos] = await db.query(`
-      SELECT m.*,
-             COUNT(DISTINCT pc.id_usuario) as usuarios_completados
+      SELECT 
+        m.*,
+        COUNT(DISTINCT CASE 
+          WHEN au.tipo_actividad = 'modulo' 
+          AND au.resultado = 'Completada' 
+          AND au.id_referencia = m.id 
+          THEN au.id_usuario 
+        END) as usuarios_completados
       FROM modulos m
-      LEFT JOIN progreso_contenido pc ON m.id = pc.id_modulo AND pc.leido = 1
+      LEFT JOIN actividad_usuario au 
+        ON au.tipo_actividad = 'modulo' 
+        AND au.id_referencia = m.id
+        AND au.resultado = 'Completada'
       GROUP BY m.id
       ORDER BY m.orden ASC
     `);
@@ -500,7 +509,7 @@ exports.crearModulo = async (req, res) => {
     ]);
     
     const moduloId = resultModulo.insertId;
-    console.log('✅ Módulo creado con ID:', moduloId);
+   // console.log('✅ Módulo creado con ID:', moduloId);
     
     // 2. Insertar lecturas en la tabla lecturas
     if (lecturas && Array.isArray(lecturas) && lecturas.length > 0) {
@@ -525,32 +534,36 @@ exports.crearModulo = async (req, res) => {
           i + 1
         ]);
         
-        console.log(`✅ Lectura ${i+1} "${lectura.titulo}" creada`);
+       // console.log(`✅ Lectura ${i+1} "${lectura.titulo}" creada`);
       }
     }
     
     // 3. Insertar materiales en la tabla materiales_modulo
     if (materiales && Array.isArray(materiales) && materiales.length > 0) {
-      for (let i = 0; i < materiales.length; i++) {
-        const material = materiales[i];
-        
-        await connection.query(`
-          INSERT INTO materiales_modulo (
-            modulo_id, titulo, descripcion, tipo, url, filename, icono, orden, activo
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
-        `, [
-          moduloId,
-          material.titulo,
-          material.descripcion || material.titulo,
-          material.tipo,
-          material.url,
-          material.filename,
-          obtenerIconoPorTipo(material.tipo),
-          i + 1
-        ]);
-      }
+  for (let i = 0; i < materiales.length; i++) {
+    const material = materiales[i];
+    
+    await connection.query(`
+      INSERT INTO materiales_modulo (
+        modulo_id, titulo, descripcion, tipo, url, filename, 
+        hash_archivo, tamano_bytes, icono, orden, activo
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+    `, [
+      moduloId,
+      material.titulo,
+      material.descripcion || material.titulo,
+      material.tipo,
+      material.url,
+      material.filename,
+      material.hash || null,       // ⬅️ NUEVO
+      material.size || 0,           // ⬅️ NUEVO
+      obtenerIconoPorTipo(material.tipo),
+      i + 1
+    ]);
+  }
+
       
-      console.log(`✅ ${materiales.length} materiales vinculados`);
+     // console.log(`✅ ${materiales.length} materiales vinculados`);
     }
     
     await connection.commit();

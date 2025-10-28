@@ -139,4 +139,11 @@ exports.descargarArchivo = (req, res) => {
       mensaje: 'Error al descargar el archivo' 
     });
   }
+  module.exports = {
+  uploadMaterial: exports.uploadMaterial,
+  uploadThumbnail: exports.uploadThumbnail,
+  subirArchivoMaterial: exports.subirArchivoMaterial,
+  eliminarArchivo: exports.eliminarArchivo,
+  descargarArchivo: exports.descargarArchivo
+};
 };

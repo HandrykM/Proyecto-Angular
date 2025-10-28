@@ -8,47 +8,55 @@ class MaterialesController {
    * Subir material adicional al servidor
    */
   async subirMaterial(req, res) {
-    try {
-      const { id_modulo, titulo, descripcion, tipo } = req.body;
-      const userId = req.user.id;
-      
-      if (!req.file) {
-        return res.status(400).json({ error: 'No se proporcionó ningún archivo' });
-      }
-
-      // El archivo ya fue guardado por multer en uploads/materiales/
-      const archivoUrl = `/uploads/materiales/${req.file.filename}`;
-      
-      // Guardar referencia en la base de datos
-      const [result] = await db.execute(`
-        INSERT INTO materiales_adicionales 
-        (id_modulo, titulo, descripcion, tipo, url_archivo, nombre_archivo, tamaño, fecha_subida)
-        VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
-      `, [
-        id_modulo,
-        titulo,
-        descripcion,
-        tipo,
-        archivoUrl,
-        req.file.originalname,
-        req.file.size
-      ]);
-
-      res.json({
-        success: true,
-        mensaje: 'Material subido exitosamente',
-        data: {
-          id: result.insertId,
-          url: archivoUrl,
-          nombre: req.file.originalname
-        }
-      });
-
-    } catch (error) {
-      console.error('Error subiendo material:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+  try {
+    const { id_modulo, titulo, descripcion, tipo } = req.body;
+    const userId = req.user.id;
+    
+    if (!req.file) {
+      return res.status(400).json({ error: 'No se proporcionó ningún archivo' });
     }
+
+    const archivoUrl = `/uploads/materiales/${req.file.filename}`;
+    
+    // ✅ CORRECCIÓN: No usar filename como titulo automáticamente
+    const tituloFinal = titulo && titulo.trim() !== '' 
+      ? titulo 
+      : req.file.originalname; // Solo usar filename si no hay titulo
+    
+    const descripcionFinal = descripcion && descripcion.trim() !== '' 
+      ? descripcion 
+      : ''; // Dejar vacío si no hay descripción
+    
+    // Guardar referencia en la base de datos
+    const [result] = await db.execute(`
+      INSERT INTO materiales_adicionales 
+      (id_modulo, titulo, descripcion, tipo, url_archivo, nombre_archivo, tamaño, fecha_subida)
+      VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+    `, [
+      id_modulo,
+      tituloFinal,
+      descripcionFinal,
+      tipo,
+      archivoUrl,
+      req.file.originalname,
+      req.file.size
+    ]);
+
+    res.json({
+      success: true,
+      mensaje: 'Material subido exitosamente',
+      data: {
+        id: result.insertId,
+        url: archivoUrl,
+        nombre: req.file.originalname
+      }
+    });
+
+  } catch (error) {
+    console.error('Error subiendo material:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
+}
 
   /**
    * Obtener materiales de un módulo

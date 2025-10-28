@@ -46,7 +46,7 @@ class MaterialesService {
     const filename = material.filename || material.url.split('/').pop();
     const filePath = path.join(__dirname, '../uploads/materiales', filename);
     
-    console.log('🔍 Buscando archivo:', filePath);
+    //console.log('🔍 Buscando archivo:', filePath);
     
     try {
       await fsPromises.access(filePath);

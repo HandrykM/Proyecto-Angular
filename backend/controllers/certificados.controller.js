@@ -10,41 +10,53 @@ class CertificadosController {
    * Verificar si el usuario puede obtener certificado
    */
   async verificarElegibilidad(req, res) {
-    try {
-      const userId = req.user.id;
+  try {
+    const userId = req.user.id;
 
-      const [modulosTotal] = await db.execute(`
-        SELECT COUNT(*) as total FROM modulos WHERE activo = 1
-      `);
+    // ✅ Contar módulos activos
+    const [modulosTotal] = await db.execute(`
+      SELECT COUNT(*) as total FROM modulos WHERE activo = 1
+    `);
 
-      const [modulosCompletados] = await db.execute(`
-        SELECT COUNT(DISTINCT pc.id_modulo) as completados
-        FROM progreso_contenido pc
-        JOIN modulos m ON pc.id_modulo = m.id
-        WHERE pc.id_usuario = ? AND pc.leido = 1 AND m.activo = 1
-      `, [userId]);
+    // ✅ CORRECCIÓN: Contar módulos completados al 100%
+    const [modulosCompletados] = await db.execute(`
+      SELECT COUNT(DISTINCT modulo_data.modulo_id) as completados
+      FROM (
+        SELECT 
+          l.modulo_id,
+          COUNT(l.id) as total_lecturas,
+          SUM(CASE WHEN pl.completada = 1 THEN 1 ELSE 0 END) as lecturas_completadas,
+          ROUND((SUM(CASE WHEN pl.completada = 1 THEN 1 ELSE 0 END) * 100.0) / NULLIF(COUNT(l.id), 0), 0) as progreso
+        FROM lecturas l
+        INNER JOIN modulos m ON l.modulo_id = m.id
+        LEFT JOIN progreso_lecturas pl ON l.id = pl.lectura_id AND pl.usuario_id = ?
+        WHERE l.activa = 1 AND m.activo = 1
+        GROUP BY l.modulo_id
+        HAVING progreso >= 100
+      ) as modulo_data
+    `, [userId]);
 
-      const total = modulosTotal[0].total;
-      const completados = modulosCompletados[0].completados;
-      const elegible = completados >= total;
-      const porcentaje = total > 0 ? Math.round((completados / total) * 100) : 0;
+    const total = modulosTotal[0].total;
+    const completados = modulosCompletados[0].completados;
+    const elegible = completados >= total;
+    const porcentaje = total > 0 ? Math.round((completados / total) * 100) : 0;
 
-      res.json({
-        success: true,
-        elegible: elegible,
-        modulosCompletados: completados,
-        modulosTotal: total,
-        porcentaje: porcentaje
-      });
+    res.json({
+      success: true,
+      elegible: elegible,
+      modulosCompletados: completados,
+      modulosTotal: total,
+      porcentaje: porcentaje
+    });
 
-    } catch (error) {
-      console.error('Error al verificar elegibilidad:', error);
-      res.status(500).json({
-        success: false,
-        mensaje: 'Error al verificar elegibilidad'
-      });
-    }
+  } catch (error) {
+    console.error('Error al verificar elegibilidad:', error);
+    res.status(500).json({
+      success: false,
+      mensaje: 'Error al verificar elegibilidad'
+    });
   }
+}
 
   /**
    * Generar certificado PDF
@@ -53,26 +65,44 @@ class CertificadosController {
   try {
     const userId = req.user.id;
 
-    // Verificar elegibilidad
+    // ✅ PASO 1: Verificar elegibilidad primero
     const [modulosTotal] = await db.execute(`
       SELECT COUNT(*) as total FROM modulos WHERE activo = 1
     `);
 
     const [modulosCompletados] = await db.execute(`
-      SELECT COUNT(DISTINCT pc.id_modulo) as completados
-      FROM progreso_contenido pc
-      JOIN modulos m ON pc.id_modulo = m.id
-      WHERE pc.id_usuario = ? AND pc.leido = 1 AND m.activo = 1
+      SELECT COUNT(DISTINCT modulo_data.modulo_id) as completados
+      FROM (
+        SELECT 
+          l.modulo_id,
+          COUNT(l.id) as total_lecturas,
+          SUM(CASE WHEN pl.completada = 1 THEN 1 ELSE 0 END) as lecturas_completadas,
+          ROUND((SUM(CASE WHEN pl.completada = 1 THEN 1 ELSE 0 END) * 100.0) / NULLIF(COUNT(l.id), 0), 0) as progreso
+        FROM lecturas l
+        INNER JOIN modulos m ON l.modulo_id = m.id
+        LEFT JOIN progreso_lecturas pl ON l.id = pl.lectura_id AND pl.usuario_id = ?
+        WHERE l.activa = 1 AND m.activo = 1
+        GROUP BY l.modulo_id
+        HAVING progreso >= 100
+      ) as modulo_data
     `, [userId]);
 
-    if (modulosCompletados[0].completados < modulosTotal[0].total) {
+    const total = modulosTotal[0].total;
+    const completados = modulosCompletados[0].completados;
+
+    console.log(`📊 Usuario ${userId} - Módulos: ${completados}/${total}`);
+
+    // ✅ PASO 2: Validar elegibilidad estricta
+    if (completados < total) {
       return res.status(403).json({
         success: false,
-        mensaje: 'Debes completar todos los módulos para obtener el certificado'
+        mensaje: `Debes completar todos los módulos. Progreso: ${completados}/${total}`,
+        modulosCompletados: completados,
+        modulosTotal: total
       });
     }
 
-    // Obtener información del usuario
+    // ✅ PASO 3: Obtener información del usuario
     const [usuario] = await db.execute(`
       SELECT 
         COALESCE(nombre_usuario, nombre) as nombre_completo,
@@ -89,9 +119,10 @@ class CertificadosController {
       });
     }
 
-    // Verificar si ya existe un certificado
+    // ✅ PASO 4: Verificar si ya existe certificado
     const [certificadoExistente] = await db.execute(`
-      SELECT id, url_certificado, codigo_verificacion FROM certificados
+      SELECT id, url_certificado, codigo_verificacion 
+      FROM certificados
       WHERE id_usuario = ? AND modulo = 'Programa Completo'
     `, [userId]);
 
@@ -99,11 +130,10 @@ class CertificadosController {
     let codigoVerificacion;
 
     if (certificadoExistente.length > 0) {
-      // Certificado ya existe - devolver el existente
+      // Certificado ya existe - devolver existente
       certificadoUrl = certificadoExistente[0].url_certificado;
       codigoVerificacion = certificadoExistente[0].codigo_verificacion;
       
-      // Importante: NO redirigir, solo devolver JSON
       return res.json({
         success: true,
         mensaje: 'Certificado ya existe',
@@ -115,20 +145,32 @@ class CertificadosController {
       });
     }
 
-    // Crear nuevo certificado solo si no existe
+    // ✅ PASO 5: Obtener módulos completados para el certificado
     const [modulos] = await db.execute(`
       SELECT 
         m.titulo,
-        m.nivel,
-        pc.fecha_lectura
-      FROM progreso_contenido pc
-      JOIN modulos m ON pc.id_modulo = m.id
-      WHERE pc.id_usuario = ? AND pc.leido = 1 AND m.activo = 1
+        m.nivel
+      FROM modulos m
+      INNER JOIN (
+        SELECT 
+          l.modulo_id,
+          COUNT(l.id) as total_lecturas,
+          SUM(CASE WHEN pl.completada = 1 THEN 1 ELSE 0 END) as lecturas_completadas,
+          ROUND((SUM(CASE WHEN pl.completada = 1 THEN 1 ELSE 0 END) * 100.0) / NULLIF(COUNT(l.id), 0), 0) as progreso
+        FROM lecturas l
+        LEFT JOIN progreso_lecturas pl ON l.id = pl.lectura_id AND pl.usuario_id = ?
+        WHERE l.activa = 1
+        GROUP BY l.modulo_id
+        HAVING progreso >= 100
+      ) prog ON m.id = prog.modulo_id
+      WHERE m.activo = 1
       ORDER BY m.orden ASC
     `, [userId]);
 
-    codigoVerificacion = crypto.randomBytes(16).toString('hex');
+    // ✅ PASO 6: Generar código de verificación
+    codigoVerificacion = require('crypto').randomBytes(16).toString('hex');
 
+    // ✅ PASO 7: Crear directorio de certificados
     const uploadDir = path.join(__dirname, '..', 'uploads', 'certificados');
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
@@ -137,6 +179,7 @@ class CertificadosController {
     const fileName = `certificado_${userId}_${Date.now()}.pdf`;
     const certificadoPath = path.join(uploadDir, fileName);
 
+    // ✅ PASO 8: Generar PDF
     await this.crearPDFCertificado(
       certificadoPath,
       usuario[0].nombre_completo,
@@ -146,6 +189,7 @@ class CertificadosController {
 
     certificadoUrl = `${req.protocol}://${req.get('host')}/uploads/certificados/${fileName}`;
 
+    // ✅ PASO 9: Guardar en base de datos
     await db.execute(`
       INSERT INTO certificados (
         id_usuario, 
@@ -166,6 +210,8 @@ class CertificadosController {
       codigoVerificacion
     ]);
 
+    console.log('✅ Certificado generado exitosamente para usuario', userId);
+
     res.json({
       success: true,
       mensaje: 'Certificado generado exitosamente',
@@ -177,10 +223,11 @@ class CertificadosController {
     });
 
   } catch (error) {
-    console.error('Error al generar certificado:', error);
+    console.error('❌ Error al generar certificado:', error);
     res.status(500).json({
       success: false,
-      mensaje: 'Error al generar certificado'
+      mensaje: 'Error al generar certificado',
+      error: error.message
     });
   }
 }

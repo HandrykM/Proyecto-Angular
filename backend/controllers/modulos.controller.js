@@ -6,6 +6,7 @@ exports.getModulosConProgreso = async (req, res) => {
   try {
     const userId = req.user.id;
     
+    // ✅ CORRECCIÓN: Query mejorada para traer TODO correctamente
     const query = `
       SELECT 
         m.*,
@@ -43,6 +44,16 @@ exports.getModulosConProgreso = async (req, res) => {
     
     const [modulos] = await db.query(query, [userId]);
     
+    // ✅ Log para debug
+    /*modulos.forEach(mod => {
+      console.log(`📦 Módulo ${mod.id} (${mod.titulo}):`, {
+        lecturas: mod.total_lecturas,
+        materiales: mod.total_materiales,
+        progreso: mod.progreso_porcentaje
+      });
+    }
+  );*/
+    
     // Determinar bloqueo de módulos
     const modulosConBloqueo = modulos.map((modulo, index) => {
       let bloqueado = false;
@@ -62,7 +73,7 @@ exports.getModulosConProgreso = async (req, res) => {
     res.json({ data: modulosConBloqueo });
     
   } catch (error) {
-    console.error('❌ Error en getModulosConProgreso:', error);
+    console.error('Error en getModulosConProgreso:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -73,13 +84,13 @@ exports.getModulo = async (req, res) => {
     const moduloId = req.params.id;
     const userId = req.user.id;
     
-    // Obtener módulo
+    // ✅ Obtener módulo
     const [modulo] = await db.query("SELECT * FROM modulos WHERE id = ? AND activo = 1", [moduloId]);
     if (!modulo[0]) {
       return res.status(404).json({ error: "Módulo no encontrado" });
     }
     
-    // Obtener LECTURAS con estado de completado
+    // ✅ CORRECCIÓN: Obtener LECTURAS con estado de completado
     const [lecturas] = await db.query(`
       SELECT 
         l.id, 
@@ -95,7 +106,7 @@ exports.getModulo = async (req, res) => {
       ORDER BY l.orden ASC
     `, [userId, moduloId]);
     
-    // Obtener MATERIALES
+    // ✅ CORRECCIÓN: Obtener MATERIALES
     const [materiales] = await db.query(`
       SELECT id, titulo, descripcion, tipo, url, filename, icono, orden
       FROM materiales_modulo 
@@ -110,6 +121,13 @@ exports.getModulo = async (req, res) => {
       total_lecturas: lecturas.length,
       total_materiales: materiales.length
     };
+    
+  /*  console.log('✅ Módulo enviado:', {
+      id: moduloCompleto.id,
+      titulo: moduloCompleto.titulo,
+      lecturas: moduloCompleto.lecturas.length,
+      materiales: moduloCompleto.materialesAdicionales.length
+    });*/
     
     res.json({ data: moduloCompleto });
     
