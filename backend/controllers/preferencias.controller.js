@@ -1,17 +1,7 @@
 // backend/controllers/preferencias.controller.js
 const db = require('../config/db');
 const nodemailer = require('nodemailer');
-
-// Configurar transporter de nodemailer (usando tu configuración de Mailer.js)
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: process.env.EMAIL_PORT || 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+const transporter = require('../config/mailer');
 
 class PreferenciasController {
   /**
@@ -36,7 +26,6 @@ class PreferenciasController {
       `, [userId]);
 
       if (preferencias.length === 0) {
-        // Crear configuración por defecto
         await this.crearConfiguracionDefecto(userId);
         return this.obtenerPreferencias(req, res);
       }
@@ -73,13 +62,11 @@ class PreferenciasController {
       const userId = req.user.id;
       const { idioma, modoOscuro, tamanoFuente, notificaciones } = req.body;
 
-      // Verificar si existe configuración
       const [existe] = await db.execute(`
         SELECT id FROM configuracion_usuario WHERE id_usuario = ?
       `, [userId]);
 
       if (existe.length === 0) {
-        // Crear nueva configuración
         await db.execute(`
           INSERT INTO configuracion_usuario (
             id_usuario, idioma, modo_oscuro, tamano_fuente,
@@ -97,7 +84,6 @@ class PreferenciasController {
           notificaciones?.logros ? 1 : 0
         ]);
       } else {
-        // Actualizar configuración existente
         await db.execute(`
           UPDATE configuracion_usuario SET
             idioma = ?,
@@ -150,25 +136,57 @@ class PreferenciasController {
   }
 
   /**
-   * Enviar notificación por email
+   * ✅ VERIFICAR SI TIENE NOTIFICACIONES ACTIVAS
+   */
+  async tieneNotificacionActiva(userId, tipo) {
+    try {
+      const [config] = await db.execute(`
+        SELECT notif_email, notif_sms, notif_push, notif_recordatorios, notif_logros
+        FROM configuracion_usuario
+        WHERE id_usuario = ?
+      `, [userId]);
+
+      if (config.length === 0) {
+        return false;
+      }
+
+      const notif = config[0];
+
+      switch (tipo) {
+        case 'email': return notif.notif_email === 1;
+        case 'sms': return notif.notif_sms === 1;
+        case 'push': return notif.notif_push === 1;
+        case 'recordatorios': return notif.notif_recordatorios === 1;
+        case 'logros': return notif.notif_logros === 1;
+        default: return false;
+      }
+    } catch (error) {
+      console.error('Error verificando notificación:', error);
+      return false;
+    }
+  }
+
+  /**
+   * ✅ ENVIAR NOTIFICACIÓN POR EMAIL
    */
   async enviarNotificacionEmail(userId, asunto, mensaje) {
     try {
-      // Verificar si el usuario tiene notificaciones por email activadas
-      const [config] = await db.execute(`
-        SELECT notif_email FROM configuracion_usuario WHERE id_usuario = ?
-      `, [userId]);
-
-      if (config.length === 0 || config[0].notif_email !== 1) {
-        return; // Usuario no tiene notificaciones activadas
+      // Verificar si tiene notificaciones email activadas
+      const tieneEmail = await this.tieneNotificacionActiva(userId, 'email');
+      if (!tieneEmail) {
+        console.log(`❌ Usuario ${userId} tiene notificaciones email desactivadas`);
+        return false;
       }
 
-      // Obtener email del usuario
+      // Obtener datos del usuario
       const [usuario] = await db.execute(`
         SELECT correo, nombre FROM usuarios WHERE id = ?
       `, [userId]);
 
-      if (usuario.length === 0) return;
+      if (usuario.length === 0) {
+        console.error('Usuario no encontrado');
+        return false;
+      }
 
       const mailOptions = {
         from: `"HydroSave" <${process.env.EMAIL_USER}>`,
@@ -179,22 +197,53 @@ class PreferenciasController {
           <html>
             <head>
               <style>
-                body { font-family: Arial, sans-serif; background: #f0f8ff; padding: 20px; }
-                .container { background: white; padding: 30px; border-radius: 10px; max-width: 600px; margin: 0 auto; }
-                .header { text-align: center; color: #00a8e8; margin-bottom: 20px; }
-                .content { color: #333; line-height: 1.6; }
-                .footer { text-align: center; margin-top: 30px; color: #999; font-size: 12px; }
-                .button { background: #00a8e8; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 20px; }
+                body { 
+                  font-family: Arial, sans-serif; 
+                  background: #f0f8ff; 
+                  padding: 20px; 
+                }
+                .container { 
+                  background: white; 
+                  padding: 30px; 
+                  border-radius: 10px; 
+                  max-width: 600px; 
+                  margin: 0 auto; 
+                  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                }
+                .header { 
+                  text-align: center; 
+                  color: #00a8e8; 
+                  margin-bottom: 20px; 
+                }
+                .content { 
+                  color: #333; 
+                  line-height: 1.6; 
+                }
+                .footer { 
+                  text-align: center; 
+                  margin-top: 30px; 
+                  color: #999; 
+                  font-size: 12px; 
+                }
+                .button { 
+                  background: #00a8e8; 
+                  color: white; 
+                  padding: 12px 30px; 
+                  text-decoration: none; 
+                  border-radius: 5px; 
+                  display: inline-block; 
+                  margin-top: 20px; 
+                }
               </style>
             </head>
             <body>
               <div class="container">
                 <div class="header">
-                  <h1>HydroSave</h1>
+                  <h1>💧 HydroSave</h1>
                 </div>
                 <div class="content">
                   <p>Hola ${usuario[0].nombre},</p>
-                  <p>${mensaje}</p>
+                  ${mensaje}
                   <a href="http://localhost:4200/perfil" class="button">Ver mi perfil</a>
                 </div>
                 <div class="footer">
@@ -208,23 +257,99 @@ class PreferenciasController {
       };
 
       await transporter.sendMail(mailOptions);
-      console.log('Email enviado correctamente a:', usuario[0].correo);
+      console.log('✅ Email enviado correctamente a:', usuario[0].correo);
+      return true;
 
     } catch (error) {
-      console.error('Error al enviar email:', error);
+      console.error('❌ Error al enviar email:', error);
+      return false;
     }
   }
 
   /**
-   * Enviar notificación de logro
+   * ✅ ENVIAR NOTIFICACIÓN POR SMS (Twilio)
+   */
+  async enviarNotificacionSMS(userId, mensaje) {
+    try {
+      // Verificar si tiene notificaciones SMS activadas
+      const tieneSMS = await this.tieneNotificacionActiva(userId, 'sms');
+      if (!tieneSMS) {
+        console.log(`❌ Usuario ${userId} tiene notificaciones SMS desactivadas`);
+        return false;
+      }
+
+      const [usuario] = await db.execute(`
+        SELECT telefono, nombre FROM usuarios WHERE id = ?
+      `, [userId]);
+
+      if (usuario.length === 0 || !usuario[0].telefono) {
+        console.log('❌ Usuario sin teléfono registrado');
+        return false;
+      }
+
+      // TODO: Integrar Twilio aquí
+      console.log(`📱 SMS a ${usuario[0].telefono}: ${mensaje}`);
+      
+      /* EJEMPLO CON TWILIO:
+      const accountSid = process.env.TWILIO_ACCOUNT_SID;
+      const authToken = process.env.TWILIO_AUTH_TOKEN;
+      const client = require('twilio')(accountSid, authToken);
+
+      await client.messages.create({
+        body: mensaje,
+        from: process.env.TWILIO_PHONE_NUMBER,
+        to: usuario[0].telefono
+      });
+      */
+
+      return true;
+    } catch (error) {
+      console.error('❌ Error al enviar SMS:', error);
+      return false;
+    }
+  }
+
+  /**
+   * ✅ NOTIFICAR MÓDULO COMPLETADO
+   */
+  async notificarModuloCompletado(userId, modulo) {
+    try {
+      const tieneEmail = await this.tieneNotificacionActiva(userId, 'email');
+      const tienePush = await this.tieneNotificacionActiva(userId, 'push');
+
+      if (tieneEmail) {
+        const asunto = '🎉 ¡Módulo Completado!';
+        const mensaje = `
+          <h2>¡Felicidades! Has completado un módulo</h2>
+          <h3>${modulo.titulo}</h3>
+          <p>${modulo.descripcion}</p>
+          <p><strong>Puntos obtenidos:</strong> +${modulo.puntos}</p>
+        `;
+        await this.enviarNotificacionEmail(userId, asunto, mensaje);
+      }
+
+      if (tienePush) {
+        // Aquí se enviaría la notificación push al frontend
+        console.log('🔔 Push notification: Módulo completado');
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error notificando módulo completado:', error);
+      return false;
+    }
+  }
+
+  /**
+   * ✅ NOTIFICAR LOGRO OBTENIDO
    */
   async notificarLogro(userId, logro) {
     try {
-      const [config] = await db.execute(`
-        SELECT notif_email, notif_logros FROM configuracion_usuario WHERE id_usuario = ?
-      `, [userId]);
+      const tieneEmail = await this.tieneNotificacionActiva(userId, 'email');
+      const tieneLogros = await this.tieneNotificacionActiva(userId, 'logros');
+      const tienePush = await this.tieneNotificacionActiva(userId, 'push');
 
-      if (config.length > 0 && config[0].notif_email === 1 && config[0].notif_logros === 1) {
+      if (tieneEmail && tieneLogros) {
         const asunto = '🏆 ¡Nuevo Logro Desbloqueado!';
         const mensaje = `
           <h2>¡Felicidades! Has desbloqueado un nuevo logro</h2>
@@ -234,21 +359,28 @@ class PreferenciasController {
         `;
         await this.enviarNotificacionEmail(userId, asunto, mensaje);
       }
+
+      if (tienePush && tieneLogros) {
+        console.log('🔔 Push notification: Logro obtenido');
+      }
+
+      return true;
     } catch (error) {
-      console.error('Error al notificar logro:', error);
+      console.error('Error notificando logro:', error);
+      return false;
     }
   }
 
   /**
-   * Enviar recordatorio de estudio
+   * ✅ ENVIAR RECORDATORIO DE ESTUDIO
    */
   async enviarRecordatorioEstudio(userId) {
     try {
-      const [config] = await db.execute(`
-        SELECT notif_email, notif_recordatorios FROM configuracion_usuario WHERE id_usuario = ?
-      `, [userId]);
+      const tieneEmail = await this.tieneNotificacionActiva(userId, 'email');
+      const tieneRecordatorios = await this.tieneNotificacionActiva(userId, 'recordatorios');
+      const tieneSMS = await this.tieneNotificacionActiva(userId, 'sms');
 
-      if (config.length > 0 && config[0].notif_email === 1 && config[0].notif_recordatorios === 1) {
+      if (tieneEmail && tieneRecordatorios) {
         const asunto = '📚 Recordatorio de Estudio - HydroSave';
         const mensaje = `
           <h2>¡No olvides continuar con tu aprendizaje!</h2>
@@ -257,21 +389,28 @@ class PreferenciasController {
         `;
         await this.enviarNotificacionEmail(userId, asunto, mensaje);
       }
+
+      if (tieneSMS && tieneRecordatorios) {
+        const mensajeSMS = '📚 HydroSave: ¡Continúa tu aprendizaje! Hace tiempo que no te vemos.';
+        await this.enviarNotificacionSMS(userId, mensajeSMS);
+      }
+
+      return true;
     } catch (error) {
-      console.error('Error al enviar recordatorio:', error);
+      console.error('Error enviando recordatorio:', error);
+      return false;
     }
   }
 
   /**
-   * Enviar notificación de certificado disponible
+   * ✅ NOTIFICAR CERTIFICADO DISPONIBLE
    */
   async notificarCertificadoDisponible(userId) {
     try {
-      const [config] = await db.execute(`
-        SELECT notif_email FROM configuracion_usuario WHERE id_usuario = ?
-      `, [userId]);
+      const tieneEmail = await this.tieneNotificacionActiva(userId, 'email');
+      const tienePush = await this.tieneNotificacionActiva(userId, 'push');
 
-      if (config.length > 0 && config[0].notif_email === 1) {
+      if (tieneEmail) {
         const asunto = '🎓 ¡Certificado Disponible!';
         const mensaje = `
           <h2>¡Felicitaciones! Has completado todos los módulos</h2>
@@ -280,40 +419,17 @@ class PreferenciasController {
         `;
         await this.enviarNotificacionEmail(userId, asunto, mensaje);
       }
+
+      if (tienePush) {
+        console.log('🔔 Push notification: Certificado disponible');
+      }
+
+      return true;
     } catch (error) {
-      console.error('Error al notificar certificado:', error);
+      console.error('Error notificando certificado:', error);
+      return false;
     }
   }
-
-  /**
- * Enviar notificación por SMS (usando Twilio o similar)
- */
-async enviarNotificacionSMS(userId, mensaje) {
-  try {
-    // Verificar si el usuario tiene notificaciones SMS activadas
-    const [config] = await db.execute(`
-      SELECT notif_sms FROM configuracion_usuario WHERE id_usuario = ?
-    `, [userId]);
-
-    if (config.length === 0 || config[0].notif_sms !== 1) {
-      return;
-    }
-
-    // Obtener teléfono del usuario
-    const [usuario] = await db.execute(`
-      SELECT telefono, nombre FROM usuarios WHERE id = ?
-    `, [userId]);
-
-    if (usuario.length === 0 || !usuario[0].telefono) return;
-
-    // Aquí integrarías Twilio u otro servicio SMS
-    // Por ahora solo logging
-    console.log(`SMS a ${usuario[0].telefono}: ${mensaje}`);
-    
-  } catch (error) {
-    console.error('Error al enviar SMS:', error);
-  }
-}
 }
 
 module.exports = new PreferenciasController();

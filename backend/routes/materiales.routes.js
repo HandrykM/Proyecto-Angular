@@ -59,7 +59,7 @@ router.get('/descargar/:id', requireAuth, async (req, res) => {
     
     res.download(filePath, filename, (err) => {
       if (err) {
-        console.error('❌ Error descargando:', err);
+        console.error('Error descargando:', err);
         res.status(500).json({ error: 'Error descargando archivo' });
       } else {
       //  console.log('✅ Archivo descargado:', filename);
