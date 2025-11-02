@@ -1,0 +1,429 @@
+<!-- Barra de navegación principal -->
+<nav class="main-nav">
+  <div class="nav-container">
+    <!-- Logo -->
+    <a routerLink="/inicio" class="nav-brand">
+      <i class="fas fa-tint"></i>
+      <span>HydroSave</span>
+    </a>
+
+    <!-- Enlaces -->
+    <div class="nav-menu">
+      <a routerLink="/inicio" class="nav-link"><i class="fas fa-home"></i><span>Inicio</span></a>
+      <a routerLink="/modulos" class="nav-link active"><i class="fas fa-graduation-cap"></i><span>Módulos</span></a>
+      <a routerLink="/biblioteca" class="nav-link"><i class="fas fa-book"></i><span>Biblioteca</span></a>
+      <a routerLink="/actividades" class="nav-link"><i class="fas fa-tasks"></i><span>Actividades</span></a>
+      <a *ngIf="usuario?.rol === 'admin'" routerLink="/admin" class="nav-link"><i class="fas fa-shield-alt"></i><span>Admin</span></a>
+    </div>
+
+    <!-- Perfil -->
+    <div class="nav-profile-container">
+      <a routerLink="/perfil" class="nav-profile">
+        <img *ngIf="usuario?.foto" [src]="usuario?.foto || ''" class="profile-img" alt="Perfil">
+        <i *ngIf="!usuario?.foto" class="fas fa-user"></i>
+        <span>{{ usuario?.nombre || 'Perfil' }}</span>
+      </a>
+    </div>
+
+    <!-- 🔹 Botón hamburguesa -->
+    <button class="nav-toggle" id="navToggle">
+      <i class="fas fa-bars open-icon"></i>
+      <i class="fas fa-times close-icon"></i>
+    </button>
+  </div>
+</nav>
+
+
+<!-- Mensaje de error global -->
+<div class="error-message" *ngIf="error">
+  <div class="error-content">
+    <i class="fas fa-exclamation-triangle"></i>
+    <span>{{error}}</span>
+    <button class="btn-close-error" (click)="error = null">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Floating Navigation para progreso -->
+<div class="floating-progress" *ngIf="!mostrandoLectura && !cargando">
+  <div class="progress-circle">
+    <svg class="progress-ring" width="60" height="60">
+      <circle class="progress-ring-bg" cx="30" cy="30" r="25"></circle>
+      <circle 
+        class="progress-ring-progress" 
+        cx="30" 
+        cy="30" 
+        r="25"
+        [style.stroke-dasharray]="157"
+        [style.stroke-dashoffset]="157 - (157 * calcularProgresoTotal()) / 100">
+      </circle>
+    </svg>
+    <span class="progress-text">{{calcularProgresoTotal()}}%</span>
+  </div>
+  <p class="progress-label">Progreso Total</p>
+</div>
+
+<!-- Indicador de carga -->
+<div class="loading-container" *ngIf="cargando">
+  <div class="loading-spinner">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Cargando módulos...</p>
+  </div>
+</div>
+
+<!-- Vista principal: Lista de módulos -->
+<div class="modulos-container" *ngIf="!moduloSeleccionado && !cargando">
+  <div class="modulos-header">
+    <h1 class="modulos-title">Módulos de Aprendizaje</h1>
+    <p class="modulos-subtitle">
+      Aprende sobre el reúso de agua paso a paso, desde los conceptos básicos hasta técnicas avanzadas
+    </p>
+    
+    <div class="progreso-general">
+      <div class="progreso-info">
+        <span class="progreso-porcentaje">{{calcularProgresoTotal()}}%</span>
+        <span class="progreso-texto">Completado</span>
+      </div>
+      <div class="progreso-barra">
+        <div class="progreso-fill" [style.width.%]="calcularProgresoTotal()"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modulos-grid">
+    <div 
+  class="modulo-card" 
+  *ngFor="let modulo of modulos; let i = index"
+  [ngClass]="{'bloqueado': modulo.bloqueado, 'completado': modulo.completado || modulo.progreso >= 100}"
+  (click)="seleccionarModulo(modulo)">
+      
+      <!-- Número del módulo -->
+      <div class="modulo-numero" [style.background-color]="modulo.color">
+        {{i + 1}}
+      </div>
+      
+      <!-- Estado del módulo -->
+      <div class="modulo-estado">
+        <i 
+          class="fas" 
+          [ngClass]="{
+            'fa-lock': modulo.bloqueado,
+            'fa-check-circle': modulo.progreso === 100,
+            'fa-play-circle': !modulo.bloqueado && modulo.progreso === 0,
+            'fa-pause-circle': modulo.progreso > 0 && modulo.progreso < 100
+          }"
+          [style.color]="modulo.bloqueado ? '#bdc3c7' : modulo.color">
+        </i>
+      </div>
+      
+      <!-- Contenido del módulo -->
+      <div class="modulo-contenido">
+        <div class="modulo-header-info">
+          <h3 class="modulo-titulo">{{modulo.titulo}}</h3>
+          <div class="modulo-meta">
+            <span class="modulo-nivel" [style.color]="obtenerNivelColor(modulo.nivel)">
+              {{modulo.nivel | uppercase}}
+            </span>
+            <span class="modulo-duracion">
+              <i class="fas fa-clock"></i>
+              {{modulo.duracionTotal}}
+            </span>
+          </div>
+        </div>
+        
+        <p class="modulo-descripcion">{{modulo.descripcion}}</p>
+        
+        <!-- Estadísticas del módulo -->
+        <div class="modulo-stats">
+  <div class="stat">
+    <i class="fas fa-book"></i>
+    <!-- ✅ CORRECCIÓN: Usar total_lecturas en vez de lecturas.length -->
+    <span>{{modulo.total_lecturas || 0}} lecturas</span>
+  </div>
+  <div class="stat">
+    <i class="fas fa-download"></i>
+    <!-- ✅ CORRECCIÓN: Usar total_materiales en vez de materialesAdicionales.length -->
+    <span>{{modulo.total_materiales || 0}} recursos</span>
+  </div>
+  <div class="stat">
+    <i class="fas fa-star"></i>
+    <span>{{modulo.puntos}} puntos</span>
+  </div>
+</div>
+        
+        <!-- Barra de progreso -->
+        <div class="modulo-progreso">
+          <div class="progreso-header">
+            <span>Progreso</span>
+            <span>{{ modulo.progreso | number:'1.0-0' }}%</span>
+          </div>
+          <div class="progreso-barra-modulo">
+            <div 
+              class="progreso-fill-modulo" 
+              [style.width.%]="modulo.progreso | number:'1.0-0'"
+              [style.background-color]="modulo.color">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Overlay para módulos bloqueados -->
+      <div class="modulo-overlay" *ngIf="modulo.bloqueado">
+        <div class="unlock-message">
+          <i class="fas fa-lock"></i>
+          <p>Completa el módulo anterior para desbloquear</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensaje cuando no hay módulos -->
+  <div class="no-modulos" *ngIf="modulos.length === 0 && !cargando">
+    <i class="fas fa-book-open"></i>
+    <h3>No hay módulos disponibles</h3>
+    <p>Los módulos se cargarán pronto. Por favor, vuelve más tarde.</p>
+  </div>
+</div>
+
+<!-- Vista detalle: Módulo seleccionado -->
+<div class="modulo-detalle" *ngIf="moduloSeleccionado && !mostrandoLectura">
+  <div class="detalle-container">
+    <!-- Header del módulo -->
+    <div class="detalle-header">
+      <button class="btn-volver" (click)="volverAModulos()">
+        <i class="fas fa-arrow-left"></i>
+        Volver a módulos
+      </button>
+      
+      <div class="modulo-info">
+        <div class="modulo-icono" [style.background-color]="moduloSeleccionado.color">
+          <i [class]="moduloSeleccionado.icono"></i>
+        </div>
+        <div class="modulo-detalles">
+          <h1>{{moduloSeleccionado.titulo}}</h1>
+          <p>{{moduloSeleccionado.descripcion}}</p>
+          <div class="modulo-badges">
+            <span class="badge badge-nivel" [style.background-color]="obtenerNivelColor(moduloSeleccionado.nivel)">
+              {{moduloSeleccionado.nivel | uppercase}}
+            </span>
+            <span class="badge badge-duracion">
+              <i class="fas fa-clock"></i>
+              {{moduloSeleccionado.duracionTotal}}
+            </span>
+            <span class="badge badge-puntos">
+              <i class="fas fa-star"></i>
+              {{moduloSeleccionado.puntos}} puntos
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      
+      <!-- Progreso del módulo actual -->
+<div class="detalle-progreso">
+  <div class="progreso-circular">
+    <svg width="80" height="80">
+      <circle cx="40" cy="40" r="35" stroke="#e0e0e0" stroke-width="8" fill="none"></circle>
+      <circle 
+        cx="40" 
+        cy="40" 
+        r="35" 
+        [attr.stroke]="moduloSeleccionado.color"
+        stroke-width="8" 
+        fill="none"
+        stroke-linecap="round"
+        [style.stroke-dasharray]="220"
+        [style.stroke-dashoffset]="220 - (220 * (moduloSeleccionado.progreso || 0)) / 100"
+        style="transform: rotate(-90deg); transform-origin: 40px 40px;">
+      </circle>
+    </svg>
+    <span class="progreso-numero">{{ moduloSeleccionado.progreso || 0 }}%</span>
+  </div>
+</div>
+    </div>
+
+    <!-- Contenido del módulo -->
+    <div class="detalle-contenido">
+      <!-- Lecturas -->
+      <div class="seccion-lecturas">
+        <h2 class="seccion-titulo">
+          <i class="fas fa-book"></i>
+          Lecturas ({{moduloSeleccionado.lecturas.length || 0}})
+        </h2>
+        
+        <!-- Skeleton loading para lecturas -->
+        <div class="lecturas-skeleton" *ngIf="cargando">
+          <div class="lectura-skeleton" *ngFor="let item of [1,2,3]">
+            <div class="skeleton-circle"></div>
+            <div class="skeleton-content">
+              <div class="skeleton-line long"></div>
+              <div class="skeleton-line short"></div>
+              <div class="skeleton-line medium"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="lecturas-lista" *ngIf="!cargando">
+          <div 
+            class="lectura-item"
+            *ngFor="let lectura of moduloSeleccionado.lecturas; let i = index"
+            [ngClass]="{'completada': lectura.completado}"
+            (click)="abrirLectura(lectura, moduloSeleccionado)">
+            
+            <div class="lectura-numero">
+              <span *ngIf="!lectura.completado">{{i + 1}}</span>
+              <i class="fas fa-check" *ngIf="lectura.completado"></i>
+            </div>
+            
+            <div class="lectura-contenido">
+              <h3>{{lectura.titulo}}</h3>
+              <p>{{lectura.descripcion}}</p>
+              <div class="lectura-meta">
+                <span class="duracion">
+                  <i class="fas fa-clock"></i>
+                  {{lectura.duracion}}
+                </span>
+                <span class="estado" *ngIf="lectura.completado">
+                  <i class="fas fa-check-circle"></i>
+                  Completado
+                </span>
+              </div>
+            </div>
+            
+            <div class="lectura-accion">
+              <i class="fas fa-play" *ngIf="!lectura.completado"></i>
+              <i class="fas fa-redo" *ngIf="lectura.completado"></i>
+            </div>
+          </div>
+          
+          <!-- Mensaje cuando no hay lecturas -->
+          <div class="no-lecturas" *ngIf="!moduloSeleccionado.lecturas || moduloSeleccionado.lecturas.length === 0">
+            <i class="fas fa-book-open"></i>
+            <p>No hay lecturas disponibles para este módulo</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Materiales adicionales -->
+      <!-- Materiales adicionales -->
+<div class="seccion-materiales">
+  <h2 class="seccion-titulo">
+    <i class="fas fa-download"></i>
+    Materiales Adicionales ({{moduloSeleccionado.materialesAdicionales.length || 0}})
+  </h2>
+  
+  <div class="materiales-grid" *ngIf="moduloSeleccionado.materialesAdicionales && moduloSeleccionado.materialesAdicionales.length > 0">
+    <div 
+      class="material-item"
+      *ngFor="let material of moduloSeleccionado.materialesAdicionales"
+      (click)="descargarMaterial(material)">
+      
+      <div class="material-icono">
+        <i [class]="material.icono || 'fas fa-file'"></i>
+      </div>
+      <div class="material-info">
+        <!-- ✅ CORRECCIÓN: Mostrar solo el título, NO el filename -->
+        <h4>{{material.titulo}}</h4>
+        <p>{{material.descripcion}}</p>
+        <span class="material-tipo">{{material.tipo | uppercase}}</span>
+      </div>
+      <div class="material-accion">
+        <i class="fas fa-download"></i>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Mensaje cuando no hay materiales -->
+  <div class="no-materiales" *ngIf="!moduloSeleccionado.materialesAdicionales || moduloSeleccionado.materialesAdicionales.length === 0">
+    <i class="fas fa-file-alt"></i>
+    <p>No hay materiales adicionales para este módulo</p>
+  </div>
+</div>
+    </div>
+  </div>
+</div>
+
+<!-- Vista lectura: Lectura individual -->
+<div class="lectura-viewer" *ngIf="mostrandoLectura && lecturaActual">
+  <div class="lectura-container">
+    <!-- Header de la lectura -->
+    <div class="lectura-header">
+      <button class="btn-cerrar" (click)="cerrarLectura()">
+        <i class="fas fa-times"></i>
+        Cerrar
+      </button>
+      
+      <div class="lectura-info">
+        <h1>{{lecturaActual.titulo}}</h1>
+        <div class="lectura-meta">
+          <span class="modulo-ref">{{moduloSeleccionado?.titulo}}</span>
+          <span class="duracion">
+            <i class="fas fa-clock"></i>
+            {{lecturaActual.duracion}}
+          </span>
+        </div>
+      </div>
+      
+      <button 
+        class="btn-completar"
+        *ngIf="!lecturaActual.completado"
+        (click)="marcarLecturaCompletada(lecturaActual, moduloSeleccionado!)"
+        [disabled]="cargando">
+        <i class="fas fa-check"></i>
+        <span *ngIf="!cargando">Marcar como completado</span>
+        <span *ngIf="cargando">Guardando...</span>
+      </button>
+      
+      <div class="estado-completado" *ngIf="lecturaActual.completado">
+        <i class="fas fa-check-circle"></i>
+        Completado
+      </div>
+    </div>
+
+    <!-- Contenido de la lectura -->
+    <div class="lectura-contenido">
+      <div class="contenido-texto">
+        <div class="texto-principal" [innerHTML]="lecturaActual.contenido"></div>
+        
+        <!-- Área de notas personales -->
+        <div class="seccion-notas">
+          <h3><i class="fas fa-sticky-note"></i> Mis Notas</h3>
+          <textarea 
+            class="textarea-notas" 
+            placeholder="Escribe aquí tus notas personales sobre esta lectura..."
+            rows="4"
+            [(ngModel)]="notasLectura"
+            (input)="onNotasChange($event)">
+          </textarea>
+          <button 
+            class="btn-guardar-notas"
+            (click)="guardarNotasLectura()"
+            [disabled]="guardandoNotas">
+            <i class="fas fa-save" *ngIf="!guardandoNotas"></i>
+            <i class="fas fa-spinner fa-spin" *ngIf="guardandoNotas"></i>
+            <span *ngIf="!guardandoNotas">Guardar notas</span>
+            <span *ngIf="guardandoNotas">Guardando...</span>
+          </button>
+        </div>
+      </div>
+
+      
+      
+      <!-- Navegación entre lecturas (opcional para implementar después) -->
+      <!--
+      <div class="lectura-navegacion">
+        <button class="btn-nav btn-anterior" *ngIf="obtenerLecturaAnterior()" (click)="navegarALectura('anterior')">
+          <i class="fas fa-arrow-left"></i>
+          Lectura anterior
+        </button>
+        
+        <button class="btn-nav btn-siguiente" *ngIf="obtenerLecturaSiguiente()" (click)="navegarALectura('siguiente')">
+          Lectura siguiente
+          <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+      -->
+    </div>
+  </div>
+</div>

@@ -1,0 +1,84 @@
+<div class="juego-container">
+  <!-- Header -->
+  <div class="header-bar">
+    <button class="btn-back" (click)="volverAActividades()">
+      <i class="fas fa-arrow-left"></i>
+      Volver a Actividades
+    </button>
+    <div class="progreso-juego">
+      <div class="nivel-actual">
+        <i class="fas fa-layer-group"></i>
+        <span>{{nivelActual | titlecase}}</span>
+      </div>
+      <div class="puntuacion-juego">
+        <i class="fas fa-star"></i>
+        <span>{{puntuacionFinal}} pts</span>
+      </div>
+      <div class="tiempo-juego">
+        <i class="fas fa-clock"></i>
+        <span>{{tiempoTranscurrido}}:{{segundosTranscurridos.toString().padStart(2, '0')}}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor del iframe -->
+  <div class="juego-wrapper" *ngIf="!showResults">
+    <div class="loading-juego" *ngIf="cargandoJuego">
+      <div class="spinner"></div>
+      <p>Cargando juego...</p>
+    </div>
+    <iframe 
+      #gameFrame
+      [src]="gameUrl" 
+      frameborder="0"
+      class="game-frame"
+      (load)="onJuegoCargado()"
+      [style.display]="cargandoJuego ? 'none' : 'block'">
+    </iframe>
+  </div>
+
+  <!-- Resultados -->
+  <div *ngIf="showResults" class="resultados-juego">
+    <div class="medalla-contenedor">
+      <div class="medalla" [class]="'medalla-' + medallaObtenida">
+        <i class="fas fa-medal"></i>
+      </div>
+      <h2>¡Juego Completado!</h2>
+    </div>
+
+    <div class="puntuacion-final">
+      <div class="puntos">{{puntuacionFinal}}</div>
+      <div class="label">Puntos Totales</div>
+    </div>
+
+    <div class="metricas">
+      <div class="metrica">
+        <div class="numero">{{respuestasCorrectas}}/{{totalTarjetas}}</div>
+        <div class="label">Correctas</div>
+      </div>
+      <div class="metrica">
+        <div class="numero">{{precision}}%</div>
+        <div class="label">Precisión</div>
+      </div>
+      <div class="metrica">
+        <div class="numero">{{tiempoTranscurrido}}m</div>
+        <div class="label">Tiempo</div>
+      </div>
+    </div>
+
+    <div class="acciones">
+      <button class="btn-reintentar" (click)="reiniciarJuego()">
+        <i class="fas fa-redo"></i> Reintentar
+      </button>
+      <button class="btn-cambiar-nivel" (click)="cambiarNivel('basico')" *ngIf="nivelActual !== 'basico'">
+        <i class="fas fa-level-down-alt"></i> Nivel Básico
+      </button>
+      <button class="btn-cambiar-nivel" (click)="cambiarNivel('intermedio')" *ngIf="precision >= 70">
+        <i class="fas fa-level-up-alt"></i> Nivel Intermedio
+      </button>
+      <button class="btn-continuar" (click)="volverAActividades()">
+        <i class="fas fa-check"></i> Continuar
+      </button>
+    </div>
+  </div>
+</div>

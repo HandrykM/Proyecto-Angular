@@ -1,0 +1,579 @@
+.simulador-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.header-bar {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-back {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateX(-5px);
+}
+
+.btn-back i {
+  margin-right: 0.5rem;
+}
+
+.progreso-actividad {
+  display: flex;
+  gap: 2rem;
+  color: white;
+}
+
+.tiempo-transcurrido,
+.puntuacion-actual {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.tiempo-transcurrido i,
+.puntuacion-actual i {
+  margin-right: 0.5rem;
+}
+
+.puntuacion-actual {
+  background: linear-gradient(45deg, #FFD700, #FFA000);
+  color: #333;
+}
+
+.simulador-wrapper {
+  flex: 1;
+  position: relative;
+  margin: 1rem;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.loading-simulator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: white;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s infinite linear;
+  margin: 0 auto 1rem;
+}
+
+.loading-simulator p {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.simulador-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: white;
+}
+
+.instrucciones-panel {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 400px;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  transition: right 0.3s ease;
+  z-index: 1000;
+  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.instrucciones-panel.visible {
+  right: 0;
+}
+
+.panel-content {
+  padding: 2rem;
+  height: 100%;
+  overflow-y: auto;
+  position: relative;
+}
+
+.panel-content h3 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.panel-content h3 i {
+  margin-right: 0.5rem;
+  color: #3498db;
+}
+
+.panel-content ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 2rem;
+}
+
+.panel-content li {
+  padding: 0.75rem 0;
+  padding-left: 2rem;
+  position: relative;
+  color: #555;
+  line-height: 1.5;
+}
+
+.panel-content li:before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: #3498db;
+  font-weight: bold;
+}
+
+.objetivos {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 10px;
+  border-left: 4px solid #3498db;
+}
+
+.objetivos h4 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.objetivo-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  color: #555;
+}
+
+.objetivo-item i {
+  margin-right: 0.75rem;
+  color: #e74c3c;
+  width: 20px;
+}
+
+.btn-cerrar {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-cerrar:hover {
+  background: #c0392b;
+}
+
+.btn-instrucciones {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 60px;
+  height: 60px;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  z-index: 999;
+  transition: all 0.3s ease;
+}
+
+.btn-instrucciones:hover {
+  transform: scale(1.1);
+  background: #2980b9;
+}
+
+/* ================================
+   MODAL DE RESULTADOS - ESTILO TRIVIA
+================================ */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.resultados-modal {
+  background: white;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideInUp 0.4s ease;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Header del modal */
+.modal-header-gogo {
+  text-align: center;
+  padding: 2rem 2rem 1rem;
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  border-radius: 20px 20px 0 0;
+}
+
+.header-icon {
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  font-size: 2.5rem;
+}
+
+.header-icon.victoria {
+  background: rgba(46, 204, 113, 0.3);
+}
+
+.header-icon.derrota {
+  background: rgba(231, 76, 60, 0.3);
+}
+
+.modal-header-gogo h3 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.modal-header-gogo p {
+  opacity: 0.9;
+  margin-bottom: 0.5rem;
+}
+
+/* Grid de estadísticas */
+.estadisticas-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.estadistica-item {
+  text-align: center;
+  background: #f8f9fa;
+  padding: 1.5rem 1rem;
+  border-radius: 15px;
+  position: relative;
+}
+
+.estadistica-valor {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.estadistica-label {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.estadistica-icon {
+  position: absolute;
+  top: -10px;
+  right: -5px;
+  background: #3498db;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+/* Detalles adicionales */
+.detalles-gogo {
+  padding: 0 2rem;
+  margin-bottom: 2rem;
+}
+
+.detalle-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.detalle-label {
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.detalle-valor {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+/* Botones de acción */
+.acciones-gogo {
+  padding: 0 2rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.btn-primario, .btn-secundario {
+  padding: 1rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-primario {
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+  color: white;
+}
+
+.btn-primario:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+}
+
+.btn-secundario {
+  background: #95a5a6;
+  color: white;
+}
+
+.btn-secundario:hover {
+  background: #7f8c8d;
+  transform: translateY(-2px);
+}
+
+.btn-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.btn-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.modal-content {
+  padding: 2rem;
+}
+
+.resultado-principal {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.puntuacion-final {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #FFD700;
+  margin-bottom: 1rem;
+}
+
+.puntuacion-final i {
+  margin-right: 0.5rem;
+  font-size: 2.5rem;
+}
+
+.eficiencia-numero {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+.eficiencia-label {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.logros-obtenidos {
+  margin-bottom: 2rem;
+}
+
+.logros-obtenidos h4 {
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.logro {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 10px;
+  margin-bottom: 0.5rem;
+}
+
+.logro i {
+  margin-right: 1rem;
+  color: #FFD700;
+  font-size: 1.2rem;
+}
+
+.resumen-mejorias h4 {
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.metrica {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.metrica .label {
+  color: #666;
+}
+
+.metrica .valor {
+  font-weight: bold;
+  color: #333;
+}
+
+.modal-actions {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid #eee;
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-continuar,
+.btn-reintentar {
+  flex: 1;
+  padding: 1rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.btn-continuar {
+  background: #4CAF50;
+  color: white;
+}
+
+.btn-continuar:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+}
+
+.btn-reintentar {
+  background: #2196F3;
+  color: white;
+}
+
+.btn-reintentar:hover {
+  background: #1976D2;
+  transform: translateY(-2px);
+}
+
+.btn-continuar i,
+.btn-reintentar i {
+  margin-right: 0.5rem;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .instrucciones-panel {
+    width: 100%;
+    right: -100%;
+  }
+  
+  .progreso-actividad {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .header-bar {
+    padding: 1rem;
+  }
+}

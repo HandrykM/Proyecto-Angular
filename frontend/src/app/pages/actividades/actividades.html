@@ -1,0 +1,223 @@
+<!-- Reemplaza toda la nav section en actividades.html -->
+<nav class="main-nav">
+  <nav class="main-nav">
+  <div class="nav-container">
+    <a routerLink="/inicio" class="nav-brand">
+      <i class="fas fa-tint"></i>
+      <span>HydroSave</span>
+    </a>
+
+    <div class="nav-menu">
+      <a routerLink="/inicio" class="nav-link"><i class="fas fa-home"></i><span>Inicio</span></a>
+      <a routerLink="/modulos" class="nav-link"><i class="fas fa-graduation-cap"></i><span>Módulos</span></a>
+      <a routerLink="/biblioteca" class="nav-link"><i class="fas fa-book"></i><span>Biblioteca</span></a>
+      <a routerLink="/actividades" class="nav-link active"><i class="fas fa-tasks"></i><span>Actividades</span></a>
+      <a *ngIf="usuario?.rol === 'admin'" routerLink="/admin" class="nav-link"><i class="fas fa-shield-alt"></i><span>Admin</span></a>
+    </div>
+
+    <div class="nav-profile-container">
+      <a routerLink="/perfil" class="nav-profile">
+        <img *ngIf="fotoUsuario || usuario?.foto" [src]="fotoUsuario || usuario?.foto" class="profile-img" alt="Perfil">
+        <i *ngIf="!(fotoUsuario || usuario?.foto)" class="fas fa-user"></i>
+        <span>{{ usuario?.nombre || 'Perfil' }}</span>
+      </a>
+    </div>
+
+    <!-- 🔹 Botón de hamburguesa -->
+    <button class="nav-toggle" id="navToggle">
+      <i class="fas fa-bars open-icon"></i>
+      <i class="fas fa-times close-icon"></i>
+    </button>
+  </div>
+</nav>
+
+</nav>
+
+<div class="actividades-container">
+  <!-- Header -->
+  
+        <div class="modulos-header">
+    <h1 class="modulos-title">Actividades Interactivas</h1>
+    <p class="modulos-subtitle">
+      Aprende sobre el reúso del agua a través de actividades divertidas e interactivas. 
+          Completa desafíos, resuelve problemas y mejora tus conocimientos.
+    </p>
+      </div>
+
+      <!-- Estadísticas del usuario -->
+      <div class="stats-grid" *ngIf="estadisticas">
+        <div class="stat-card completadas">
+          <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="stat-info">
+            <h3>{{estadisticas.actividadesCompletadas}}/{{estadisticas.totalActividades}}</h3>
+            <p>Actividades Completadas</p>
+          </div>
+        </div>
+
+        <div class="stat-card puntos">
+          <div class="stat-icon">
+            <i class="fas fa-star"></i>
+          </div>
+          <div class="stat-info">
+            <h3>{{estadisticas.puntosTotal}}</h3>
+            <p>Puntos Totales de las Actividades</p>
+          </div>
+        </div>
+
+        <div class="stat-card tiempo">
+          <div class="stat-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="stat-info">
+            <h3>{{estadisticas.tiempoTotalMinutos}}min</h3>
+            <p>Tiempo Jugado</p>
+          </div>
+        </div>
+
+        <div class="stat-card favorita">
+          <div class="stat-icon">
+            <i class="fas fa-heart"></i>
+          </div>
+          <div class="stat-info">
+            <h3>{{estadisticas.actividadFavorita}}</h3>
+            <p>Actividad Favorita</p>
+          </div>
+        </div>
+        
+      </div>
+      
+    </div>
+    
+  
+
+  <!-- Lista de Actividades -->
+  <div class="actividades-section">
+    <div class="container mx-auto px-4 py-8">
+      <div class="actividades-grid">
+        <div class="actividad-card" 
+             *ngFor="let actividad of actividades" 
+             [class]="'nivel-' + actividad.nivel"
+             (click)="navegarAActividad(actividad)">
+          
+          <!-- Badge de completada -->
+          <div class="completion-badge" *ngIf="actividad.completada">
+            <i class="fas fa-crown"></i>
+          </div>
+
+          <!-- Header de la card -->
+          <div class="card-header" [style.background-color]="actividad.color">
+            <div class="actividad-icon">
+              <i [class]="actividad.icono"></i>
+            </div>
+            <div class="nivel-badge" [class]="'nivel-' + actividad.nivel">
+              {{actividad.nivel | titlecase}}
+            </div>
+          </div>
+
+          <!-- Contenido -->
+          <div class="card-content">
+            <h3 class="actividad-titulo">{{actividad.titulo}}</h3>
+            <p class="actividad-descripcion">{{actividad.descripcion}}</p>
+
+            <!-- Información adicional -->
+            <div class="actividad-info">
+              <div class="info-item">
+                <i class="fas fa-star"></i>
+                <span>{{actividad.puntos}} puntos</span>
+              </div>
+              <div class="info-item">
+                <i class="fas fa-clock"></i>
+                <span>{{actividad.duracion}}</span>
+              </div>
+            </div>
+
+            <!-- Barra de progreso -->
+            <div class="progress-section">
+              <div class="progress-info">
+                <span>Progreso</span>
+                <span>{{actividad.progreso}}%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" 
+                     [style.width.%]="actividad.progreso"
+                     [style.background-color]="actividad.color">
+                </div>
+              </div>
+            </div>
+
+            <!-- Puntuación máxima si existe -->
+            <div class="puntuacion-maxima" *ngIf="actividad.puntuacionMaxima">
+              <i class="fas fa-trophy"></i>
+              <span>Mejor puntuación: {{actividad.puntuacionMaxima}}</span>
+            </div>
+
+            <!-- Última vez jugada -->
+            <div class="ultima-vez" *ngIf="actividad.ultimaVez">
+              <i class="fas fa-history"></i>
+              <span>Última vez: {{actividad.ultimaVez | date:'short'}}</span>
+            </div>
+          </div>
+
+          <!-- Botón de acción -->
+          <div class="card-actions">
+            <button class="btn-actividad" [style.background-color]="actividad.color">
+              <span *ngIf="!actividad.completada">Comenzar</span>
+              <span *ngIf="actividad.completada">Jugar de nuevo</span>
+              <i class="fas fa-play ml-2"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- Sección de Ranking GoGo -->
+<div class="ranking-section" *ngIf="rankingGogo.length > 0">
+  <div class="container mx-auto px-4 py-8">
+    <div class="ranking-header">
+      <h2 class="section-title">
+        <i class="fas fa-trophy"></i>
+        Ranking Atrapa la gota - Aventura de lluvia
+      </h2>
+      <button class="btn-toggle-ranking" (click)="mostrarRanking = !mostrarRanking">
+        {{ mostrarRanking ? 'Ocultar Ranking' : 'Ver Ranking' }}
+        <i [class]="mostrarRanking ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
+      </button>
+    </div>
+
+    <!-- Contenedor colapsable -->
+    <div class="ranking-container-wrapper" [class.show]="mostrarRanking">
+      <div class="ranking-container">
+        <div
+          class="ranking-item"
+          *ngFor="let jugador of rankingGogo; let i = index"
+          [class]="'posicion-' + (i + 1)"
+        >
+          <div class="posicion">
+            <span class="numero">{{ i + 1 }}</span>
+            <i class="fas fa-medal" *ngIf="i < 3"></i>
+          </div>
+          <div class="jugador-info">
+            <h4>{{ jugador.nombreUsuario }}</h4>
+            <p>Nivel {{ jugador.nivel }}</p>
+          </div>
+          <div class="puntuacion">
+            <span>{{ jugador.puntuacionMaxima }}</span>
+            <small>puntos</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+  <!-- Loading -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p>Cargando actividades...</p>
+    </div>
+  </div>

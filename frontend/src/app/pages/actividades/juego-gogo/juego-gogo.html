@@ -1,0 +1,127 @@
+<div class="gogo-container">
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="cargandoJuego">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p>Cargando GoGo - Atrapa Gotas...</p>
+      <p style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-top: 10px;">
+        Prepárate para atrapar las gotas 💧
+      </p>
+    </div>
+  </div>
+
+  <!-- Header - Solo visible cuando el juego está activo -->
+  <div class="header-bar" *ngIf="juegoActivo && !mostrarResultados && !cargandoJuego">
+    <button class="btn-back" (click)="volverAActividades()">
+      <i class="fas fa-arrow-left"></i>
+      Volver a Actividades
+    </button>
+    
+    <div class="progreso-juego">
+      <div class="nivel-actual">
+        <i class="fas fa-trophy"></i>
+        <span>Nivel {{nivel}}</span>
+      </div>
+      
+      <div class="puntuacion-gogo">
+        <i class="fas fa-star"></i>
+        <span>{{puntuacionActual}} pts</span>
+      </div>
+      
+      <div class="tiempo-gogo">
+        <i class="fas fa-clock"></i>
+        <span>{{tiempoTranscurrido}}:{{segundosTranscurridos.toString().padStart(2, '0')}}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor del juego - Solo visible cuando el juego está activo -->
+  <div class="juego-wrapper" *ngIf="juegoActivo && !mostrarResultados">
+    <iframe 
+      #juegoFrame
+      [src]="juegoUrl" 
+      frameborder="0"
+      class="juego-frame"
+      (load)="onJuegoCargado()"
+      allow="fullscreen"
+      [style.display]="cargandoJuego ? 'none' : 'block'">
+    </iframe>
+  </div>
+
+  <!-- Modal de resultados -->
+  <div class="modal-overlay" *ngIf="mostrarResultados">
+    <div class="resultados-modal">
+      <!-- Header con icono -->
+      <div class="modal-header-gogo">
+        <div class="header-icon" [class.victoria]="puntuacionFinal >= 1000" [class.derrota]="puntuacionFinal < 1000">
+          <i class="fas" [class.fa-trophy]="puntuacionFinal >= 1000" [class.fa-cloud-rain]="puntuacionFinal < 1000"></i>
+        </div>
+        <h3>{{puntuacionFinal >= 1000 ? '¡Excelente!' : '¡Buen intento!'}}</h3>
+        <p>{{puntuacionFinal >= 1000 ? 'Dominaste las gotas como un profesional' : 'Sigue practicando para mejorar'}}</p>
+      </div>
+
+      <!-- Estadísticas principales -->
+      <div class="estadisticas-grid">
+        <div class="estadistica-item">
+          <div class="estadistica-valor">{{puntuacionFinal}}</div>
+          <div class="estadistica-label">Puntos</div>
+          <div class="estadistica-icon">
+            <i class="fas fa-star"></i>
+          </div>
+        </div>
+        
+        <div class="estadistica-item">
+          <div class="estadistica-valor">{{nivel}}</div>
+          <div class="estadistica-label">Nivel</div>
+          <div class="estadistica-icon">
+            <i class="fas fa-trophy"></i>
+          </div>
+        </div>
+        
+        <div class="estadistica-item">
+          <div class="estadistica-valor">{{tiempoTranscurrido}}m</div>
+          <div class="estadistica-label">Tiempo</div>
+          <div class="estadistica-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+        </div>
+
+        <div class="estadistica-item">
+          <div class="estadistica-valor">{{gotasAtrapadas}}</div>
+          <div class="estadistica-label">Gotas</div>
+          <div class="estadistica-icon">
+            <i class="fas fa-tint"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detalles adicionales -->
+      <div class="detalles-gogo">
+        <div class="detalle-item">
+          <span class="detalle-label">
+            <i class="fas fa-gamepad"></i> Modo de Juego:
+          </span>
+          <span class="detalle-valor">{{modoJuego === 'normal' ? 'Normal' : 'Clasificatoria'}}</span>
+        </div>
+        <div class="detalle-item">
+          <span class="detalle-label">
+            <i class="fas fa-percent"></i> Eficiencia:
+          </span>
+          <span class="detalle-valor">{{eficiencia | number:'1.0-0'}}%</span>
+        </div>
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="acciones-gogo">
+        <button class="btn-primario" (click)="finalizarActividad()">
+          <i class="fas fa-check-circle"></i>
+          Guardar y Salir
+        </button>
+        <button class="btn-secundario" (click)="reiniciarJuego()">
+          <i class="fas fa-redo-alt"></i>
+          Jugar Otra Vez
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

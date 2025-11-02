@@ -1,0 +1,154 @@
+<!-- src/app/components/material-manager/material-manager.component.html -->
+<div class="material-manager">
+  <div class="material-header">
+    <h4>
+      <i class="fas fa-folder-open"></i>
+      Materiales Adicionales
+    </h4>
+    <button type="button" class="btn-add-material" (click)="abrirFormulario()">
+      <i class="fas fa-plus"></i>
+      Agregar Material
+    </button>
+  </div>
+  
+  <!-- Lista de materiales -->
+  <div class="materiales-lista" *ngIf="materiales.length > 0">
+    <div class="material-item" *ngFor="let material of materiales; let i = index">
+      <div class="material-icon">
+        <i [class]="material.icono || obtenerIconoTipo(material.tipo)"></i>
+      </div>
+      <div class="material-info">
+        <h5>{{material.titulo}}</h5>
+        <p *ngIf="material.descripcion">{{material.descripcion}}</p>
+        <div class="material-meta">
+          <span class="badge-tipo">{{obtenerNombreTipo(material.tipo)}}</span>
+          <span class="material-url" *ngIf="material.url">
+            <i class="fas fa-link"></i>
+            {{material.url.substring(0, 40)}}{{material.url.length > 40 ? '...' : ''}}
+          </span>
+        </div>
+      </div>
+      <div class="material-actions">
+        <button type="button" class="btn-icon-sm" (click)="editarMaterial(material, i)" title="Editar">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button type="button" class="btn-icon-sm danger" (click)="eliminarMaterial(i)" title="Eliminar">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="empty-state" *ngIf="materiales.length === 0 && !mostrarFormulario">
+    <i class="fas fa-folder-open"></i>
+    <p>No hay materiales agregados</p>
+  </div>
+  
+  <!-- Formulario para agregar/editar material -->
+  <div class="modal-overlay" *ngIf="mostrarFormulario" (click)="cerrarFormulario()">
+    <div class="modal-content-material" (click)="$event.stopPropagation()">
+      <div class="modal-header-material">
+        <h4>
+          <i class="fas fa-file-plus"></i>
+          {{editandoIndice !== null ? 'Editar' : 'Agregar'}} Material
+        </h4>
+        <button type="button" class="btn-close-modal" (click)="cerrarFormulario()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body-material">
+        <div class="form-group">
+          <label>Tipo de Material *</label>
+          <div class="tipo-selector">
+            <button type="button" 
+                    *ngFor="let tipo of tiposMaterial"
+                    class="tipo-btn"
+                    [class.active]="materialActual.tipo === tipo.valor"
+                    (click)="materialActual.tipo = tipo.valor"
+>
+              <i [class]="tipo.icono"></i>
+              <span>{{tipo.label}}</span>
+            </button>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Título *</label>
+          <input type="text" 
+                 [(ngModel)]="materialActual.titulo" 
+                 class="form-control"
+                 placeholder="Título del material">
+        </div>
+        
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea [(ngModel)]="materialActual.descripcion"
+                    class="form-control"
+                    rows="3"
+                    placeholder="Descripción opcional"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label>URL del Material</label>
+          <input type="url" 
+                 [(ngModel)]="materialActual.url"
+                 class="form-control"
+                 placeholder="https://ejemplo.com/archivo.pdf">
+          <small>O sube un archivo desde tu computadora</small>
+        </div>
+        
+        <div class="form-group">
+          <label>Subir Archivo</label>
+          <div class="file-upload-wrapper">
+            <input type="file" 
+                   (change)="onArchivoSeleccionado($event)"
+                   class="file-input"
+                   id="fileInput">
+            <label for="fileInput" class="file-label">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <span>Seleccionar archivo</span>
+            </label>
+            <span class="file-name" *ngIf="materialActual.archivo">
+              {{materialActual.archivo.name}}
+            </span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Icono</label>
+          <div class="icono-selector-wrapper">
+            <button type="button" 
+                    class="btn-icono-actual"
+                    (click)="mostrarSelectorIconos = !mostrarSelectorIconos">
+              <i [class]="materialActual.icono || 'fas fa-file'"></i>
+              <span>Seleccionar icono</span>
+              <i class="fas fa-caret-down"></i>
+            </button>
+            
+            <div class="iconos-grid" *ngIf="mostrarSelectorIconos">
+              <button type="button" 
+                      *ngFor="let icono of iconosDisponibles"
+                      class="icono-option"
+                      [class.selected]="materialActual.icono === icono"
+                      (click)="seleccionarIcono(icono)">
+                <i [class]="icono"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer-material">
+        <button type="button" class="btn-secondary" (click)="cerrarFormulario()">
+          <i class="fas fa-times"></i>
+          Cancelar
+        </button>
+        <button type="button" class="btn-primary" (click)="guardarMaterial()">
+          <i class="fas fa-save"></i>
+          Guardar Material
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

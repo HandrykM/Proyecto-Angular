@@ -1,0 +1,141 @@
+<!-- src/app/pages/lectura-viewer/lectura-viewer.html -->
+
+<div class="lectura-viewer" *ngIf="!cargando">
+  
+  <!-- Barra de progreso fija -->
+  <div class="barra-progreso-fija" *ngIf="mostrarBarraProgreso">
+    <div class="progreso-container">
+      <div class="progreso-fill" [style.width.%]="porcentajeLeido"></div>
+    </div>
+    <span class="progreso-texto">{{porcentajeLeido}}% leído</span>
+  </div>
+
+  <!-- Header de la lectura -->
+  <div class="lectura-header">
+    <button class="btn-cerrar" (click)="cerrarLectura()" data-i18n="common.back">
+      <i class="fas fa-arrow-left"></i>
+      Volver
+    </button>
+    
+    <div class="lectura-info">
+      <span class="modulo-ref" *ngIf="moduloActual">
+        <i class="fas fa-book"></i>
+        {{moduloActual.titulo}}
+      </span>
+  <h1 data-i18n="">{{lecturaActual?.titulo}}</h1>
+      <div class="lectura-meta">
+        <span class="tiempo-estimado">
+          <i class="fas fa-clock"></i>
+          {{lecturaActual?.duracion}} min
+        </span>
+        <span class="tiempo-transcurrido">
+          <i class="fas fa-stopwatch"></i>
+          Tiempo: {{obtenerTiempoFormateado()}}
+        </span>
+        <span class="puntos">
+          <i class="fas fa-star"></i>
+          {{lecturaActual?.puntos}} puntos
+        </span>
+      </div>
+    </div>
+    
+    <button 
+      class="btn-completar"
+      *ngIf="!lecturaActual?.completado"
+      (click)="marcarComoCompletada()"
+      [disabled]="completandoLectura">
+      <i class="fas fa-check-circle"></i>
+      <span *ngIf="!completandoLectura" data-i18n="modules.start">Completar lectura</span>
+      <span *ngIf="completandoLectura" data-i18n="common.loading">Guardando...</span>
+    </button>
+    
+    <div class="estado-completado" *ngIf="lecturaActual?.completado">
+      <i class="fas fa-check-circle"></i>
+      <span data-i18n="modules.completed">Completada</span>
+    </div>
+  </div>
+
+  <!-- Contenido principal con scroll tracking -->
+  <div class="lectura-contenido" #contenedorLectura>
+    <div class="contenido-wrapper">
+      
+      <!-- Descripción -->
+<div class="lectura-descripcion" *ngIf="lecturaActual?.descripcion">
+  <p>{{ lecturaActual?.descripcion || '' }}</p>
+</div>
+
+<!-- Contenido HTML enriquecido -->
+<div 
+  class="texto-principal contenido-enriquecido" 
+  [innerHTML]="(lecturaActual?.contenido || '') | safeHtml">
+</div>
+
+
+      <!-- Sección de notas personales -->
+      <div class="seccion-notas">
+        <h3>
+          <i class="fas fa-sticky-note"></i>
+          <span data-i18n="profile.notes">Mis Notas Personales</span>
+        </h3>
+        <p class="notas-descripcion" data-i18n="profile.notesDesc">
+          Escribe tus reflexiones, ideas clave o preguntas sobre esta lectura
+        </p>
+        <textarea 
+          class="textarea-notas" 
+          placeholder="Escribe aquí tus notas..."
+          rows="6"
+          [(ngModel)]="notasLectura"
+          (input)="onNotasChange($event)">
+        </textarea>
+        <button 
+          class="btn-guardar-notas"
+          (click)="guardarNotas()"
+          [disabled]="guardandoNotas">
+          <i class="fas fa-save" *ngIf="!guardandoNotas"></i>
+          <i class="fas fa-spinner fa-spin" *ngIf="guardandoNotas"></i>
+          <span *ngIf="!guardandoNotas" data-i18n="common.save">Guardar notas</span>
+          <span *ngIf="guardandoNotas" data-i18n="common.loading">Guardando...</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Indicador de posición -->
+  <div class="indicador-posicion">
+    <div class="circulo-progreso">
+      <svg width="60" height="60">
+        <circle 
+          cx="30" 
+          cy="30" 
+          r="25" 
+          stroke="#e0e0e0" 
+          stroke-width="4" 
+          fill="none">
+        </circle>
+        <circle 
+          cx="30" 
+          cy="30" 
+          r="25" 
+          stroke="#00a8e8" 
+          stroke-width="4" 
+          fill="none"
+          stroke-linecap="round"
+          [style.stroke-dasharray]="157"
+          [style.stroke-dashoffset]="157 - (157 * porcentajeLeido) / 100"
+          style="transform: rotate(-90deg); transform-origin: 30px 30px;">
+        </circle>
+      </svg>
+      <span class="porcentaje">{{porcentajeLeido}}%</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- Indicador de carga -->
+<div class="loading-container" *ngIf="cargando">
+  <div class="loading-spinner">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Cargando lectura...</p>
+  </div>
+</div>

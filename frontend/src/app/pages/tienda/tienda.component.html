@@ -1,0 +1,322 @@
+<!-- src/app/pages/tienda/tienda.component.html -->
+
+<!-- Navegación Principal -->
+<nav class="main-nav">
+  <div class="nav-container">
+    <a routerLink="/inicio" class="nav-brand">
+      <i class="fas fa-tint"></i>
+      <span>HydroSave</span>
+    </a>
+    
+    <div class="nav-menu">
+      <a routerLink="/inicio" class="nav-link">
+        <i class="fas fa-home"></i>
+        <span>Inicio</span>
+      </a>
+      <a routerLink="/modulos" class="nav-link">
+        <i class="fas fa-graduation-cap"></i>
+        <span>Módulos</span>
+      </a>
+      <a routerLink="/biblioteca" class="nav-link">
+        <i class="fas fa-book"></i>
+        <span>Biblioteca</span>
+      </a>
+      <a routerLink="/actividades" class="nav-link">
+        <i class="fas fa-tasks"></i>
+        <span>Actividades</span>
+      </a>
+      <a routerLink="/tienda" class="nav-link active">
+        <i class="fas fa-shopping-cart"></i>
+        <span>Tienda</span>
+      </a>
+      <a *ngIf="usuario?.rol === 'admin'" routerLink="/admin" class="nav-link">
+        <i class="fas fa-shield-alt"></i>
+        <span>Admin</span>
+      </a>
+    </div>
+    
+    <div class="nav-profile-container">
+      <a routerLink="/perfil" class="nav-profile">
+        <img *ngIf="fotoUsuario || usuario?.foto" [src]="fotoUsuario || usuario?.foto" class="profile-img" [alt]="usuario?.nombre || 'Usuario'">
+        <i *ngIf="!(fotoUsuario || usuario?.foto)" class="fas fa-user"></i>
+        <span>{{ usuario?.nombre || 'Perfil' }}</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- Mensaje de error global -->
+<div class="error-message" *ngIf="error">
+  <div class="error-content">
+    <i class="fas fa-exclamation-triangle"></i>
+    <span>{{error}}</span>
+    <button class="btn-close-error" (click)="error = null">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Indicador de carga -->
+<div class="loading-container" *ngIf="cargando">
+  <div class="loading-spinner">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Cargando tienda...</p>
+  </div>
+</div>
+
+<!-- Container Principal -->
+<div class="tienda-container" *ngIf="!cargando">
+  
+  <!-- Header de la tienda -->
+  <div class="tienda-header">
+    <div class="header-content">
+      <div class="header-title">
+        <i class="fas fa-store"></i>
+        <h1>Tienda HydroSave</h1>
+        <p>Canjea tus puntos por contenido exclusivo</p>
+      </div>
+      
+      <div class="puntos-card">
+        <div class="puntos-icon">
+          <i class="fas fa-coins"></i>
+        </div>
+        <div class="puntos-info">
+          <span class="puntos-label">Tus Puntos</span>
+          <span class="puntos-cantidad">{{puntos?.disponible || 0}}</span>
+        </div>
+        <button class="btn-historial" (click)="verHistorialPuntos()">
+          <i class="fas fa-history"></i>
+          Historial
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Filtros y Categorías -->
+  <div class="filtros-section">
+    <div class="categorias-scroll">
+      <button 
+        class="categoria-btn"
+        [class.active]="categoriaActiva === null"
+        (click)="filtrarPorCategoria(null)">
+        <i class="fas fa-th"></i>
+        <span>Todos</span>
+      </button>
+      
+      <button 
+        *ngFor="let cat of categorias"
+        class="categoria-btn"
+        [class.active]="categoriaActiva === cat.id"
+        [style.--cat-color]="cat.color"
+        (click)="filtrarPorCategoria(cat.id)">
+        <i [class]="cat.icono"></i>
+        <span>{{cat.nombre}}</span>
+        <span class="badge">{{cat.total_productos}}</span>
+      </button>
+    </div>
+    
+    <div class="filtros-extras">
+      <button 
+        class="filtro-btn"
+        [class.active]="soloDestacados"
+        (click)="toggleDestacados()">
+        <i class="fas fa-star"></i>
+        Destacados
+      </button>
+      
+      <select [(ngModel)]="ordenamiento" (change)="aplicarOrdenamiento()" class="select-orden">
+        <option value="recientes">Más recientes</option>
+        <option value="precio_asc">Precio: Menor a Mayor</option>
+        <option value="precio_desc">Precio: Mayor a Menor</option>
+        <option value="nombre">Nombre A-Z</option>
+      </select>
+    </div>
+  </div>
+  
+  <!-- Grid de Productos -->
+  <div class="productos-grid" *ngIf="productosFiltrados.length > 0; else noProductos">
+    <div 
+      *ngFor="let producto of productosFiltrados"
+      class="producto-card"
+      [class.comprado]="producto.ya_comprado"
+      [class.destacado]="producto.destacado">
+      
+      <!-- Badge de destacado -->
+      <div class="badge-destacado" *ngIf="producto.destacado">
+        <i class="fas fa-star"></i>
+        Destacado
+      </div>
+      
+      <!-- Badge de comprado -->
+      <div class="badge-comprado" *ngIf="producto.ya_comprado">
+        <i class="fas fa-check-circle"></i>
+        Adquirido
+      </div>
+      
+      <!-- Imagen del producto -->
+      <div class="producto-imagen" [style.background]="'linear-gradient(135deg, ' + producto.categoria_color + ', ' + producto.categoria_color + 'dd)'">
+        <i *ngIf="!producto.imagen_url" [class]="producto.categoria_icono" class="producto-icono-default"></i>
+        <img *ngIf="producto.imagen_url" [src]="producto.imagen_url" [alt]="producto.nombre">
+      </div>
+      
+      <!-- Info del producto -->
+      <div class="producto-info">
+        <div class="producto-categoria">
+          <i [class]="producto.categoria_icono"></i>
+          <span>{{producto.categoria_nombre}}</span>
+        </div>
+        
+        <h3 class="producto-nombre">{{producto.nombre}}</h3>
+        <p class="producto-descripcion">{{producto.descripcion}}</p>
+        
+        <!-- Características especiales -->
+        <div class="producto-detalles" *ngIf="producto.datos_extra">
+          <span class="detalle-item" *ngIf="producto.datos_extra.duracion">
+            <i class="fas fa-clock"></i>
+            {{producto.datos_extra.duracion}}
+          </span>
+          <span class="detalle-item" *ngIf="producto.datos_extra.formato">
+            <i class="fas fa-file"></i>
+            {{producto.datos_extra.formato}}
+          </span>
+          <span class="detalle-item" *ngIf="producto.datos_extra.certificado">
+            <i class="fas fa-certificate"></i>
+            Con certificado
+          </span>
+        </div>
+        
+        <!-- Stock -->
+        <div class="producto-stock" *ngIf="producto.stock !== null">
+          <i class="fas fa-box"></i>
+          <span [class.stock-bajo]="producto.stock < 5">
+            {{producto.stock > 0 ? producto.stock + ' disponibles' : 'Sin stock'}}
+          </span>
+        </div>
+        
+        <!-- Precio y acción -->
+        <div class="producto-footer">
+          <div class="producto-precio">
+            <i class="fas fa-coins"></i>
+            <span class="precio-valor">{{producto.precio_puntos}}</span>
+            <span class="precio-label">puntos</span>
+          </div>
+          
+          <button 
+            class="btn-comprar"
+            [disabled]="producto.ya_comprado || comprando || (puntos?.disponible || 0) < producto.precio_puntos"
+            (click)="comprarProducto(producto)">
+            <i class="fas fa-shopping-cart" *ngIf="!producto.ya_comprado && !comprando"></i>
+            <i class="fas fa-check" *ngIf="producto.ya_comprado"></i>
+            <i class="fas fa-spinner fa-spin" *ngIf="comprando"></i>
+            <span *ngIf="!producto.ya_comprado">{{comprando ? 'Comprando...' : 'Comprar'}}</span>
+            <span *ngIf="producto.ya_comprado">Adquirido</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <ng-template #noProductos>
+    <div class="no-productos">
+      <i class="fas fa-inbox"></i>
+      <h3>No hay productos disponibles</h3>
+      <p>Intenta cambiar los filtros o vuelve más tarde</p>
+    </div>
+  </ng-template>
+  
+  <!-- Sección de Mis Compras -->
+  <div class="mis-compras-section" *ngIf="misCompras.length > 0">
+    <div class="section-header">
+      <h2>
+        <i class="fas fa-shopping-bag"></i>
+        Mis Compras
+      </h2>
+      <button class="btn-ver-todas" (click)="verTodasCompras()">
+        Ver todas
+        <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+    
+    <div class="compras-grid">
+      <div *ngFor="let compra of misCompras.slice(0, 4)" class="compra-card">
+        <div class="compra-icono">
+          <i [class]="obtenerIconoTipo(compra.tipo)"></i>
+        </div>
+        <div class="compra-info">
+          <h4>{{compra.nombre}}</h4>
+          <p>{{compra.descripcion}}</p>
+          <span class="compra-fecha">
+            <i class="fas fa-calendar"></i>
+            {{formatearFecha(compra.fecha_compra)}}
+          </span>
+        </div>
+        <button 
+          class="btn-descargar"
+          *ngIf="compra.archivo_url"
+          (click)="descargarRecurso(compra.archivo_url, compra.nombre)">
+          <i class="fas fa-download"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Confirmación de Compra -->
+<div class="modal-overlay" *ngIf="mostrarModalCompra" (click)="cerrarModalCompra()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>
+        <i class="fas fa-shopping-cart"></i>
+        Confirmar Compra
+      </h3>
+      <button class="btn-close" (click)="cerrarModalCompra()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body" *ngIf="productoSeleccionado">
+      <div class="producto-preview">
+        <div class="preview-imagen" [style.background]="'linear-gradient(135deg, ' + productoSeleccionado.categoria_color + ', ' + productoSeleccionado.categoria_color + 'dd)'">
+          <i [class]="productoSeleccionado.categoria_icono"></i>
+        </div>
+        <div class="preview-info">
+          <h4>{{productoSeleccionado.nombre}}</h4>
+          <p>{{productoSeleccionado.descripcion}}</p>
+        </div>
+      </div>
+      
+      <div class="compra-resumen">
+        <div class="resumen-item">
+          <span>Precio:</span>
+          <span class="valor">
+            <i class="fas fa-coins"></i>
+            {{productoSeleccionado.precio_puntos}} puntos
+          </span>
+        </div>
+        <div class="resumen-item">
+          <span>Tus puntos:</span>
+          <span class="valor">{{puntos?.disponible || 0}} puntos</span>
+        </div>
+        <div class="resumen-item total">
+          <span>Puntos restantes:</span>
+          <span class="valor">{{(puntos?.disponible || 0) - productoSeleccionado.precio_puntos}} puntos</span>
+        </div>
+      </div>
+      
+      <div class="modal-acciones">
+        <button class="btn-secondary" (click)="cerrarModalCompra()">
+          <i class="fas fa-times"></i>
+          Cancelar
+        </button>
+        <button 
+          class="btn-primary"
+          [disabled]="comprando"
+          (click)="confirmarCompra()">
+          <i class="fas fa-check" *ngIf="!comprando"></i>
+          <i class="fas fa-spinner fa-spin" *ngIf="comprando"></i>
+          {{comprando ? 'Procesando...' : 'Confirmar Compra'}}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

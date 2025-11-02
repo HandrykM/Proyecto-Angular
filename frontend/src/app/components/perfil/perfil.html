@@ -1,0 +1,764 @@
+<!-- src/app/components/perfil/perfil.component.html - CON TRADUCCIONES -->
+
+<nav class="main-nav">
+  <div class="nav-container">
+    <a routerLink="/inicio" class="nav-brand">
+      <i class="fas fa-tint"></i>
+      <span>HydroSave</span>
+    </a>
+
+    <div class="nav-menu">
+      <a routerLink="/inicio" class="nav-link"><i class="fas fa-home"></i><span>Inicio</span></a>
+      <a routerLink="/modulos" class="nav-link"><i class="fas fa-graduation-cap"></i><span>Módulos</span></a>
+      <a routerLink="/biblioteca" class="nav-link"><i class="fas fa-book"></i><span>Biblioteca</span></a>
+      <a routerLink="/actividades" class="nav-link"><i class="fas fa-tasks"></i><span>Actividades</span></a>
+      <a *ngIf="usuario?.rol === 'admin'" routerLink="/admin" class="nav-link"><i class="fas fa-shield-alt"></i><span>Admin</span></a>
+    </div>
+<app-dark-mode-toggle></app-dark-mode-toggle>
+    <div class="nav-profile-container">
+      <a routerLink="/perfil" class="nav-profile active">
+        <img *ngIf="usuario?.foto as foto" [src]="foto" class="profile-img" alt="Perfil">
+
+<i *ngIf="!usuario?.foto" class="fas fa-user"></i>
+        <span>{{ usuario?.nombre || 'Perfil' }}</span>
+      </a>
+    </div>
+
+    <!-- 🔹 Botón de hamburguesa -->
+    <button class="nav-toggle" id="navToggle">
+      <i class="fas fa-bars open-icon"></i>
+      <i class="fas fa-times close-icon"></i>
+    </button>
+  </div>
+</nav>
+
+<!-- Mensaje de error global -->
+<div class="error-message" *ngIf="error">
+  <div class="error-content">
+    <i class="fas fa-exclamation-triangle"></i>
+    <span>{{error}}</span>
+    <button class="btn-close-error" (click)="error = null">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Indicador de carga -->
+<div class="loading-container" *ngIf="cargando">
+  <div class="loading-spinner">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>{{ 'common.loading' | translate }}...</p>
+  </div>
+</div>
+
+<!-- Container principal -->
+<div class="perfil-container" *ngIf="!cargando && usuario">
+  
+  <!-- Header del perfil -->
+  <div class="perfil-header">
+    <div class="perfil-avatar">
+      <div class="avatar-container">
+        <img [src]="obtenerUrlFotoPerfil()" [alt]="usuario.nombre" class="avatar-image">
+        <button class="btn-cambiar-foto" (click)="seleccionarFoto()" [disabled]="subiendoFoto">
+          <i class="fas fa-camera" *ngIf="!subiendoFoto"></i>
+          <i class="fas fa-spinner fa-spin" *ngIf="subiendoFoto"></i>
+        </button>
+        <input #inputFoto type="file" accept="image/*" (change)="onArchivoSeleccionado($event)" style="display: none">
+      </div>
+    </div>
+    
+    <div class="perfil-info">
+      <h1 class="perfil-nombre">{{usuario.nombre}}</h1>
+      <p class="perfil-email">{{usuario.correo}}</p>
+      <div class="perfil-stats">
+        <div class="stat-item">
+          <i class="fas fa-graduation-cap"></i>
+          <span>{{usuario.estadisticas.modulosCompletados}} {{ 'modules.title' | translate }}</span>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-star"></i>
+          <span>{{formatearNumero(usuario.estadisticas.puntosTotal)}} {{ 'modules.points' | translate }}</span>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-fire"></i>
+          <span>{{usuario.estadisticas.racha}} {{ 'profile.days' | translate }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acciones de foto si hay preview -->
+    <div class="foto-acciones" *ngIf="previewFoto">
+      <button class="btn-guardar-foto" (click)="subirFoto()" [disabled]="subiendoFoto">
+        <i class="fas fa-check"></i>
+        {{ 'common.save' | translate }}
+      </button>
+      <button class="btn-cancelar-foto" (click)="limpiarPreviewFoto()">
+        <i class="fas fa-times"></i>
+        {{ 'common.cancel' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Navegación de secciones -->
+  <div class="perfil-nav">
+    <button 
+      class="nav-section-btn"
+      [class.active]="seccionActiva === 'informacion'"
+      (click)="cambiarSeccion('informacion')">
+      <i class="fas fa-user-edit"></i>
+      <span>{{ 'profile.personalInfo' | translate }}</span>
+    </button>
+    
+    <button 
+      class="nav-section-btn"
+      [class.active]="seccionActiva === 'seguridad'"
+      (click)="cambiarSeccion('seguridad')">
+      <i class="fas fa-shield-alt"></i>
+      <span>{{ 'profile.security' | translate }}</span>
+    </button>
+    
+    <button 
+      class="nav-section-btn"
+      [class.active]="seccionActiva === 'preferencias'"
+      (click)="cambiarSeccion('preferencias')">
+      <i class="fas fa-cog"></i>
+      <span>{{ 'profile.preferences' | translate }}</span>
+    </button>
+    
+    <button 
+      class="nav-section-btn"
+      [class.active]="seccionActiva === 'estadisticas'"
+      (click)="cambiarSeccion('estadisticas')">
+      <i class="fas fa-chart-bar"></i>
+      <span>{{ 'profile.statistics' | translate }}</span>
+    </button>
+    
+    <button 
+      class="nav-section-btn"
+      [class.active]="seccionActiva === 'logros'"
+      (click)="cambiarSeccion('logros')">
+      <i class="fas fa-trophy"></i>
+      <span>{{ 'profile.achievements' | translate }}</span>
+    </button>
+    
+    <button 
+      class="nav-section-btn"
+      [class.active]="seccionActiva === 'cuenta'"
+      (click)="cambiarSeccion('cuenta')">
+      <i class="fas fa-user-cog"></i>
+      <span>{{ 'profile.account' | translate }}</span>
+    </button>
+
+    <a 
+      *ngIf="esAdmin()" 
+      routerLink="/admin" 
+      class="nav-section-btn"
+      [class.active]="seccionActiva === 'admin'">
+      <i class="fas fa-shield-alt"></i>
+      <span>{{ 'nav.admin' | translate }}</span>
+    </a>
+  </div>
+
+  <!-- Contenido de las secciones -->
+  <div class="perfil-content">
+
+    <!-- INFORMACIÓN PERSONAL -->
+    <div class="section-content" *ngIf="seccionActiva === 'informacion'">
+      <div class="section-header">
+        <h2>
+          <i class="fas fa-user-edit"></i>
+          {{ 'profile.personalInfo' | translate }}
+        </h2>
+        <p>{{ 'profile.personalInfo' | translate }}</p>
+      </div>
+
+      <form [formGroup]="formInformacion" (ngSubmit)="guardarInformacion()" class="form-grid">
+        <div class="form-group">
+          <label for="nombre">{{ 'profile.name' | translate }} *</label>
+          <input 
+            type="text" 
+            id="nombre" 
+            formControlName="nombre"
+            class="form-control"
+            [placeholder]="'profile.name' | translate">
+          <span class="error-text" *ngIf="obtenerErrorCampo('nombre', formInformacion)">
+            {{obtenerErrorCampo('nombre', formInformacion)}}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="nombreUsuario">{{ 'profile.fullName' | translate }}</label>
+          <input 
+            type="text" 
+            id="nombreUsuario" 
+            formControlName="nombreUsuario"
+            class="form-control"
+            [placeholder]="'profile.fullName' | translate">
+          <span class="error-text" *ngIf="obtenerErrorCampo('nombreUsuario', formInformacion)">
+            {{obtenerErrorCampo('nombreUsuario', formInformacion)}}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="correo">{{ 'profile.email' | translate }} *</label>
+          <input 
+            type="email" 
+            id="correo" 
+            formControlName="correo"
+            class="form-control"
+            [placeholder]="'profile.email' | translate">
+          <span class="error-text" *ngIf="obtenerErrorCampo('correo', formInformacion)">
+            {{obtenerErrorCampo('correo', formInformacion)}}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="telefono">{{ 'profile.phone' | translate }}</label>
+          <input 
+            type="tel" 
+            id="telefono" 
+            formControlName="telefono"
+            class="form-control"
+            [placeholder]="'profile.phone' | translate">
+          <span class="error-text" *ngIf="obtenerErrorCampo('telefono', formInformacion)">
+            {{obtenerErrorCampo('telefono', formInformacion)}}
+          </span>
+        </div>
+
+        <div class="form-actions full-width">
+          <button 
+            type="submit" 
+            class="btn-primary"
+            [disabled]="formInformacion.invalid || guardando">
+            <i class="fas fa-save" *ngIf="!guardando"></i>
+            <i class="fas fa-spinner fa-spin" *ngIf="guardando"></i>
+            {{guardando ? ('common.loading' | translate) : ('profile.saveChanges' | translate)}}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- SEGURIDAD -->
+    <div class="section-content" *ngIf="seccionActiva === 'seguridad'">
+      <div class="section-header">
+        <h2>
+          <i class="fas fa-shield-alt"></i>
+          {{ 'profile.security' | translate }}
+        </h2>
+        <p>{{ 'profile.accountManagement' | translate }}</p>
+      </div>
+
+      <!-- Cambiar contraseña -->
+      <div class="security-card">
+        <h3>
+          <i class="fas fa-key"></i>
+          {{ 'profile.changePassword' | translate }}
+        </h3>
+        
+        <form [formGroup]="formContrasena" (ngSubmit)="cambiarContrasena()" class="form-grid">
+          <div class="form-group">
+            <label for="contrasenaActual">{{ 'profile.currentPassword' | translate }} *</label>
+            <input 
+              type="password" 
+              id="contrasenaActual" 
+              formControlName="contrasenaActual"
+              class="form-control"
+              [placeholder]="'profile.currentPassword' | translate">
+          </div>
+
+          <div class="form-group">
+            <label for="nuevaContrasena">{{ 'profile.newPassword' | translate }} *</label>
+            <input 
+              type="password" 
+              id="nuevaContrasena" 
+              formControlName="nuevaContrasena"
+              class="form-control"
+              [placeholder]="'profile.newPassword' | translate">
+          </div>
+
+          <div class="form-group">
+            <label for="confirmarContrasena">{{ 'profile.confirmPassword' | translate }} *</label>
+            <input 
+              type="password" 
+              id="confirmarContrasena" 
+              formControlName="confirmarContrasena"
+              class="form-control"
+              [placeholder]="'profile.confirmPassword' | translate">
+          </div>
+
+          <div class="form-actions full-width">
+            <button 
+              type="submit" 
+              class="btn-warning"
+              [disabled]="formContrasena.invalid || guardando">
+              <i class="fas fa-key" *ngIf="!guardando"></i>
+              <i class="fas fa-spinner fa-spin" *ngIf="guardando"></i>
+              {{guardando ? ('common.loading' | translate) : ('profile.changePassword' | translate)}}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Historial de sesiones -->
+      <div class="security-card">
+        <h3>
+          <i class="fas fa-history"></i>
+          {{ 'profile.sessionHistory' | translate }}
+        </h3>
+        
+        <div class="sessions-list" *ngIf="historialSesiones.length > 0; else noSessions">
+          <div 
+            class="session-item"
+            *ngFor="let sesion of historialSesiones"
+            [class.active]="sesion.activo">
+            
+            <div class="session-info">
+              <div class="session-device">
+                <i [class]="sesion.dispositivo.includes('Mobile') ? 'fas fa-mobile-alt' : 'fas fa-desktop'"></i>
+                <span>{{sesion.dispositivo}}</span>
+                <span class="session-status" *ngIf="sesion.activo">{{ 'profile.currentSession' | translate }}</span>
+              </div>
+              <div class="session-details">
+                <span>{{formatearFecha(sesion.fechaAcceso)}}</span>
+                <span>{{sesion.ip}}</span>
+                <span *ngIf="sesion.ubicacion">{{sesion.ubicacion}}</span>
+              </div>
+            </div>
+            
+            <button 
+              class="btn-danger-sm"
+              *ngIf="!sesion.activo"
+              (click)="cerrarSesionRemota(sesion.id)">
+              <i class="fas fa-sign-out-alt"></i>
+              {{ 'profile.closeSession' | translate }}
+            </button>
+          </div>
+        </div>
+        
+        <ng-template #noSessions>
+          <p class="no-data">{{ 'common.noResults' | translate }}</p>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- PREFERENCIAS -->
+    <div class="section-content" *ngIf="seccionActiva === 'preferencias'">
+      <div class="section-header">
+        <h2>
+          <i class="fas fa-cog"></i>
+          {{ 'profile.preferences' | translate }}
+        </h2>
+        <p>{{ 'profile.preferences' | translate }}</p>
+      </div>
+
+      <form [formGroup]="formConfiguracion" (ngSubmit)="guardarConfiguracion()" class="preferences-form">
+        
+        <!-- Configuración general -->
+        <div class="preference-card">
+          <h3>
+            <i class="fas fa-globe"></i>
+            {{ 'profile.preferences' | translate }}
+          </h3>
+          
+          <div class="preference-row">
+            <label for="idioma">{{ 'profile.language' | translate }}</label>
+            <select id="idioma" formControlName="idioma" class="form-control">
+              <option *ngFor="let idioma of idiomas" [value]="idioma.codigo">
+                {{idioma.bandera}} {{idioma.nombre}}
+              </option>
+            </select>
+          </div>
+
+          <div class="preference-row">
+            <label for="tamanoFuente">{{ 'profile.fontSize' | translate }}</label>
+            <select id="tamanoFuente" formControlName="tamanoFuente" class="form-control">
+              <option *ngFor="let tamano of tamanosFuente" [value]="tamano.valor">
+                {{tamano.etiqueta}}
+              </option>
+            </select>
+          </div>
+
+          <div class="preference-row">
+            <div class="switch-container">
+              <label class="switch-label">
+                <input 
+                  type="checkbox" 
+                  formControlName="modoOscuro"
+                  class="switch-input">
+                <span class="switch-text">{{ 'profile.darkMode' | translate }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notificaciones -->
+        <div class="preference-card" formGroupName="notificaciones">
+          <h3>
+            <i class="fas fa-bell"></i>
+            {{ 'profile.notifications' | translate }}
+          </h3>
+          
+          <div class="preference-row">
+            <div class="switch-container">
+              <label class="switch-label">
+                <input type="checkbox" formControlName="email" class="switch-input">
+                <span class="switch-text">{{ 'profile.emailNotifications' | translate }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="preference-row">
+            <div class="switch-container">
+              <label class="switch-label">
+                <input type="checkbox" formControlName="sms" class="switch-input">
+                <span class="switch-text">{{ 'profile.smsNotifications' | translate }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="preference-row">
+            <div class="switch-container">
+              <label class="switch-label">
+                <input type="checkbox" formControlName="push" class="switch-input">
+                <span class="switch-text">{{ 'profile.pushNotifications' | translate }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="preference-row">
+            <div class="switch-container">
+              <label class="switch-label">
+                <input type="checkbox" formControlName="recordatorios" class="switch-input">
+                <span class="switch-text">{{ 'profile.reminders' | translate }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="preference-row">
+            <div class="switch-container">
+              <label class="switch-label">
+                <input type="checkbox" formControlName="logros" class="switch-input">
+                <span class="switch-text">{{ 'profile.achievementNotifs' | translate }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button 
+            type="submit" 
+            class="btn-primary"
+            [disabled]="formConfiguracion.invalid || guardando">
+            <i class="fas fa-save" *ngIf="!guardando"></i>
+            <i class="fas fa-spinner fa-spin" *ngIf="guardando"></i>
+            {{guardando ? ('common.loading' | translate) : ('profile.saveChanges' | translate)}}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ESTADÍSTICAS -->
+    <div class="section-content" *ngIf="seccionActiva === 'estadisticas'">
+      <div class="section-header">
+        <h2>
+          <i class="fas fa-chart-bar"></i>
+          {{ 'profile.statistics' | translate }}
+        </h2>
+        <p>{{ 'profile.activityHistory' | translate }}</p>
+      </div>
+
+      <div class="stats-grid" *ngIf="usuario">
+        <div class="stat-card">
+          <div class="stat-icon time">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{formatearTiempo(usuario.estadisticas.tiempoTotalEstudio)}}</h3>
+            <p>{{ 'profile.totalStudyTime' | translate }}</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon modules">
+            <i class="fas fa-graduation-cap"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{usuario.estadisticas.modulosCompletados}}</h3>
+            <p>{{ 'profile.completedModules' | translate }}</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon activities">
+            <i class="fas fa-tasks"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{usuario.estadisticas.actividadesCompletadas}}</h3>
+            <p>{{ 'profile.completedActivities' | translate }}</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon points">
+            <i class="fas fa-star"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{formatearNumero(usuario.estadisticas.puntosTotal)}}</h3>
+            <p>{{ 'profile.totalPoints' | translate }}</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon streak">
+            <i class="fas fa-fire"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{usuario.estadisticas.racha}}</h3>
+            <p>{{ 'profile.currentStreak' | translate }}</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon last-activity">
+            <i class="fas fa-calendar"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{formatearFecha(usuario.estadisticas.ultimaActividad)}}</h3>
+            <p>{{ 'profile.lastActivity' | translate }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORIAL DE ACTIVIDAD -->
+      <div class="historial-section" style="margin-top: 3rem;">
+        <h3 style="display: flex; align-items: center; gap: 0.5rem; font-size: 1.4rem; color: var(--primary-dark); margin-bottom: 1.5rem;">
+          <i class="fas fa-history"></i>
+          {{ 'profile.activityHistory' | translate }}
+        </h3>
+        
+        <div class="historial-filtros" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+          <button 
+            class="filtro-btn" 
+            [class.active]="filtroHistorial === 'todo'"
+            (click)="filtrarHistorial('todo')">
+            {{ 'profile.all' | translate }}
+          </button>
+          <button 
+            class="filtro-btn" 
+            [class.active]="filtroHistorial === 'modulo'"
+            (click)="filtrarHistorial('modulo')">
+            {{ 'profile.module' | translate }}
+          </button>
+          <button 
+            class="filtro-btn" 
+            [class.active]="filtroHistorial === 'actividad'"
+            (click)="filtrarHistorial('actividad')">
+            {{ 'profile.activity' | translate }}
+          </button>
+          <button 
+            class="filtro-btn" 
+            [class.active]="filtroHistorial === 'biblioteca'"
+            (click)="filtrarHistorial('biblioteca')">
+            {{ 'profile.library' | translate }}
+          </button>
+        </div>
+
+        <div class="historial-lista" style="max-height: 500px; overflow-y: auto;">
+          <div 
+            class="historial-item" 
+            *ngFor="let item of historialActividad">
+            
+            <div 
+              class="historial-icono" 
+              [style.background]="obtenerColorTipo(item.tipo)">
+              <i [class]="obtenerIconoTipo(item.tipo)"></i>
+            </div>
+
+            <div class="historial-contenido">
+              <div class="historial-titulo">
+                {{item.titulo}}
+              </div>
+              <div class="historial-detalles">
+                <span>
+                  <i class="fas fa-tag"></i>
+                  {{formatearTipo(item.tipo)}}
+                </span>
+                <span>
+                  <i class="fas fa-clock"></i>
+                  {{formatearFecha(item.fecha)}}
+                </span>
+                <span *ngIf="item.puntos > 0">
+                  <i class="fas fa-star"></i>
+                  +{{item.puntos}} {{ 'modules.points' | translate }}
+                </span>
+              </div>
+            </div>
+
+            <div 
+              class="historial-estado" 
+              [style.background]="item.completado ? 'rgba(46, 204, 113, 0.1)' : 'rgba(243, 156, 18, 0.1)'"
+              [style.color]="item.completado ? '#2ecc71' : '#f39c12'">
+              {{item.completado ? ('modules.completed' | translate) : ('modules.progress' | translate)}}
+            </div>
+          </div>
+
+          <div *ngIf="historialActividad.length === 0" class="no-data">
+            {{ 'common.noResults' | translate }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGROS -->
+    <div class="section-content" *ngIf="seccionActiva === 'logros'">
+      <div class="section-header">
+        <h2>
+          <i class="fas fa-trophy"></i>
+          {{ 'profile.achievements' | translate }}
+        </h2>
+        <p>{{ 'profile.achievementsObtained' | translate }}</p>
+      </div>
+
+      <!-- Logros -->
+      <div class="achievements-section">
+        <h3>
+          <i class="fas fa-medal"></i>
+          {{ 'profile.achievementsObtained' | translate }}
+        </h3>
+        
+        <div class="achievements-grid" *ngIf="logros.length > 0; else noAchievements">
+          <div class="achievement-card" *ngFor="let logro of logros">
+            <div class="achievement-icon">
+              <i [class]="logro.icono"></i>
+            </div>
+            <div class="achievement-content">
+              <h4>{{logro.titulo}}</h4>
+              <p>{{logro.descripcion}}</p>
+              <span class="achievement-date">
+                <i class="fas fa-calendar"></i>
+                {{formatearFecha(logro.fechaObtenido || '')}}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <ng-template #noAchievements>
+          <p class="no-data">{{ 'profile.noAchievements' | translate }}</p>
+        </ng-template>
+      </div>
+
+      <!-- Certificados -->
+      <div class="certificates-section">
+        <h3>
+          <i class="fas fa-certificate"></i>
+          {{ 'profile.certificatesObtained' | translate }}
+        </h3>
+        
+        <div class="certificates-list" *ngIf="certificados.length > 0; else noCertificates">
+          <div class="certificate-card" *ngFor="let certificado of certificados">
+            <div class="certificate-icon">
+              <i class="fas fa-award"></i>
+            </div>
+            <div class="certificate-content">
+              <h4>{{certificado.titulo}}</h4>
+              <p>{{certificado.descripcion}}</p>
+              <div class="certificate-details">
+                <span><i class="fas fa-book"></i> {{certificado.modulo}}</span>
+                <span><i class="fas fa-calendar"></i> {{formatearFecha(certificado.fechaEmision)}}</span>
+              </div>
+            </div>
+            <div class="certificate-actions">
+              <button class="btn-download" (click)="descargarCertificadoDirecto(certificado.urlCertificado)">
+                <i class="fas fa-download"></i>
+                {{ 'profile.download' | translate }}
+              </button>
+              <span class="verification-badge" [class.verificado]="certificado.verificado">
+                <i [class]="certificado.verificado ? 'fas fa-check-circle' : 'fas fa-clock'"></i>
+                {{certificado.verificado ? ('profile.verified' | translate) : ('profile.notVerified' | translate)}}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <ng-template #noCertificates>
+          <div class="certificado-bloqueado">
+            <div class="icon-wrap">
+              <i class="fas fa-lock"></i>
+            </div>
+            <h3>{{ 'profile.certificateLocked' | translate }}</h3>
+            <p>{{ 'profile.completeAllModules' | translate }}</p>
+            
+            <div class="progreso-info" *ngIf="elegibilidadCertificado">
+              <div class="progreso-bar">
+                <div class="progreso-fill" [style.width.%]="elegibilidadCertificado.porcentaje">
+                  {{elegibilidadCertificado.porcentaje}}%
+                </div>
+              </div>
+              <p class="progreso-texto">
+                {{ 'profile.modulesCompleted' | translate }}: {{elegibilidadCertificado.modulosCompletados}} / {{elegibilidadCertificado.modulosTotal}}
+              </p>
+            </div>
+            
+            <button 
+              class="btn-primary" 
+              (click)="verificarElegibilidadCertificado()"
+              [disabled]="verificandoCertificado">
+              <i class="fas fa-check" *ngIf="!verificandoCertificado"></i>
+              <i class="fas fa-spinner fa-spin" *ngIf="verificandoCertificado"></i>
+              {{verificandoCertificado ? ('profile.checking' | translate) : ('profile.checkEligibility' | translate)}}
+            </button>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- CUENTA -->
+    <div class="section-content" *ngIf="seccionActiva === 'cuenta'">
+      <div class="section-header">
+        <h2>
+          <i class="fas fa-user-cog"></i>
+          {{ 'profile.accountManagement' | translate }}
+        </h2>
+        <p>{{ 'profile.accountManagement' | translate }}</p>
+      </div>
+
+      <div class="account-actions">
+        
+        <!-- Cerrar sesión -->
+        <div class="action-card">
+          <div class="action-info">
+            <h3>
+              <i class="fas fa-sign-out-alt"></i>
+              {{ 'nav.logout' | translate }}
+            </h3>
+            <p>{{ 'profile.logoutDescription' | translate }}</p>
+          </div>
+          <button class="btn-secondary" (click)="cerrarSesion()">
+            <i class="fas fa-sign-out-alt"></i>
+            {{ 'nav.logout' | translate }}
+          </button>
+        </div>
+
+        <!-- Eliminar cuenta -->
+        <div class="action-card danger">
+          <div class="action-info">
+            <h3>
+              <i class="fas fa-trash-alt"></i>
+              {{ 'profile.deleteAccount' | translate }}
+            </h3>
+            <p>{{ 'profile.deleteAccountDescription' | translate }}</p>
+            <div class="danger-warning">
+              <i class="fas fa-exclamation-triangle"></i>
+              <strong>{{ 'profile.deleteWarning' | translate }}</strong>
+            </div>
+          </div>
+          <button class="btn-danger-custom" (click)="eliminarCuenta()">
+            <i class="fas fa-trash-alt"></i>
+            {{ 'profile.deleteAccount' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

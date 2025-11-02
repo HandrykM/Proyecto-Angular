@@ -1,0 +1,29 @@
+<div class="detalle-container">
+
+  <h2>{{ modulo.titulo }}</h2>
+  <p>{{ modulo.descripcion }}</p>
+
+  <h3>📖 Contenido</h3>
+  <div class="contenido">
+    {{ modulo.contenido }}
+  </div>
+
+  <h3>📝 Quiz</h3>
+  <form (ngSubmit)="enviarQuiz()">
+    <div *ngFor="let p of preguntas" class="pregunta">
+      <p><strong>{{ p.pregunta }}</strong></p>
+
+      <div *ngFor="let op of p.opciones">
+        <input type="radio" [name]="'pregunta_' + p.id" [value]="op" [(ngModel)]="respuestas[p.id]" required>
+        <label>{{ op }}</label>
+      </div>
+    </div>
+
+    <button type="submit">Enviar respuestas</button>
+  </form>
+
+  <div *ngIf="resultado" class="resultado">
+    {{ resultado }}
+  </div>
+
+</div>

@@ -1,0 +1,139 @@
+
+
+<div class="trivia-container">
+	<!-- Header -->
+	<div class="header-bar">
+		<button class="btn-back" (click)="volverAActividades()">
+			<i class="fas fa-arrow-left"></i>
+			Volver a Actividades
+		</button>
+		<div class="progreso-trivia">
+			<div class="dificultad-actual">
+				<i class="fas fa-layer-group"></i>
+				<span>{{dificultadActual | titlecase}}</span>
+			</div>
+			<div class="puntuacion-trivia">
+				<i class="fas fa-star"></i>
+				<span>{{puntuacionActual}} pts</span>
+			</div>
+			<div class="tiempo-trivia">
+				<i class="fas fa-clock"></i>
+				<span>{{tiempoTranscurrido}}:{{segundosTranscurridos.toString().padStart(2, '0')}}</span>
+			</div>
+		</div>
+	</div>
+
+	<!-- Contenedor del iframe de la trivia -->
+	<div class="trivia-wrapper" *ngIf="!showResults">
+		<div class="loading-trivia" *ngIf="cargandoTrivia">
+			<div class="spinner"></div>
+		</div>
+		<iframe 
+			#triviaFrame
+			[src]="triviaUrl" 
+			frameborder="0"
+			class="trivia-frame"
+			(load)="onTriviaCargada()"
+			[style.display]="cargandoTrivia ? 'none' : 'block'">
+		</iframe>
+	</div>
+
+	<!-- Panel de estadísticas en vivo -->
+	<div class="stats-panel" [class.visible]="mostrarStats" *ngIf="!showResults">
+		<div class="panel-header">
+			<h3>
+				<i class="fas fa-chart-line"></i>
+				Estadísticas en Vivo
+			</h3>
+			<button class="btn-toggle-stats" (click)="toggleStats()">
+				<i class="fas fa-eye-slash" *ngIf="mostrarStats"></i>
+				<i class="fas fa-eye" *ngIf="!mostrarStats"></i>
+			</button>
+		</div>
+		<div class="stats-content" *ngIf="mostrarStats">
+			<div class="stat-row">
+				<span class="stat-label">Respuestas Correctas:</span>
+				<span class="stat-value correctas">{{respuestasCorrectas}}/{{totalPreguntas}}</span>
+			</div>
+			<div class="stat-row">
+				<span class="stat-label">Precisión:</span>
+				<span class="stat-value precision">{{precision}}%</span>
+			</div>
+			<div class="stat-row">
+				<span class="stat-label">Racha Actual:</span>
+				<span class="stat-value racha">{{rachaActual}}</span>
+			</div>
+			<div class="stat-row">
+				<span class="stat-label">Mejor Racha:</span>
+				<span class="stat-value mejor-racha">{{mejorRacha}}</span>
+			</div>
+			<div class="progress-trivia">
+				<div class="progress-label">Progreso General</div>
+				<div class="progress-bar-trivia">
+					<div class="progress-fill-trivia" [style.width.%]="progresoGeneral"></div>
+				</div>
+				<div class="progress-text">{{progresoGeneral}}%</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Botón flotante para mostrar stats -->
+	<button class="btn-stats-float" (click)="toggleStats()" *ngIf="!mostrarStats && !showResults">
+		<i class="fas fa-chart-bar"></i>
+	</button>
+
+	<!-- Resultados centrales, solo visible si showResults -->
+	<div *ngIf="showResults" class="resultados-actividad">
+		<div class="resultado-principal">
+			<div class="puntuacion-final-trivia">
+				<div class="puntos">{{puntuacionFinal}}</div>
+				<div class="label">Puntos Totales</div>
+			</div>
+			<div class="metricas-principales">
+				<div class="metrica">
+					<div class="numero">{{respuestasCorrectas}}/{{totalPreguntas}}</div>
+					<div class="label">Correctas</div>
+				</div>
+				<div class="metrica">
+					<div class="numero">{{precision}}%</div>
+					<div class="label">Precisión</div>
+				</div>
+				<div class="metrica">
+					<div class="numero">{{mejorRacha}}</div>
+					<div class="label">Mejor Racha</div>
+				</div>
+			</div>
+			<div class="detalles-categoria" *ngIf="resultadosPorCategoria.length > 0">
+				<h4>Rendimiento por Categoría:</h4>
+				<div class="categoria-resultado" *ngFor="let categoria of resultadosPorCategoria">
+					<div class="categoria-nombre">{{categoria.nombre}}</div>
+					<div class="categoria-barra">
+						<div class="categoria-progreso" [style.width.%]="categoria.porcentaje"></div>
+					</div>
+					<div class="categoria-porcentaje">{{categoria.porcentaje}}%</div>
+				</div>
+			</div>
+			<div class="recomendaciones" *ngIf="recomendaciones.length > 0">
+				<h4>Recomendaciones de Mejora:</h4>
+				<div class="recomendacion" *ngFor="let recomendacion of recomendaciones">
+					<i [class]="recomendacion.icono"></i>
+					<span>{{recomendacion.texto}}</span>
+				</div>
+			</div>
+			<div class="modal-actions">
+				<button class="btn-nueva-dificultad" (click)="cambiarDificultad()">
+					<i class="fas fa-layer-group"></i>
+					Cambiar Dificultad
+				</button>
+				<button class="btn-continuar" (click)="finalizarActividad()">
+					<i class="fas fa-check"></i>
+					Continuar
+				</button>
+				<button class="btn-reintentar" (click)="reiniciarTrivia()">
+					<i class="fas fa-redo"></i>
+					Intentar de Nuevo
+				</button>
+			</div>
+		</div>
+	</div>
+</div>

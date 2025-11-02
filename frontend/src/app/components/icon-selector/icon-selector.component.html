@@ -1,0 +1,57 @@
+<!-- src/app/components/icon-selector/icon-selector.component.html -->
+<div class="icon-selector-wrapper">
+  <div class="selected-icon" (click)="togglePicker()">
+    <i [class]="selectedIcon"></i>
+    <span>{{ selectedIconName }}</span>
+    <i class="fas fa-chevron-down arrow" [class.rotate]="showPicker"></i>
+  </div>
+
+  <div class="icon-picker" *ngIf="showPicker" (click)="$event.stopPropagation()">
+    <div class="picker-header">
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (ngModelChange)="filterIcons()"
+        placeholder="Buscar icono..."
+        class="search-input"
+        (click)="$event.stopPropagation()">
+      <button class="btn-close-picker" (click)="togglePicker()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="picker-categories">
+      <button 
+        *ngFor="let cat of categories"
+        [class.active]="selectedCategory === cat"
+        (click)="selectCategory(cat)"
+        class="category-btn">
+        {{ cat }}
+      </button>
+    </div>
+
+    <div class="icons-grid">
+      <div 
+        *ngFor="let icon of filteredIcons"
+        class="icon-option"
+        [class.selected]="selectedIcon === icon.class"
+        (click)="selectIcon(icon.class)"
+        [title]="icon.name">
+        <i [class]="icon.class"></i>
+        <span class="icon-name">{{ icon.name }}</span>
+      </div>
+
+      <div *ngIf="filteredIcons.length === 0" class="no-icons">
+        <i class="fas fa-search"></i>
+        <p>No se encontraron iconos</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay para cerrar el picker al hacer clic fuera -->
+<div 
+  class="picker-overlay" 
+  *ngIf="showPicker" 
+  (click)="togglePicker()">
+</div>
