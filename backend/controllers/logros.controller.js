@@ -1,15 +1,10 @@
 // backend/controllers/logros.controller.js
 const db = require('../config/db');
-const preferenciasController = require('./preferencias.controller');
-
-// ✅ Añadir en modulos.controller.js
-const modulosNotificaciones = {
-  async notificarModuloCompletado(userId, modulo) {
-    await preferenciasController.notificarModuloCompletado(userId, modulo);
-  }
-};
 
 class LogrosController {
+  /**
+   * Obtener todos los logros disponibles y los del usuario
+   */
   async obtenerLogrosUsuario(req, res) {
     try {
       const userId = req.user.id;
@@ -58,7 +53,7 @@ class LogrosController {
   }
 
   /**
-   * ✅ VERIFICAR Y OTORGAR LOGROS CON NOTIFICACIONES
+   * Verificar y otorgar logros automáticamente
    */
   async verificarYOtorgarLogros(userId) {
     try {
@@ -97,26 +92,20 @@ class LogrosController {
         }
 
         if (cumple) {
-          // Insertar logro
           await db.execute(`
             INSERT INTO usuario_logros (id_usuario, id_logro, fecha_obtenido)
             VALUES (?, ?, NOW())
           `, [userId, logro.id]);
 
-          const logroObtenido = {
+          logrosNuevos.push({
             id: logro.id,
             titulo: logro.titulo,
             descripcion: logro.descripcion,
             icono: logro.icono,
             puntosRecompensa: logro.puntos_recompensa
-          };
+          });
 
-          logrosNuevos.push(logroObtenido);
-
-          // ✅ ENVIAR NOTIFICACIÓN DEL LOGRO
-          await preferenciasController.notificarLogro(userId, logroObtenido);
-
-          console.log(`✅ Logro otorgado: ${logro.titulo} a usuario ${userId}`);
+         // console.log(`✅ Logro otorgado: ${logro.titulo} a usuario ${userId}`);
         }
       }
 
@@ -128,8 +117,12 @@ class LogrosController {
     }
   }
 
+  /**
+   * Obtener estadísticas del usuario
+   */
   async obtenerEstadisticasUsuario(userId) {
     try {
+      // Módulos completados (100%)
       const [modulosResult] = await db.execute(`
         SELECT COUNT(DISTINCT modulo_data.modulo_id) as total
         FROM (
@@ -145,6 +138,7 @@ class LogrosController {
         ) as modulo_data
       `, [userId]);
 
+      // Puntos de módulos
       const [puntosModulos] = await db.execute(`
         SELECT COALESCE(SUM(CAST(m.puntos AS UNSIGNED)), 0) as puntos
         FROM modulos m
@@ -155,6 +149,7 @@ class LogrosController {
         HAVING ROUND((SUM(CASE WHEN pl.completada = 1 THEN 1 ELSE 0 END) * 100.0) / NULLIF(COUNT(l.id), 0), 0) >= 100
       `, [userId]);
 
+      // Puntos de actividades
       const [puntosActividades] = await db.execute(`
         SELECT COALESCE(SUM(CAST(puntos_obtenidos AS UNSIGNED)), 0) as puntos
         FROM actividad_usuario
@@ -163,18 +158,21 @@ class LogrosController {
           AND puntos_obtenidos > 0
       `, [userId]);
 
+      // Tiempo total
       const [tiempoResult] = await db.execute(`
         SELECT COALESCE(SUM(tiempo_minutos), 0) as total
         FROM tiempo_estudio
         WHERE id_usuario = ?
       `, [userId]);
 
+      // Actividades completadas
       const [actividadesResult] = await db.execute(`
         SELECT COUNT(*) as total
         FROM actividad_usuario
         WHERE id_usuario = ? AND resultado = 'Completada'
       `, [userId]);
 
+      // Racha consecutiva (últimos 30 días)
       const [rachaResult] = await db.execute(`
         SELECT COUNT(DISTINCT DATE(fecha_lectura)) as dias
         FROM progreso_contenido
@@ -204,6 +202,9 @@ class LogrosController {
     }
   }
 
+  /**
+   * Verificación manual de logros
+   */
   async verificarLogrosManual(req, res) {
     try {
       const userId = req.user.id;
@@ -226,10 +227,19 @@ class LogrosController {
     }
   }
 
+  /**
+   * Verificar logros después de completar módulo
+   */
   async verificarLogrosDespuesDeModulo(req, res) {
     try {
       const userId = req.user.id;
       const logrosNuevos = await this.verificarYOtorgarLogros(userId);
+
+      if (logrosNuevos.length > 0) {
+        for (const logro of logrosNuevos) {
+          await this.notificarLogro(userId, logro);
+        }
+      }
 
       res.json({
         success: true,
@@ -241,6 +251,18 @@ class LogrosController {
         success: false,
         mensaje: 'Error al verificar logros'
       });
+    }
+  }
+
+  /**
+   * Notificar logro al usuario
+   */
+  async notificarLogro(userId, logro) {
+    try {
+      // Notificación simple por consola
+      console.log(`🏆 Logro obtenido por usuario ${userId}:`, logro.titulo);
+    } catch (error) {
+      console.error('Error notificando logro:', error);
     }
   }
 }

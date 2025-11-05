@@ -5,13 +5,7 @@ const path = require('path');
 const cors = require('cors');
 const morgan = require('morgan');
 const app = express();
-const recordatoriosCron = require('./cron/recordatorios');
 
-
-if (process.env.CRON_ENABLED !== 'false') {
-  recordatoriosCron.iniciar();
-  console.log('✅ CRON Jobs iniciados');
-}
 // Middlewares
 app.use(cors());
 app.use(express.json());
@@ -112,9 +106,7 @@ app.use('/api/reutilizable', reutilizableRoutes);
 const configuracionUsuarioRoutes = require('./routes/configuracion_usuario.routes');
 app.use('/api', configuracionUsuarioRoutes);
 
-// Rutas de tienda (NUEVO)
-const tiendaRoutes = require('./routes/tienda.routes');
-app.use('/api/tienda', tiendaRoutes);
+
 
 // Rutas de admin
 const adminRoutes = require('./routes/admin.routes');
@@ -172,8 +164,4 @@ app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
   console.log(`🔍 Health check: http://localhost:${PORT}/api/health-check`);
   console.log(`📁 Archivos estáticos: http://localhost:${PORT}/uploads/`);
-  
-  if (process.env.CRON_ENABLED !== 'false') {
-    console.log('📅 Sistema de recordatorios activo');
-  }
 });

@@ -27,11 +27,7 @@ export const routes: Routes = [
   loadComponent: () => import('./pages/lectura-viewer/lectura-viewer').then(m => m.LecturaViewerComponent),
   canActivate: [AuthGuard]
 },
-{
-    path: 'tienda',
-    loadComponent: () => import('./pages/tienda/tienda.component').then(m => m.TiendaComponent),
-    canActivate: [AuthGuard]
-  },
+
   // Si tienes un componente para quiz rápido, descomenta la siguiente línea y crea el archivo si no existe:
   // { path: 'actividades/quiz-rapido', loadComponent: () => import('./pages/actividades/quiz-rapido/quiz-rapido').then(m => m.QuizRapidoComponent), canActivate: [AuthGuard] },
   { 
