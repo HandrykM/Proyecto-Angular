@@ -1,4 +1,4 @@
-// backend/app.nuevo.js
+// backend/app.js
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
@@ -6,36 +6,60 @@ const cors = require('cors');
 const morgan = require('morgan');
 const app = express();
 
-// Middlewares
-app.use(cors());
-app.use(express.json());
-// Logger de peticiones (muestra método, url y tiempo)
-//app.use(morgan('dev'));
+// ============================================
+// CORS Configuration
+// ============================================
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = process.env.ALLOWED_ORIGINS 
+      ? process.env.ALLOWED_ORIGINS.split(',') 
+      : ['http://localhost:4200'];
+    
+    // Permitir requests sin origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
 
-// Middleware para medir duración de cada request y detectar bloqueos
+app.use(cors(corsOptions));
+app.use(express.json());
+
+// Logger de peticiones (opcional)
+// app.use(morgan('dev'));
+
+// Middleware para medir duración de cada request
 app.use((req, res, next) => {
   const start = Date.now();
   res.on('finish', () => {
     const duration = Date.now() - start;
-    //console.log(`⏱️ ${req.method} ${req.originalUrl} -> ${res.statusCode} (${duration}ms)`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`⏱️ ${req.method} ${req.originalUrl} -> ${res.statusCode} (${duration}ms)`);
+    }
   });
   next();
 });
 
-// Disable ETag and force no-cache for API responses to avoid 304 for JSON endpoints
+// Disable ETag and force no-cache for API responses
 app.disable('etag');
 app.use('/api', (req, res, next) => {
-  // For APIs we don't want browser caching to return 304 with empty body
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.set('Pragma', 'no-cache');
   res.set('Expires', '0');
   next();
 });
 
+// ============================================
 // Servir archivos estáticos
-// Configuración especial para videos y otros archivos
+// ============================================
 app.use('/uploads', (req, res, next) => {
-  // Habilitar partial content y rangos para videos
   res.set({
     'Accept-Ranges': 'bytes',
     'Cache-Control': 'public, max-age=3600',
@@ -54,86 +78,86 @@ app.use('/uploads', (req, res, next) => {
 });
 app.use('/assets', express.static(path.join(__dirname, 'public/assets')));
 
-// Rutas de autenticación
+// ============================================
+// RUTAS DE LA API
+// ============================================
+
+// Autenticación
 const authRoutes = require('./routes/auth.routes');
 app.use('/api/auth', authRoutes);
 
-// Rutas de módulos
+// Módulos
 const modulosRoutes = require('./routes/modulos.routes');
 app.use('/api/modulos', modulosRoutes);
 
-// Rutas de lecturas
+// Lecturas
 const lecturasRoutes = require('./routes/lecturas.routes');
 app.use('/api/modulos', lecturasRoutes);
 
-// Rutas de materiales adicionales
+// Materiales
 const materialesRoutes = require('./routes/materiales.routes');
 app.use('/api/materiales', materialesRoutes);
 
-
-// Rutas de actividades
+// Actividades
 const actividadesRoutes = require('./routes/actividades.routes');
 app.use('/api', actividadesRoutes);
 
-// Rutas de biblioteca (NUEVA VERSIÓN)
+// Biblioteca
 const bibliotecaRoutes = require('./routes/biblioteca.routes');
 app.use('/api/biblioteca', bibliotecaRoutes);
 
-// Rutas de upload (NUEVO)
+// Upload
 const uploadRoutes = require('./routes/upload.routes');
 app.use('/api/upload', uploadRoutes);
 
-// Rutas de perfil
+// Perfil
 const perfilRoutes = require('./routes/perfil.routes');
 app.use('/api/perfil', perfilRoutes);
 
-// Rutas de logros
+// Logros
 const logrosRoutes = require('./routes/logros.routes');
 app.use('/api', logrosRoutes);
 
-// Rutas de certificados
+// Certificados
 const certificadosRoutes = require('./routes/certificados.routes');
 app.use('/api', certificadosRoutes);
 
-// Rutas de preferencias
+// Preferencias
 const preferenciasRoutes = require('./routes/preferencias.routes');
 app.use('/api', preferenciasRoutes);
 
-// Rutas de reutilizable (NUEVO)
+// Reutilizable
 const reutilizableRoutes = require('./routes/reutilizable.routes');
 app.use('/api/reutilizable', reutilizableRoutes);
 
+// Notificaciones
 const notificacionesRoutes = require('./routes/notificaciones.routes');
 app.use('/api/notificaciones', notificacionesRoutes);
 
+// Configuración de usuario
 const configuracionUsuarioRoutes = require('./routes/configuracion_usuario.routes');
 app.use('/api', configuracionUsuarioRoutes);
 
-
-
-// Rutas de admin
+// Admin
 const adminRoutes = require('./routes/admin.routes');
 app.use('/api/admin', adminRoutes);
+
+// ============================================
+// RUTAS ESPECIALES
+// ============================================
 
 // Health check
 app.get('/api/health-check', (req, res) => {
   res.status(200).json({ 
     status: 'OK', 
     service: 'proyecto-agua-api',
+    environment: process.env.NODE_ENV,
     timestamp: new Date().toISOString(),
+    database: process.env.DB_HOST ? 'connected' : 'not configured',
     modules: [
-      'auth', 
-      'modulos', 
-      'lecturas',
-      'materiales',
-      'actividades', 
-      'biblioteca', 
-      'upload',
-      'perfil', 
-      'logros', 
-      'certificados', 
-      'preferencias',
-      'admin'
+      'auth', 'modulos', 'lecturas', 'materiales',
+      'actividades', 'biblioteca', 'upload', 'perfil', 
+      'logros', 'certificados', 'preferencias', 'admin'
     ]
   });
 });
@@ -142,7 +166,10 @@ app.get('/', (req, res) => {
   res.send('💧 API de Proyecto Agua funcionando');
 });
 
-// Middleware de manejo de errores global
+// ============================================
+// MANEJO DE ERRORES
+// ============================================
+
 app.use((err, req, res, next) => {
   console.error('Error global:', err);
   
@@ -161,10 +188,14 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Puerto
+// ============================================
+// INICIAR SERVIDOR
+// ============================================
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-  console.log(`🔍 Health check: http://localhost:${PORT}/api/health-check`);
-  console.log(`📁 Archivos estáticos: http://localhost:${PORT}/uploads/`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Servidor corriendo en puerto ${PORT}`);
+  console.log(`🔍 Health check: /api/health-check`);
+  console.log(`📁 Archivos estáticos: /uploads/`);
+  console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
 });

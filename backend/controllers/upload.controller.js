@@ -68,7 +68,8 @@ exports.subirArchivoMaterial = (req, res) => {
       });
     }
 
-    const fileUrl = `http://localhost:3000/uploads/materiales/${req.file.filename}`;
+     const apiUrl = process.env.API_URL; // ✅ Correcto
+    const fileUrl = `${apiUrl}/uploads/materiales/${req.file.filename}`;
     
     res.json({
       success: true,

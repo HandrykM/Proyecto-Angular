@@ -1,9 +1,9 @@
 // src/app/services/auth.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { tap, catchError, map } from 'rxjs/operators';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { tap, map } from 'rxjs/operators';
 import { environment } from '../environments/environment';
 
 interface Usuario {
@@ -23,21 +23,19 @@ export interface AuthResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private baseUrl = 'http://localhost:3000/api/auth';
-  private apiUrl = `${environment.apiUrl}/auth`;
+  private apiUrl = `${environment.apiUrl}/auth`; // ✅ Usa environment
   private tokenKey = 'token';
   private usuarioKey = 'usuario';
   
-  // BehaviorSubject para mantener el usuario actualizado en toda la app
+  // BehaviorSubject para mantener el usuario actualizado
   private usuarioSubject = new BehaviorSubject<Usuario | null>(null);
-public usuario$ = this.usuarioSubject.asObservable();
+  public usuario$ = this.usuarioSubject.asObservable();
 
-public isAuthenticated$ = this.usuario$.pipe(
-  map(usuario => usuario !== null)
-);
+  public isAuthenticated$ = this.usuario$.pipe(
+    map(usuario => usuario !== null)
+  );
 
   constructor(private http: HttpClient, private router: Router) {
-    // Cargar usuario al inicializar
     this.cargarUsuarioDesdeStorage();
   }
 
@@ -56,6 +54,9 @@ public isAuthenticated$ = this.usuario$.pipe(
     }
   }
 
+  /**
+   * Obtener ID del usuario desde el token
+   */
   getUserId(): number {
     const token = this.getToken();
     if (token) {
@@ -70,20 +71,27 @@ public isAuthenticated$ = this.usuario$.pipe(
     return 0;
   }
 
-  // Registro
-  register(data: { nombre: string; correo: string; contrasena: string; repetirContrasena: string}) {
-    return this.http.post(`${this.baseUrl}/register`, data);
+  /**
+   * Registro
+   */
+  register(data: { 
+    nombre: string; 
+    correo: string; 
+    contrasena: string; 
+    repetirContrasena: string 
+  }) {
+    return this.http.post(`${this.apiUrl}/register`, data);
   }
 
-  // Login - MEJORADO
+  /**
+   * Login
+   */
   login(data: { nombre: string; contrasena: string }): Observable<{ token: string; user: any }> {
-    return this.http.post<{ token: string; user: any }>(`${this.baseUrl}/login`, data).pipe(
+    return this.http.post<{ token: string; user: any }>(`${this.apiUrl}/login`, data).pipe(
       tap(response => {
         if (response.token && response.user) {
-          // Guardar token
           this.saveToken(response.token);
           
-          // Guardar usuario con foto
           const usuario: Usuario = {
             id: response.user.id,
             nombre: response.user.nombre,
@@ -93,37 +101,50 @@ public isAuthenticated$ = this.usuario$.pipe(
           };
           
           this.saveUser(usuario);
-          this.usuarioSubject.next(usuario);
         }
       })
     );
   }
 
-  // Forgot password
+  /**
+   * Forgot password
+   */
   forgotPassword(data: { correo: string }) {
-    return this.http.post(`${this.baseUrl}/forgot-password`, data);
+    return this.http.post(`${this.apiUrl}/forgot-password`, data);
   }
 
+  /**
+   * Reset password
+   */
   resetPassword(data: { token: string; nuevaContrasena: string }) {
-    return this.http.post(`${this.baseUrl}/reset-password`, data);
+    return this.http.post(`${this.apiUrl}/reset-password`, data);
   }
 
-  // Guardar token
+  /**
+   * Guardar token
+   */
   saveToken(token: string) {
     localStorage.setItem('token', token);
   }
 
-  // Guardar usuario - MEJORADO
+  /**
+   * Guardar usuario
+   */
   saveUser(user: Usuario) {
     localStorage.setItem('user', JSON.stringify(user));
     this.usuarioSubject.next(user);
   }
 
+  /**
+   * Obtener token
+   */
   getToken(): string {
     return localStorage.getItem('token') || '';
   }
 
-  // Obtener usuario - MEJORADO
+  /**
+   * Obtener usuario
+   */
   getUser(): Usuario | null {
     const user = localStorage.getItem('user');
     if (user) {
@@ -136,14 +157,16 @@ public isAuthenticated$ = this.usuario$.pipe(
     }
     return null;
   }
-  obtenerUsuario() {
-  const usuario = localStorage.getItem('usuario');
-  return usuario ? JSON.parse(usuario) : null;
-}
-
 
   /**
-   * Actualizar usuario en storage - NUEVO
+   * Obtener usuario (alias)
+   */
+  obtenerUsuario(): Usuario | null {
+    return this.getUser();
+  }
+
+  /**
+   * Actualizar usuario en storage
    */
   actualizarUsuario(datosActualizados: Partial<Usuario>): void {
     const usuarioActual = this.getUser();
@@ -154,54 +177,53 @@ public isAuthenticated$ = this.usuario$.pipe(
   }
 
   /**
-   * Actualizar foto del usuario - NUEVO
+   * Actualizar foto del usuario
    */
   actualizarFotoUsuario(fotoUrl: string): void {
     this.actualizarUsuario({ foto: fotoUrl });
   }
 
+  /**
+   * Limpiar token y usuario
+   */
   clearToken() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this.usuarioSubject.next(null);
   }
 
-  // Verificar si está logueado
+  /**
+   * Verificar si está autenticado
+   */
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
 
-  // Verificar si es admin - NUEVO
+  /**
+   * Verificar si es admin
+   */
   isAdmin(): boolean {
     const usuario = this.getUser();
     return usuario?.rol === 'admin';
   }
 
-  
-
-  // Logout corregido
+  /**
+   * Logout
+   */
   logout(): void {
     this.clearToken();
     this.router.navigate(['/']);
   }
 
-  // Obtener ID de usuario
+  /**
+   * Obtener ID de usuario
+   */
   getUsuarioId(): number {
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        return payload.id || 0;
-      } catch (error) {
-        console.error('Error al obtener ID de usuario:', error);
-        return 0;
-      }
-    }
-    return 0;
+    return this.getUserId();
   }
 
   /**
-   * Obtener foto de usuario - MEJORADO
+   * Obtener foto de usuario
    */
   getFotoUsuario(): string | null {
     const usuario = this.getUser();
