@@ -162,9 +162,9 @@
         
         <!-- Badge de leído -->
         <div class="recurso-leido-badge" *ngIf="esRecursoLeido(recurso.id)">
-          <i class="fas fa-check-circle"></i>
-          Leído
-        </div>
+  <i class="fas fa-check-circle"></i>
+  {{ recurso.tipo === 'video' ? 'Visto' : 'Leído' }}
+</div>
         
         <button 
           class="btn-favorito"
@@ -390,28 +390,28 @@
         
         <!-- ========== PDFs / INFOGRAFÍAS / GUÍAS ========== -->
         <div class="pdf-container" *ngIf="['infografia','guia'].includes(recursoSeleccionado.tipo)">
-          <div class="pdf-toolbar">
-            <h4>{{recursoSeleccionado.titulo}}</h4>
-            <button class="btn-descargar" (click)="descargarArchivo(); $event.stopPropagation()">
-              <i class="fas fa-download"></i> Descargar
-            </button>
-          </div>
+  <div class="pdf-toolbar">
+    <h4>{{recursoSeleccionado.titulo}}</h4>
+    <button class="btn-descargar" (click)="descargarArchivo(); $event.stopPropagation()">
+      <i class="fas fa-download"></i> Descargar
+    </button>
+  </div>
 
-          <iframe 
-            *ngIf="previewUrl" 
-            class="pdf-viewer" 
-            [src]="previewUrl" 
-            frameborder="0">
-          </iframe>
+  <iframe 
+    *ngIf="previewUrl" 
+    class="pdf-viewer" 
+    [src]="previewUrl" 
+    frameborder="0">
+  </iframe>
 
-          <div *ngIf="!previewUrl && !cargandoRecurso" class="pdf-error">
-            <i class="fas fa-file-pdf"></i>
-            <p>No se pudo generar vista previa</p>
-            <button class="btn-descargar" (click)="descargarArchivo(); $event.stopPropagation()">
-              <i class="fas fa-download"></i> Descargar archivo
-            </button>
-          </div>
-        </div>
+  <!-- ✅ ELIMINAR este bloque de error con botón duplicado -->
+  <!-- Solo mostrar mensaje si no hay preview -->
+  <div *ngIf="!previewUrl && !cargandoRecurso" class="pdf-error" 
+       style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem; color: var(--gray-color);">
+    <i class="fas fa-file-pdf" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+    <p style="margin: 0;">No se pudo generar vista previa. Usa el botón "Descargar" arriba.</p>
+  </div>
+</div>
         
         <!-- ========== ESTUDIOS ========== -->
         <div class="articulo-container" *ngIf="recursoSeleccionado.tipo === 'estudio'">

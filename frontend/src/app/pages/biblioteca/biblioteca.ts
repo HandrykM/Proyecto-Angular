@@ -328,7 +328,7 @@ isMp4(url: string | undefined): boolean {
   this.previewUrl = null;
   this.sanitizedRecursoUrl = null;
 
-  // Registrar lectura/visualización
+  // ✅ CAMBIO PRINCIPAL: Registrar como "visto" para videos, "leído" para el resto
   if (this.usuario?.id && !this.esRecursoLeido(recurso.id)) {
     const tipoEvento: 'leido' | 'visto' = recurso.tipo === 'video' ? 'visto' : 'leido';
     this.registrarLectura(recurso.id, tipoEvento);
@@ -380,6 +380,9 @@ isMp4(url: string | undefined): boolean {
 
   // CASO 3: OTROS TIPOS
   this.cargandoRecurso = false;
+}
+esVideo(recurso: Recurso): boolean {
+  return recurso.tipo === 'video';
 }
 
 private cargarVideoMp4(recurso: Recurso): void {

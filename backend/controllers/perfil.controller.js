@@ -1,4 +1,4 @@
-// backend/controllers/perfil.controller.js
+// backend/controllers/perfil.controller.js - VERSIÓN CORREGIDA
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
@@ -41,9 +41,15 @@ const obtenerPerfilCompleto = async (req, res) => {
   try {
     const userId = req.user.id;
 
+    // Actualizar última actividad del usuario
+    await db.execute(
+      'UPDATE usuarios SET ultima_actividad = NOW() WHERE id = ?',
+      [userId]
+    );
+
     const [userResult] = await db.execute(
       `SELECT u.id, u.nombre, u.correo, u.telefono, u.nombre_usuario as nombreUsuario, 
-              u.foto, u.fecha_registro as fechaRegistro, u.rol
+              u.foto, u.fecha_registro as fechaRegistro, u.rol, u.ultima_actividad
        FROM usuarios u 
        WHERE u.id = ?`,
       [userId]
@@ -97,7 +103,7 @@ const obtenerPerfilCompleto = async (req, res) => {
       HAVING ROUND((SUM(CASE WHEN pl.completada = 1 THEN 1 ELSE 0 END) * 100.0) / NULLIF(COUNT(l.id), 0), 0) >= 100
     `, [userId]);
 
-    // ✅ PUNTOS DE ACTIVIDADES (sin límites artificiales)
+    // ✅ PUNTOS DE ACTIVIDADES
     const [puntosActividades] = await db.execute(`
       SELECT COALESCE(SUM(CAST(puntos_obtenidos AS UNSIGNED)), 0) as puntos_actividades
       FROM actividad_usuario
@@ -122,23 +128,37 @@ const obtenerPerfilCompleto = async (req, res) => {
       [userId]
     );
 
-    // Última actividad
-    const [ultimaActividad] = await db.execute(
-      `SELECT MAX(fecha_lectura) as ultima_fecha
-       FROM progreso_contenido
-       WHERE id_usuario = ?`,
-      [userId]
-    );
+    // ✅ ÚLTIMA ACTIVIDAD (CORREGIDA - usa nombres de columnas correctos)
+    const [ultimaActividad] = await db.execute(`
+      SELECT MAX(fecha_actividad) as ultima_fecha
+      FROM (
+        SELECT MAX(fecha_actividad) as fecha_actividad 
+        FROM actividad_usuario 
+        WHERE id_usuario = ?
+        
+        UNION ALL
+        
+        SELECT MAX(fecha_completada) as fecha_actividad
+        FROM progreso_lecturas 
+        WHERE usuario_id = ?
+        
+        UNION ALL
+        
+        SELECT MAX(ultima_actualizacion) as fecha_actividad
+        FROM progreso_lecturas 
+        WHERE usuario_id = ?
+        
+        UNION ALL
+        
+        SELECT ultima_actividad as fecha_actividad
+        FROM usuarios
+        WHERE id = ?
+      ) AS todas_fechas
+    `, [userId, userId, userId, userId]);
 
     const puntosModulosNum = parseInt(puntosModulos[0]?.puntos_modulos) || 0;
     const puntosActividadesNum = parseInt(puntosActividades[0]?.puntos_actividades) || 0;
     const totalPuntos = puntosModulosNum + puntosActividadesNum;
-
-    /*console.log('📊 DEBUG PUNTOS:', {
-      puntosModulos: puntosModulosNum,
-      puntosActividades: puntosActividadesNum,
-      totalPuntos
-    });*/
 
     const estadisticas = {
       tiempoTotalEstudio: tiempoEstudio[0]?.tiempo_total || 0,
@@ -146,7 +166,7 @@ const obtenerPerfilCompleto = async (req, res) => {
       actividadesCompletadas: actividadesCompletadas[0]?.total_actividades || 0,
       puntosTotal: totalPuntos,
       racha: 1,
-      ultimaActividad: ultimaActividad[0]?.ultima_fecha || usuario.fechaRegistro
+      ultimaActividad: ultimaActividad[0]?.ultima_fecha || usuario.ultima_actividad || usuario.fechaRegistro
     };
 
     const perfilCompleto = {
@@ -278,7 +298,7 @@ const actualizarInformacionPersonal = async (req, res) => {
 
     await db.execute(
       `UPDATE usuarios 
-       SET nombre = ?, correo = ?, telefono = ?, nombre_usuario = ?
+       SET nombre = ?, correo = ?, telefono = ?, nombre_usuario = ?, ultima_actividad = NOW()
        WHERE id = ?`,
       [nombre, correo, telefono || null, nombreUsuario || null, userId]
     );
@@ -322,7 +342,7 @@ const subirFotoPerfil = [
       );
 
       await db.execute(
-        'UPDATE usuarios SET foto = ? WHERE id = ?',
+        'UPDATE usuarios SET foto = ?, ultima_actividad = NOW() WHERE id = ?',
         [fotoUrl, userId]
       );
 
@@ -376,7 +396,7 @@ const cambiarContrasena = async (req, res) => {
     const nuevaContrasenaHash = await bcrypt.hash(nuevaContrasena, 10);
 
     await db.execute(
-      'UPDATE usuarios SET contrasena = ? WHERE id = ?',
+      'UPDATE usuarios SET contrasena = ?, ultima_actividad = NOW() WHERE id = ?',
       [nuevaContrasenaHash, userId]
     );
 
@@ -393,6 +413,28 @@ const obtenerHistorialSesiones = async (req, res) => {
   try {
     const userId = req.user.id;
 
+    const [sesiones] = await db.execute(`
+      SELECT 
+        id,
+        fecha_acceso as fechaAcceso,
+        ip,
+        dispositivo,
+        navegador,
+        sistema_operativo as sistemaOperativo,
+        ubicacion,
+        activo,
+        ultima_actividad as ultimaActividad
+      FROM sesiones_usuario
+      WHERE id_usuario = ?
+      ORDER BY fecha_acceso DESC
+      LIMIT 20
+    `, [userId]);
+
+    res.json(sesiones);
+
+  } catch (error) {
+    console.error('Error al obtener historial:', error);
+    // Si la tabla no existe, devolver sesión actual simulada
     const historialSesiones = [
       {
         id: 1,
@@ -401,15 +443,11 @@ const obtenerHistorialSesiones = async (req, res) => {
         dispositivo: req.get('User-Agent') || 'Desconocido',
         navegador: 'Chrome',
         ubicacion: 'Colombia',
-        activo: true
+        activo: true,
+        ultimaActividad: new Date().toISOString()
       }
     ];
-
     res.json(historialSesiones);
-
-  } catch (error) {
-    console.error('Error al obtener historial:', error);
-    res.status(500).json({ mensaje: 'Error interno del servidor' });
   }
 };
 
@@ -418,6 +456,11 @@ const actualizarConfiguracion = async (req, res) => {
   try {
     const userId = req.user.id;
     const configuracion = req.body;
+
+    await db.execute(
+      'UPDATE usuarios SET ultima_actividad = NOW() WHERE id = ?',
+      [userId]
+    );
 
     res.json({
       mensaje: 'Configuración actualizada correctamente',
@@ -443,14 +486,6 @@ const obtenerLogros = async (req, res) => {
         icono: 'fas fa-star',
         fechaObtenido: new Date().toISOString(),
         categoria: 'Progreso'
-      },
-      {
-        id: 2,
-        titulo: 'Estudiante dedicado',
-        descripcion: 'Estudiaste durante 5 horas esta semana',
-        icono: 'fas fa-clock',
-        fechaObtenido: new Date(Date.now() - 86400000).toISOString(),
-        categoria: 'Tiempo'
       }
     ];
 

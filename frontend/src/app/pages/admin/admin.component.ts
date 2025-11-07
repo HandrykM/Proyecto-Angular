@@ -169,6 +169,50 @@ subiendoArchivo: boolean = false;
   };
   coloresPorNivelArray = Object.values(this.coloresPorNivel);
 
+  // ✅ COLORES DISPONIBLES
+  coloresDisponibles = [
+    { nombre: 'Verde Agua', valor: '#1abc9c', categoria: 'basico' },
+    { nombre: 'Azul Océano', valor: '#3498db', categoria: 'basico' },
+    { nombre: 'Turquesa', valor: '#48c9b0', categoria: 'basico' },
+    { nombre: 'Verde Esmeralda', valor: '#2ecc71', categoria: 'basico' },
+    { nombre: 'Azul Profundo', valor: '#0077b6', categoria: 'intermedio' },
+    { nombre: 'Naranja', valor: '#f39c12', categoria: 'intermedio' },
+    { nombre: 'Amarillo Sol', valor: '#f1c40f', categoria: 'intermedio' },
+    { nombre: 'Coral', valor: '#ff6b6b', categoria: 'intermedio' },
+    { nombre: 'Rojo Fuego', valor: '#e74c3c', categoria: 'avanzado' },
+    { nombre: 'Morado Real', valor: '#9b59b6', categoria: 'avanzado' },
+    { nombre: 'Rosa Fucsia', valor: '#e91e63', categoria: 'avanzado' },
+    { nombre: 'Índigo', valor: '#667eea', categoria: 'avanzado' }
+  ];
+
+  // Variables para selectores
+  iconoSeleccionado: string = 'fa-book';
+  colorSeleccionado: string = '#1abc9c';
+
+  // ✅ ICONOS DISPONIBLES (FontAwesome)
+  iconosDisponibles = [
+    { clase: 'fa-book', nombre: 'Libro' },
+    { clase: 'fa-graduation-cap', nombre: 'Graduación' },
+    { clase: 'fa-tint', nombre: 'Gota' },
+    { clase: 'fa-droplet', nombre: 'Gotita' },
+    { clase: 'fa-water', nombre: 'Agua' },
+    { clase: 'fa-cloud-rain', nombre: 'Lluvia' },
+    { clase: 'fa-leaf', nombre: 'Hoja' },
+    { clase: 'fa-seedling', nombre: 'Planta' },
+    { clase: 'fa-tree', nombre: 'Árbol' },
+    { clase: 'fa-recycle', nombre: 'Reciclar' },
+    { clase: 'fa-globe', nombre: 'Globo' },
+    { clase: 'fa-sun', nombre: 'Sol' },
+    { clase: 'fa-flask', nombre: 'Experimento' },
+    { clase: 'fa-atom', nombre: 'Átomo' },
+    { clase: 'fa-gamepad', nombre: 'Juego' },
+    { clase: 'fa-puzzle-piece', nombre: 'Puzzle' },
+    { clase: 'fa-star', nombre: 'Estrella' },
+    { clase: 'fa-award', nombre: 'Premio' },
+    { clase: 'fa-medal', nombre: 'Medalla' },
+    { clase: 'fa-trophy', nombre: 'Trofeo' }
+  ];
+
   private subscriptions: Subscription[] = [];
 
   constructor(
@@ -189,7 +233,35 @@ subiendoArchivo: boolean = false;
     document.getElementById('thumbnailRecurso')?.click();
   }
 
-  
+  // ✅ MÉTODO PARA SELECCIONAR ICONO
+  seleccionarIcono(icono: string): void {
+    this.iconoSeleccionado = icono;
+    this.formModulo.patchValue({ icono: `fas ${icono}` });
+    this.formActividad.patchValue({ icono: `fas ${icono}` });
+  }
+
+  // ✅ MÉTODO PARA SELECCIONAR COLOR
+  seleccionarColor(color: string): void {
+    this.colorSeleccionado = color;
+    this.formModulo.patchValue({ color });
+    this.formActividad.patchValue({ color });
+  }
+
+  // ✅ OBTENER COLOR SUGERIDO POR NIVEL
+  obtenerColorPorNivel(nivel: string): string {
+    const colores: {[key: string]: string} = {
+      'basico': '#1abc9c',
+      'intermedio': '#f39c12',
+      'avanzado': '#e74c3c'
+    };
+    return colores[nivel] || '#00a8e8';
+  }
+
+  // ✅ FILTRAR COLORES POR NIVEL
+  obtenerColoresPorNivel(nivel: string): any[] {
+    if (!nivel) return this.coloresDisponibles;
+    return this.coloresDisponibles.filter(c => c.categoria === nivel);
+  }
 
    ngOnInit(): void {
   this.verificarAccesoAdmin();
@@ -967,75 +1039,82 @@ resetearPuntos(usuarioId: number): void {
     this.subscriptions.push(sub);
   }
 
+  // ✅ ACTUALIZAR AL ABRIR MODAL DE MÓDULO
   abrirModalModulo(modulo?: Modulo): void {
-  if (modulo) {
-    // EDICIÓN: Cargar módulo completo desde el servidor
-    this.cargando = true;
+    if (modulo) {
+      // Modo edición
+      this.moduloEnEdicion = modulo;
+      
+      // Extraer el icono sin el prefijo "fas"
+      const iconoSinPrefijo = modulo.icono?.replace('fas ', '') || 'fa-book';
+      this.iconoSeleccionado = iconoSinPrefijo;
+      this.colorSeleccionado = modulo.color || '#1abc9c';
+      
+      this.formModulo.patchValue({
+        titulo: modulo.titulo,
+        descripcion: modulo.descripcion,
+        nivel: modulo.nivel,
+        orden: modulo.orden,
+        icono: modulo.icono,
+        color: modulo.color,
+        puntos: modulo.puntos
+      });
+      
+      // Cargar lecturas y materiales...
+      this.cargando = true;
+      const sub = this.adminService.obtenerModuloCompleto(modulo.id).subscribe({
+        next: (response) => {
+          const moduloCompleto = response.data;
+          
+          this.lecturasTemporal = moduloCompleto.lecturas?.length > 0
+            ? moduloCompleto.lecturas.map((l: any) => ({
+                titulo: l.titulo,
+                descripcion: l.descripcion || '',
+                contenido: l.contenido,
+                duracion: l.duracion || '10 min'
+              }))
+            : [{ titulo: '', descripcion: '', contenido: '', duracion: '10 min' }];
+          
+          this.materialesSeleccionados = moduloCompleto.materialesAdicionales?.length > 0
+            ? moduloCompleto.materialesAdicionales.map((m: any) => ({
+                titulo: m.titulo,
+                descripcion: m.descripcion,
+                tipo: m.tipo,
+                url: m.url,
+                filename: m.filename,
+                archivo: null
+              }))
+            : [];
+          
+          this.cargando = false;
+        },
+        error: (error) => {
+          console.error('Error cargando módulo:', error);
+          this.mostrarError('Error al cargar el módulo');
+          this.cargando = false;
+        }
+      });
+      this.subscriptions.push(sub);
+    } else {
+      // Modo creación
+      this.moduloEnEdicion = null;
+      this.iconoSeleccionado = 'fa-book';
+      this.colorSeleccionado = '#1abc9c';
+      
+      this.formModulo.reset({
+        nivel: 'basico',
+        icono: 'fas fa-book',
+        color: '#1abc9c',
+        puntos: 100,
+        orden: 1
+      });
+      
+      this.lecturasTemporal = [{ titulo: '', descripcion: '', contenido: '', duracion: '10 min' }];
+      this.materialesSeleccionados = [];
+    }
     
-    const sub = this.adminService.obtenerModuloCompleto(modulo.id).subscribe({
-      next: (response) => {
-        const moduloCompleto = response.data;
-        
-        this.moduloEnEdicion = moduloCompleto;
-        this.formModulo.patchValue({
-          titulo: moduloCompleto.titulo,
-          descripcion: moduloCompleto.descripcion,
-          nivel: moduloCompleto.nivel,
-          orden: moduloCompleto.orden,
-          icono: moduloCompleto.icono,
-          color: moduloCompleto.color,
-          puntos: moduloCompleto.puntos
-        });
-        
-        // Cargar lecturas
-        this.lecturasTemporal = moduloCompleto.lecturas && moduloCompleto.lecturas.length > 0
-          ? moduloCompleto.lecturas.map((l: any) => ({
-              titulo: l.titulo,
-              descripcion: l.descripcion || '',
-              contenido: l.contenido,
-              duracion: l.duracion || '10 min'
-            }))
-          : [{ titulo: '', descripcion: '', contenido: '', duracion: '10 min' }];
-        
-        // Cargar materiales
-        this.materialesSeleccionados = moduloCompleto.materialesAdicionales && moduloCompleto.materialesAdicionales.length > 0
-          ? moduloCompleto.materialesAdicionales.map((m: any) => ({
-              titulo: m.titulo,
-              descripcion: m.descripcion,
-              tipo: m.tipo,
-              url: m.url,
-              filename: m.filename,
-              archivo: null // No hay archivo porque ya está subido
-            }))
-          : [];
-        
-        this.cargando = false;
-        this.mostrarModalModulo = true;
-      },
-      error: (error) => {
-        console.error('❌ Error cargando módulo completo:', error);
-        this.mostrarError('Error al cargar el módulo');
-        this.cargando = false;
-      }
-    });
-    
-    this.subscriptions.push(sub);
-    
-  } else {
-    // NUEVO MÓDULO
-    this.moduloEnEdicion = null;
-    this.formModulo.reset({
-      nivel: 'basico',
-      icono: 'fas fa-book',
-      color: '#1abc9c',
-      puntos: 100,
-      orden: 1
-    });
-    this.lecturasTemporal = [{ titulo: '', descripcion: '', contenido: '', duracion: '10 min' }];
-    this.materialesSeleccionados = [];
     this.mostrarModalModulo = true;
   }
-}
 
   private subirMaterial(archivo: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -1140,22 +1219,39 @@ toggleActivoActividad(actividad: Actividad): void {
     this.subscriptions.push(sub);
   }
 
+  // ✅ ACTUALIZAR AL ABRIR MODAL DE ACTIVIDAD
   abrirModalActividad(actividad?: Actividad): void {
     if (actividad) {
       this.actividadEnEdicion = actividad;
+      
+      const iconoSinPrefijo = actividad.icono?.replace('fas ', '') || 'fa-gamepad';
+      this.iconoSeleccionado = iconoSinPrefijo;
+      this.colorSeleccionado = actividad.color || '#3498db';
+      
       this.formActividad.patchValue(actividad);
     } else {
       this.actividadEnEdicion = null;
+      this.iconoSeleccionado = 'fa-gamepad';
+      this.colorSeleccionado = '#3498db';
+      
       this.formActividad.reset({
         tipo: 'quiz',
         nivel: 'basico',
         puntos: 10,
         icono: 'fas fa-gamepad',
         color: '#3498db',
-        orden: 1
+        orden: 1,
+        duracion: '10-15 min'
       });
     }
+    
     this.mostrarModalActividad = true;
+  }
+
+  // ✅ AL CAMBIAR NIVEL, ACTUALIZAR COLOR SUGERIDO
+  onNivelChange(nivel: string): void {
+    const colorSugerido = this.obtenerColorPorNivel(nivel);
+    this.seleccionarColor(colorSugerido);
   }
 
   private mostrarExito(mensaje: string): void {

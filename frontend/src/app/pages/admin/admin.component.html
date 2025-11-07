@@ -671,17 +671,16 @@
         </div>
       </div>
 
-
       <div class="form-group">
         <label>Descripción *</label>
         <textarea formControlName="descripcion" class="form-control" rows="3" placeholder="Descripción del módulo"></textarea>
       </div>
 
-      <!-- Configuración -->
+      <!-- Nivel y Puntos -->
       <div class="form-row">
         <div class="form-group">
           <label>Nivel *</label>
-          <select formControlName="nivel" class="form-control">
+<select formControlName="nivel" class="form-control" (change)="onNivelChange($any($event.target).value)">
             <option value="basico">Básico</option>
             <option value="intermedio">Intermedio</option>
             <option value="avanzado">Avanzado</option>
@@ -694,23 +693,55 @@
         </div>
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label>Icono</label>
-          <input type="text" formControlName="icono" class="form-control" placeholder="fas fa-book">
-        </div>
-
-        <div class="form-group">
-          <label>Color *</label>
-  <select formControlName="color" class="form-control">
-    <option *ngFor="let color of coloresPorNivelArray" [value]="color.valor">
-      {{color.nombre}}
-    </option>
-  </select>
+      <!-- ✅ SELECTOR VISUAL DE ICONOS -->
+      <div class="form-group">
+        <label>
+          <i class="fas fa-icons"></i>
+          Icono del Módulo
+        </label>
+        <div class="icon-selector">
+          <button
+            type="button"
+            *ngFor="let icono of iconosDisponibles"
+            class="icon-option"
+            [class.selected]="iconoSeleccionado === icono.clase"
+            (click)="seleccionarIcono(icono.clase)"
+            [title]="icono.nombre">
+            <i class="fas {{icono.clase}}"></i>
+          </button>
         </div>
       </div>
 
-      <!-- Lecturas -->
+      <!-- ✅ SELECTOR VISUAL DE COLORES -->
+      <div class="form-group">
+        <label>
+          <i class="fas fa-palette"></i>
+          Color del Módulo
+        </label>
+        <div class="color-selector">
+          <button
+            type="button"
+            *ngFor="let color of obtenerColoresPorNivel(formModulo.value.nivel)"
+            class="color-option"
+            [class.selected]="colorSeleccionado === color.valor"
+            [style.background]="color.valor"
+            (click)="seleccionarColor(color.valor)"
+            [title]="color.nombre">
+            <i *ngIf="colorSeleccionado === color.valor" class="fas fa-check check-icon"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- ✅ PREVIEW DEL MÓDULO -->
+      <div class="preview-section">
+        <p class="preview-label">Vista Previa:</p>
+        <div class="preview-card" [style.background]="'linear-gradient(135deg, ' + colorSeleccionado + ', ' + colorSeleccionado + 'dd)'">
+          <i class="fas {{iconoSeleccionado}}"></i>
+          <span>{{formModulo.value.titulo || 'Título del módulo'}}</span>
+        </div>
+      </div>
+
+      <!-- Lecturas (código existente...) -->
       <div style="border-top: 2px solid #e0e0e0; margin-top: 2rem; padding-top: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
           <h4 style="color: #00a8e8; margin: 0;">
@@ -723,7 +754,8 @@
           </button>
         </div>
 
-        <div class="lectura-item" *ngFor="let lectura of lecturasTemporal; let i = index" style="margin-bottom: 1.5rem; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
+        <div class="lectura-item" *ngFor="let lectura of lecturasTemporal; let i = index" 
+             style="margin-bottom: 1.5rem; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
           <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
             <h5 style="margin: 0; color: #333;">Lectura {{i + 1}}</h5>
             <button *ngIf="lecturasTemporal.length > 1" type="button" class="btn-icon danger" (click)="eliminarLectura(i)">
@@ -733,134 +765,113 @@
 
           <div class="form-group">
             <label>Título de la Lectura *</label>
-            <input type="text" [(ngModel)]="lectura.titulo" [ngModelOptions]="{standalone: true}" class="form-control" placeholder="Título de la lectura">
+            <input type="text" [(ngModel)]="lectura.titulo" [ngModelOptions]="{standalone: true}" 
+                   class="form-control" placeholder="Título de la lectura">
           </div>
 
           <div class="form-group">
             <label>Descripción (Vista Previa) *</label>
-            <textarea [(ngModel)]="lectura.descripcion" [ngModelOptions]="{standalone: true}" class="form-control" rows="2" placeholder="Descripción que se verá antes de abrir la lectura"></textarea>
+            <textarea [(ngModel)]="lectura.descripcion" [ngModelOptions]="{standalone: true}" 
+                      class="form-control" rows="2" placeholder="Descripción que se verá antes de abrir la lectura"></textarea>
           </div>
 
           <div class="form-group">
             <label>Contenido de la Lectura *</label>
-            <textarea [(ngModel)]="lectura.contenido" [ngModelOptions]="{standalone: true}" class="form-control" rows="4" placeholder="Contenido completo de la lectura (soporta HTML)"></textarea>
+            <textarea [(ngModel)]="lectura.contenido" [ngModelOptions]="{standalone: true}" 
+                      class="form-control" rows="4" placeholder="Contenido completo de la lectura (soporta HTML)"></textarea>
           </div>
 
           <div class="form-group">
             <label>Duración</label>
-            <input type="text" [(ngModel)]="lectura.duracion" [ngModelOptions]="{standalone: true}" class="form-control" placeholder="10 min">
+            <input type="text" [(ngModel)]="lectura.duracion" [ngModelOptions]="{standalone: true}" 
+                   class="form-control" placeholder="10 min">
           </div>
         </div>
       </div>
 
-      <!-- src/app/pages/admin/admin.component.html - CONTINUACIÓN MODAL MÓDULO -->
-
-      <!-- Materiales Adicionales -->
+      <!-- Materiales (código existente...) -->
       <div style="border-top: 2px solid #e0e0e0; margin-top: 2rem; padding-top: 1.5rem;">
-  <h4 style="color: #00a8e8; margin-bottom: 1rem;">
-    <i class="fas fa-download"></i>
-    Materiales Adicionales
-  </h4>
+        <h4 style="color: #00a8e8; margin-bottom: 1rem;">
+          <i class="fas fa-download"></i>
+          Materiales Adicionales
+        </h4>
 
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-    <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-infografia')">
-      <i class="fas fa-image"></i>
-      Infografía
-    </button>
-    <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-guia')">
-      <i class="fas fa-file-pdf"></i>
-      Guía
-    </button>
-    <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-video')">
-      <i class="fas fa-video"></i>
-      Video
-    </button>
-    <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-otro')">
-      <i class="fas fa-file"></i>
-      Estudio
-    </button>
-  </div>
-
-        <!-- Inputs ocultos -->
-        <input type="file" id="input-infografia" (change)="onMaterialSeleccionado($event, 'infografia')" style="display: none;">
-  <input type="file" id="input-guia" (change)="onMaterialSeleccionado($event, 'guia')" style="display: none;">
-  <input type="file" id="input-video" (change)="onMaterialSeleccionado($event, 'video')" style="display: none;">
-  <input type="file" id="input-otro" (change)="onMaterialSeleccionado($event, 'otro')" style="display: none;">
-
-        <!-- Lista de materiales -->
-        <div *ngIf="materialesSeleccionados.length > 0" style="margin-top: 1.5rem;">
-    <h5 style="color: #333; margin-bottom: 1rem;">Materiales Subidos ({{materialesSeleccionados.length}})</h5>
-    <div class="materiales-list">
-      <div *ngFor="let material of materialesSeleccionados; let i = index" class="material-item-editable" 
-        style="padding: 1.5rem; background: #f5f5f5; border-radius: 8px; margin-bottom: 1rem;">
-        
-        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-          <div style="flex: 1; margin-right: 1rem;">
-            <!-- Título editable -->
-            <div class="form-group" style="margin-bottom: 0.8rem;">
-              <label style="font-size: 0.85rem; color: #666; margin-bottom: 0.3rem; display: block;">
-                Título del material
-              </label>
-              <input 
-                type="text"
-                class="form-control"
-                [(ngModel)]="material.titulo"
-                [ngModelOptions]="{standalone: true}"
-                placeholder="Título del material"
-                style="font-size: 0.95rem;">
-            </div>
-
-            <!-- Descripción editable -->
-            <div class="form-group" style="margin-bottom: 0.5rem;">
-              <label style="font-size: 0.85rem; color: #666; margin-bottom: 0.3rem; display: block;">
-                Descripción del material
-              </label>
-              <textarea
-                class="form-control"
-                [(ngModel)]="material.descripcion"
-                [ngModelOptions]="{standalone: true}"
-                placeholder="Describe brevemente este material..."
-                rows="2"
-                style="font-size: 0.9rem; resize: vertical;"></textarea>
-            </div>
-
-            <!-- Info del archivo -->
-            <p style="margin: 0.5rem 0 0 0; font-size: 0.8rem; color: #999;">
-              <i class="fas fa-file"></i>
-              Archivo: {{material.archivo?.name || 'Sin archivo'}}
-              <span style="background: #e3f2fd; padding: 0.2rem 0.6rem; border-radius: 4px; text-transform: uppercase; font-size: 0.7rem; margin-left: 0.5rem;">
-                {{material.tipo}}
-              </span>
-            </p>
-          </div>
-
-          <button type="button" class="btn-icon danger" (click)="eliminarMaterial(i)" 
-            style="width: 40px; height: 40px; flex-shrink: 0;">
-            <i class="fas fa-trash"></i>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-infografia')">
+            <i class="fas fa-image"></i>
+            Infografía
+          </button>
+          <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-guia')">
+            <i class="fas fa-file-pdf"></i>
+            Guía
+          </button>
+          <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-video')">
+            <i class="fas fa-video"></i>
+            Video
+          </button>
+          <button type="button" class="btn-secondary" (click)="abrirInputArchivo('input-otro')">
+            <i class="fas fa-file"></i>
+            Estudio
           </button>
         </div>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- CSS adicional para los estilos -->
-<style>
-  .material-item-editable {
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-  }
-  
-  .material-item-editable:hover {
-    border-color: #00a8e8;
-    box-shadow: 0 4px 12px rgba(0, 168, 232, 0.1);
-  }
-  
-  .material-item-editable .form-control:focus {
-    border-color: #00a8e8;
-    box-shadow: 0 0 0 3px rgba(0, 168, 232, 0.1);
-  }
-</style>
+        <input type="file" id="input-infografia" (change)="onMaterialSeleccionado($event, 'infografia')" style="display: none;">
+        <input type="file" id="input-guia" (change)="onMaterialSeleccionado($event, 'guia')" style="display: none;">
+        <input type="file" id="input-video" (change)="onMaterialSeleccionado($event, 'video')" style="display: none;">
+        <input type="file" id="input-otro" (change)="onMaterialSeleccionado($event, 'otro')" style="display: none;">
+
+        <div *ngIf="materialesSeleccionados.length > 0" style="margin-top: 1.5rem;">
+          <h5 style="color: #333; margin-bottom: 1rem;">Materiales Subidos ({{materialesSeleccionados.length}})</h5>
+          <div class="materiales-list">
+            <div *ngFor="let material of materialesSeleccionados; let i = index" class="material-item-editable" 
+                 style="padding: 1.5rem; background: #f5f5f5; border-radius: 8px; margin-bottom: 1rem;">
+              
+              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                <div style="flex: 1; margin-right: 1rem;">
+                  <div class="form-group" style="margin-bottom: 0.8rem;">
+                    <label style="font-size: 0.85rem; color: #666; margin-bottom: 0.3rem; display: block;">
+                      Título del material
+                    </label>
+                    <input 
+                      type="text"
+                      class="form-control"
+                      [(ngModel)]="material.titulo"
+                      [ngModelOptions]="{standalone: true}"
+                      placeholder="Título del material"
+                      style="font-size: 0.95rem;">
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <label style="font-size: 0.85rem; color: #666; margin-bottom: 0.3rem; display: block;">
+                      Descripción del material
+                    </label>
+                    <textarea
+                      class="form-control"
+                      [(ngModel)]="material.descripcion"
+                      [ngModelOptions]="{standalone: true}"
+                      placeholder="Describe brevemente este material..."
+                      rows="2"
+                      style="font-size: 0.9rem; resize: vertical;"></textarea>
+                  </div>
+
+                  <p style="margin: 0.5rem 0 0 0; font-size: 0.8rem; color: #999;">
+                    <i class="fas fa-file"></i>
+                    Archivo: {{material.archivo?.name || 'Sin archivo'}}
+                    <span style="background: #e3f2fd; padding: 0.2rem 0.6rem; border-radius: 4px; text-transform: uppercase; font-size: 0.7rem; margin-left: 0.5rem;">
+                      {{material.tipo}}
+                    </span>
+                  </p>
+                </div>
+
+                <button type="button" class="btn-icon danger" (click)="eliminarMaterial(i)" 
+                        style="width: 40px; height: 40px; flex-shrink: 0;">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- Acciones -->
       <div class="modal-actions" style="margin-top: 2rem;">
@@ -908,15 +919,16 @@
           <select formControlName="tipo" class="form-control">
             <option value="quiz">Quiz</option>
             <option value="juego">Juego</option>
-            <option value="trivia">trivia</option>
+            <option value="trivia">Trivia</option>
             <option value="pregunta">Pregunta</option>
-            <option value="simulador">simulador</option>
+            <option value="simulador">Simulador</option>
           </select>
         </div>
 
         <div class="form-group">
           <label>Nivel *</label>
-          <select formControlName="nivel" class="form-control">
+          <!-- ✅ CORRECTO -->
+<select formControlName="nivel" class="form-control" (change)="onNivelChange($any($event.target).value)">
             <option value="basico">Básico</option>
             <option value="intermedio">Intermedio</option>
             <option value="avanzado">Avanzado</option>
@@ -936,21 +948,57 @@
         </div>
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label>Icono</label>
-          <input type="text" formControlName="icono" class="form-control" placeholder="fas fa-gamepad">
-        </div>
-
-        <div class="form-group">
-          <label>Color</label>
-          <input type="color" formControlName="color" class="form-control">
-        </div>
-      </div>
-
       <div class="form-group">
         <label>Duración</label>
         <input type="text" formControlName="duracion" class="form-control" placeholder="10-15 min">
+      </div>
+
+      <!-- ✅ SELECTOR VISUAL DE ICONOS -->
+      <div class="form-group">
+        <label>
+          <i class="fas fa-icons"></i>
+          Icono de la Actividad
+        </label>
+        <div class="icon-selector">
+          <button
+            type="button"
+            *ngFor="let icono of iconosDisponibles"
+            class="icon-option"
+            [class.selected]="iconoSeleccionado === icono.clase"
+            (click)="seleccionarIcono(icono.clase)"
+            [title]="icono.nombre">
+            <i class="fas {{icono.clase}}"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- ✅ SELECTOR VISUAL DE COLORES -->
+      <div class="form-group">
+        <label>
+          <i class="fas fa-palette"></i>
+          Color de la Actividad
+        </label>
+        <div class="color-selector">
+          <button
+            type="button"
+            *ngFor="let color of obtenerColoresPorNivel(formActividad.value.nivel)"
+            class="color-option"
+            [class.selected]="colorSeleccionado === color.valor"
+            [style.background]="color.valor"
+            (click)="seleccionarColor(color.valor)"
+            [title]="color.nombre">
+            <i *ngIf="colorSeleccionado === color.valor" class="fas fa-check check-icon"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- ✅ PREVIEW DE LA ACTIVIDAD -->
+      <div class="preview-section">
+        <p class="preview-label">Vista Previa:</p>
+        <div class="preview-card" [style.background]="'linear-gradient(135deg, ' + colorSeleccionado + ', ' + colorSeleccionado + 'dd)'">
+          <i class="fas {{iconoSeleccionado}}"></i>
+          <span>{{formActividad.value.titulo || 'Título de la actividad'}}</span>
+        </div>
       </div>
 
       <div class="modal-actions">

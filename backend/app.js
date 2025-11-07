@@ -103,6 +103,9 @@ app.use('/api', preferenciasRoutes);
 const reutilizableRoutes = require('./routes/reutilizable.routes');
 app.use('/api/reutilizable', reutilizableRoutes);
 
+const notificacionesRoutes = require('./routes/notificaciones.routes');
+app.use('/api/notificaciones', notificacionesRoutes);
+
 const configuracionUsuarioRoutes = require('./routes/configuracion_usuario.routes');
 app.use('/api', configuracionUsuarioRoutes);
 

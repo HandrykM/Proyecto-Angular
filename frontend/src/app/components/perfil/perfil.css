@@ -1212,80 +1212,160 @@ button:disabled {
 }
 
 /* === 21. HISTORIAL DE ACTIVIDAD === */
+/* === HISTORIAL DE ACTIVIDAD MEJORADO === */
 .historial-section {
   margin-top: 3rem;
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
+.historial-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 1.5rem;
+  color: var(--primary-dark);
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+
+.historial-section h3 i {
+  color: var(--primary-color);
+  font-size: 1.6rem;
+}
+
+/* === FILTROS === */
 .historial-filtros {
   display: flex;
-  gap: 1rem;
+  gap: 0.8rem;
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
+  padding: 1rem;
+  background: rgba(0, 168, 232, 0.03);
+  border-radius: 12px;
 }
 
 .filtro-btn {
-  padding: 0.6rem 1.2rem;
+  padding: 0.7rem 1.5rem;
   border: 2px solid var(--primary-color);
-  border-radius: 10px;
+  border-radius: 25px;
   background: white;
   color: var(--primary-color);
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.3s ease;
   font-weight: 600;
   font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .filtro-btn:hover {
-  background: var(--primary-color);
-  color: white;
+  background: rgba(0, 168, 232, 0.1);
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 168, 232, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 168, 232, 0.2);
 }
 
 .filtro-btn.active {
-  background: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color), #0077b6);
   color: white;
+  border-color: #0077b6;
+  box-shadow: 0 4px 15px rgba(0, 168, 232, 0.3);
 }
 
+/* === LISTA DE HISTORIAL === */
 .historial-lista {
-  max-height: 500px;
+  max-height: 600px;
   overflow-y: auto;
-  padding-right: 0.5rem;
+  padding: 0.5rem;
 }
 
+/* Scrollbar personalizado */
+.historial-lista::-webkit-scrollbar {
+  width: 8px;
+}
+
+.historial-lista::-webkit-scrollbar-track {
+  background: rgba(0, 168, 232, 0.05);
+  border-radius: 10px;
+}
+
+.historial-lista::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 10px;
+}
+
+.historial-lista::-webkit-scrollbar-thumb:hover {
+  background: #0077b6;
+}
+
+/* === ITEM DE HISTORIAL === */
 .historial-item {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
+  gap: 1.2rem;
+  padding: 1.2rem;
   background: white;
-  border: 2px solid #e0e0e0;
-  border-radius: var(--border-radius);
-  margin-bottom: 0.75rem;
-  transition: var(--transition);
+  border: 2px solid rgba(0, 168, 232, 0.1);
+  border-radius: 12px;
+  margin-bottom: 0.8rem;
+  transition: all 0.3s ease;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.historial-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: var(--primary-color);
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
 }
 
 .historial-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 25px rgba(0, 168, 232, 0.15);
   border-color: var(--primary-color);
 }
 
+.historial-item:hover::before {
+  transform: scaleY(1);
+}
+
+/* === ICONO === */
 .historial-icono {
-  width: 50px;
-  height: 50px;
-  min-width: 50px;
-  min-height: 50px;
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  min-height: 56px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   flex-shrink: 0;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
 }
 
+.historial-icono::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.3), transparent);
+  border-radius: 50%;
+}
+
+/* === CONTENIDO === */
 .historial-contenido {
   flex: 1;
   min-width: 0;
@@ -1294,9 +1374,10 @@ button:disabled {
 .historial-titulo {
   font-weight: 600;
   color: var(--primary-dark);
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.5rem;
   font-size: 1.05rem;
   word-wrap: break-word;
+  line-height: 1.4;
 }
 
 .historial-detalles {
@@ -1310,15 +1391,46 @@ button:disabled {
 .historial-detalles span {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.4rem;
+  padding: 0.3rem 0.8rem;
+  background: rgba(0, 168, 232, 0.05);
+  border-radius: 8px;
+  transition: background 0.2s;
 }
 
+.historial-detalles span:hover {
+  background: rgba(0, 168, 232, 0.1);
+}
+
+.historial-detalles i {
+  color: var(--primary-color);
+}
+
+/* === ESTADO === */
 .historial-estado {
-  padding: 0.4rem 1rem;
+  padding: 0.5rem 1.2rem;
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 600;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.3s ease;
+}
+
+.historial-estado::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
 }
 
 /* === 22. GESTIÓN DE CUENTA === */
@@ -1385,21 +1497,76 @@ button:disabled {
 /* === 23. NO DATA === */
 .no-data {
   text-align: center;
+  padding: 3rem 2rem;
   color: var(--gray-color);
   font-style: italic;
-  padding: 2rem;
+  background: rgba(0, 168, 232, 0.03);
+  border-radius: 12px;
+  border: 2px dashed rgba(0, 168, 232, 0.2);
 }
 
-/* === 24. ANIMACIONES === */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(100%);
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .historial-item {
+    flex-direction: column;
+    text-align: center;
+    padding: 1rem;
   }
-  to {
-    opacity: 1;
-    transform: translateX(0);
+
+  .historial-icono {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
   }
+
+  .historial-detalles {
+    justify-content: center;
+    gap: 0.8rem;
+  }
+
+  .historial-estado {
+    align-self: stretch;
+    justify-content: center;
+  }
+}
+
+
+/* === MODO OSCURO === */
+.dark-theme .historial-section {
+  background: var(--bg-card);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme .historial-filtros {
+  background: rgba(76, 201, 240, 0.05);
+}
+
+.dark-theme .filtro-btn {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.dark-theme .filtro-btn:hover {
+  background: rgba(76, 201, 240, 0.1);
+}
+
+.dark-theme .historial-item {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+.dark-theme .historial-titulo {
+  color: var(--text-primary);
+}
+
+.dark-theme .historial-detalles {
+  color: var(--text-secondary);
+}
+
+.dark-theme .historial-detalles span {
+  background: rgba(76, 201, 240, 0.05);
 }
 
 /* === 25. RESPONSIVE === */

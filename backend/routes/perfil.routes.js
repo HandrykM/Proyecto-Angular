@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const perfilController = require('../controllers/perfil.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
+const sessionsController = require('../controllers/sessions.controller');
 
 // Aplicar middleware de autenticación a todas las rutas
 router.use(authMiddleware.verifyToken);
@@ -29,6 +30,12 @@ router.get('/certificados', perfilController.obtenerCertificados);
 // === ESTADÍSTICAS === //
 router.get('/estadisticas', perfilController.obtenerEstadisticasDetalladas);
 router.get('/historial', perfilController.obtenerHistorialActividad); // ESTA LÍNEA
+
+
+// === Historia de sesion === //
+router.get('/historial-sesiones', sessionsController.obtenerHistorialSesiones.bind(sessionsController));
+router.delete('/sesiones/:id', sessionsController.cerrarSesionRemota.bind(sessionsController));
+
 
 // === GESTIÓN DE CUENTA === //
 router.post('/logout', perfilController.cerrarSesion);

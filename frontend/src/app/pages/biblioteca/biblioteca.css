@@ -1,9 +1,9 @@
-/* Importar estilos base desde modulos.css */
-/*@import url('./modulos.css');*/
+/* ========================================
+   BIBLIOTECA.CSS - COMPLETO Y ORGANIZADO
+   ======================================== */
 
-/* === ESTILOS ESPECÍFICOS DE BIBLIOTECA === */
 /* ================================
-   VARIABLES Y BASE
+   1. VARIABLES Y BASE
 ================================ */
 :root {
   --primary-color: #00a8e8;
@@ -33,110 +33,670 @@ body {
   font-family: 'Poppins', sans-serif;
   color: var(--dark-color);
   line-height: 1.6;
-  background-color: #f0f8ff;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
 }
 
-
-/* =====================================================
-   NAV RESPONSIVE - HAMBURGUESA A LA DERECHA
-===================================================== */
-.nav-toggle {
-  display: none;
-  background: none;
-  border: none;
-  font-size: 1.8rem;
+.pdf-toolbar h4 {
+  font-size: 1.1rem;
   color: var(--primary-dark);
+  margin: 0;
+  flex: 1;
+}
+
+.btn-descargar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--primary-color);
+  color: white;
+  text-decoration: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 15px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  border: none;
   cursor: pointer;
-  z-index: 1100;
-  transition: transform 0.3s ease;
 }
 
-.nav-toggle .close-icon {
-  display: none;
+.btn-descargar:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 168, 232, 0.4);
 }
 
-.nav-toggle.open .open-icon {
-  display: none;
+.pdf-viewer {
+  position: relative;
+  top: auto;
+  width: 100%;
+  height: 100%;
+  min-height: 540px;
+  flex: 1 1 auto;
+  border: none;
+  background: #f5f5f5;
 }
 
-.nav-toggle.open .close-icon {
-  display: inline;
+/* ================================
+   16. ARTÍCULO/ESTUDIO VIEWER
+================================ */
+.articulo-container {
+  padding: 2rem;
+  flex: 1 1 auto;
+  min-height: 320px;
+  overflow-y: auto;
+  max-height: calc(90vh - 140px);
+}
+
+.articulo-imagen {
+  width: 100%;
+  height: 250px;
+  margin-bottom: 1.5rem;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.articulo-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.articulo-contenido {
+  max-width: 100%;
+  margin: 0;
+}
+
+.texto-principal {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--dark-color);
+}
+
+.texto-principal img,
+.pdf-preview img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0.5rem auto;
+}
+
+.pdf-preview {
+  position: relative;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 600px;
+  margin-bottom: 1rem;
+  background: #f5f5f5;
+}
+
+.articulo-container .pdf-viewer,
+.pdf-preview .pdf-viewer {
+  position: static;
+  width: 100%;
+  height: 100%;
+  min-height: 600px;
+  border: none;
+}
+
+.texto-principal h2,
+.texto-principal h3,
+.texto-principal h4 {
+  color: var(--primary-dark);
+  margin: 1.5rem 0 0.8rem 0;
+}
+
+.texto-principal h2 {
+  font-size: 1.3rem;
+}
+
+.texto-principal h3 {
+  font-size: 1.2rem;
+}
+
+.texto-principal h4 {
+  font-size: 1.1rem;
+}
+
+.texto-principal p {
+  margin-bottom: 1rem;
+}
+
+.texto-principal ul,
+.texto-principal ol {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+.texto-principal li {
+  margin-bottom: 0.5rem;
+}
+
+.texto-principal strong {
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+.articulo-footer {
+  border-top: 2px solid var(--light-color);
+  padding-top: 1.5rem;
+  margin-top: 2rem;
+  color: var(--gray-color);
+}
+
+.articulo-footer p {
+  margin-bottom: 0.5rem;
+}
+
+.articulo-footer a {
+  color: var(--primary-color);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.articulo-footer a:hover {
+  text-decoration: underline;
+}
+
+/* ================================
+   17. LOADING SPINNER
+================================ */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
   color: var(--primary-color);
 }
 
-@media (max-width: 992px) {
-  .nav-container {
-    position: relative;
-    flex-wrap: nowrap;
-  }
-
-  .nav-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background: white;
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-    gap: 0.8rem;
-    padding: 1rem;
-    border-radius: 0 0 16px 16px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    transform: scaleY(0);
-    transform-origin: top right;
-    transition: transform 0.4s ease, opacity 0.3s ease;
-    opacity: 0;
-    z-index: 1000;
-  }
-
-  .nav-menu.active {
-    transform: scaleY(1);
-    opacity: 1;
-  }
-
-  .nav-link {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    color: var(--dark-color);
-    padding: 0.6rem 1rem;
-    text-align: right;
-    font-size: 0.95rem;
-    border-radius: 10px;
-    transition: 0.3s ease;
-  }
-
-  .nav-link:hover {
-    background: rgba(0, 168, 232, 0.05);
-    color: var(--primary-color);
-  }
-
-  .nav-profile-container {
-    display: none;
-  }
-
-  .nav-toggle {
-    display: block;
-  }
-
-  .main-nav {
-    overflow: visible;
-  }
+.loading-spinner i {
+  font-size: 3rem;
+  animation: spin 1s linear infinite;
 }
-
-@media (max-width: 576px) {
-  .nav-link span {
-    display: none;
-  }
-  .nav-link i {
-    font-size: 1.4rem;
-  }
-}
-
 
 /* ================================
-   NAVEGACIÓN PRINCIPAL
+   18. SCROLLBAR PERSONALIZADO
+================================ */
+.articulo-container::-webkit-scrollbar,
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.articulo-container::-webkit-scrollbar-track,
+.modal-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.articulo-container::-webkit-scrollbar-thumb,
+.modal-body::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 3px;
+}
+
+.articulo-container::-webkit-scrollbar-thumb:hover,
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
+
+/* ================================
+   19. RESPONSIVE - TABLET
+================================ */
+@media (max-width: 1024px) {
+  .recursos-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+  
+  .modal-contenido {
+    max-width: 95vw;
+    max-height: 95vh;
+  }
+  
+  .modal-header {
+    padding: 1rem 1.5rem;
+  }
+  
+  .modal-info h2 {
+    font-size: 1.2rem;
+  }
+  
+  .pdf-container,
+  .pdf-preview,
+  .video-container {
+    min-height: 500px;
+  }
+  
+  .video-player-mp4 {
+    min-height: 400px;
+  }
+  
+  .filtros-busqueda {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .busqueda-container {
+    min-width: unset;
+  }
+}
+
+/* ================================
+   20. RESPONSIVE - MÓVIL
+================================ */
+@media (max-width: 768px) {
+  .biblioteca-filtros {
+    padding: 1.5rem;
+  }
+  
+  .recursos-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .recurso-card {
+    max-width: 100%;
+  }
+  
+  .modal-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem;
+  }
+  
+  .modal-info h2 {
+    font-size: 1.1rem;
+  }
+  
+  .modal-acciones {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+  }
+  
+  .modal-body {
+    max-height: calc(95vh - 180px);
+  }
+  
+  .filtros-opciones {
+    justify-content: center;
+  }
+  
+  .biblioteca-pestanas {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .video-container,
+  .pdf-container {
+    min-height: 400px;
+  }
+  
+  .video-player-mp4 {
+    min-height: 300px;
+  }
+  
+  .articulo-container {
+    padding: 1rem;
+  }
+  
+  .pdf-toolbar {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  
+  .btn-descargar {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .pdf-container,
+  .pdf-preview {
+    min-height: 400px;
+  }
+  
+  .btn-limpiar-filtros {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .modulos-container {
+    padding: 1rem;
+  }
+  
+  .biblioteca-filtros {
+    padding: 1rem;
+  }
+  
+  .recurso-contenido {
+    padding: 1rem;
+  }
+  
+  .modal-contenido {
+    width: 98vw;
+    max-height: 98vh;
+    border-radius: 15px;
+  }
+  
+  .modal-header {
+    padding: 0.8rem;
+  }
+  
+  .modal-info h2 {
+    font-size: 1rem;
+  }
+  
+  .video-container,
+  .pdf-container {
+    min-height: 300px;
+  }
+  
+  .video-player-mp4 {
+    min-height: 250px;
+  }
+  
+  .video-loading,
+  .video-error {
+    min-height: 300px;
+    padding: 2rem 1rem;
+  }
+  
+  .video-loading i,
+  .video-error i {
+    font-size: 2.5rem;
+  }
+  
+  .video-error h3 {
+    font-size: 1.2rem;
+  }
+  
+  .video-loading p,
+  .video-error p {
+    font-size: 0.95rem;
+  }
+  
+  .error-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .btn-cancelar-carga,
+  .btn-cerrar-modal,
+  .btn-descargar {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .recurso-imagen {
+    height: 160px;
+  }
+  
+  .pdf-preview {
+    min-height: 350px;
+  }
+  
+  .recurso-modal {
+    padding: 0.5rem;
+  }
+}
+
+/* ================================
+   21. FIXES ESPECÍFICOS NAVEGADORES
+================================ */
+
+/* Safari */
+@supports (-webkit-appearance: none) {
+  .video-player-mp4::-webkit-media-controls {
+    z-index: 999999 !important;
+  }
+}
+
+/* Firefox */
+@-moz-document url-prefix() {
+  .video-player-mp4::-moz-media-controls {
+    z-index: 999999 !important;
+  }
+}
+
+/* Edge/IE */
+@supports (-ms-ime-align: auto) {
+  .video-player-mp4::-ms-media-controls {
+    z-index: 999999 !important;
+  }
+}
+
+/* ================================
+   22. PREVENIR PROBLEMAS Z-INDEX
+================================ */
+body.modal-open {
+  overflow: hidden;
+}
+
+.recurso-modal ~ * {
+  pointer-events: none;
+}
+
+.recurso-modal {
+  pointer-events: all;
+}
+
+/* ================================
+   23. MEJORAS ACCESIBILIDAD
+================================ */
+.btn-modal-cerrar:focus,
+.btn-descargar:focus,
+.btn-cancelar-carga:focus,
+.btn-cerrar-modal:focus {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.video-loading p,
+.video-error p {
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* ================================
+   24. ANIMACIONES ADICIONALES
+================================ */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.recurso-modal.closing .modal-contenido {
+  animation: modalFadeOut 0.2s ease-in;
+}
+
+@keyframes modalFadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+}
+
+/* ============================================================
+   25. MODO OSCURO UNIVERSAL
+   ============================================================ */
+
+/* CONTENEDORES PRINCIPALES */
+.dark-theme .modulos-container,
+.dark-theme .actividades-container,
+.dark-theme .biblioteca-container,
+body.dark-theme .modulos-container,
+body.dark-theme .actividades-container,
+body.dark-theme .biblioteca-container {
+  background-color: var(--bg-primary) !important;
+}
+
+/* TODOS LOS CARDS */
+.dark-theme .modulo-card,
+.dark-theme .actividad-card,
+.dark-theme .recurso-card,
+.dark-theme .resource-card,
+body.dark-theme .modulo-card,
+body.dark-theme .actividad-card,
+body.dark-theme .recurso-card,
+body.dark-theme .resource-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* CARD HEADERS */
+.dark-theme .card-header,
+.dark-theme .modal-header,
+body.dark-theme .card-header,
+body.dark-theme .modal-header {
+  background: var(--bg-tertiary) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* CARD CONTENT */
+.dark-theme .card-content,
+.dark-theme .card-body,
+.dark-theme .recurso-contenido,
+body.dark-theme .card-content,
+body.dark-theme .card-body,
+body.dark-theme .recurso-contenido {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+}
+
+/* TÍTULOS EN CARDS */
+.dark-theme .card-title,
+.dark-theme .modulo-titulo,
+.dark-theme .recurso-titulo,
+body.dark-theme .card-title,
+body.dark-theme .modulo-titulo,
+body.dark-theme .recurso-titulo {
+  color: var(--text-primary) !important;
+}
+
+/* DESCRIPCIONES */
+.dark-theme .card-description,
+.dark-theme .recurso-descripcion,
+body.dark-theme .card-description,
+body.dark-theme .recurso-descripcion {
+  color: var(--text-secondary) !important;
+}
+
+/* FILTROS Y BÚSQUEDA */
+.dark-theme .biblioteca-filtros,
+.dark-theme .filters-bar,
+body.dark-theme .biblioteca-filtros,
+body.dark-theme .filters-bar {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.dark-theme .input-busqueda,
+body.dark-theme .input-busqueda {
+  background: var(--input-bg) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--input-border) !important;
+}
+
+/* PESTAÑAS */
+.dark-theme .pestana-boton,
+body.dark-theme .pestana-boton {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.dark-theme .pestana-boton:hover,
+body.dark-theme .pestana-boton:hover {
+  background: rgba(76, 201, 240, 0.1) !important;
+  color: var(--primary-color) !important;
+}
+
+.dark-theme .pestana-boton.activa,
+body.dark-theme .pestana-boton.activa {
+  background: var(--primary-color) !important;
+  color: white !important;
+}
+
+/* INFO ITEMS */
+.dark-theme .recurso-meta,
+body.dark-theme .recurso-meta {
+  color: var(--text-secondary) !important;
+}
+
+/* NO RECURSOS */
+.dark-theme .no-recursos,
+body.dark-theme .no-recursos {
+  background: var(--bg-card) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+/* MODALS */
+.dark-theme .recurso-modal,
+.dark-theme .modal-overlay,
+body.dark-theme .recurso-modal,
+body.dark-theme .modal-overlay {
+  background: rgba(0, 0, 0, 0.9) !important;
+}
+
+.dark-theme .modal-contenido,
+body.dark-theme .modal-contenido {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.dark-theme .modal-info,
+body.dark-theme .modal-info {
+  color: var(--text-primary) !important;
+}
+
+/* SCROLLBAR */
+.dark-theme *::-webkit-scrollbar,
+body.dark-theme *::-webkit-scrollbar {
+  background: var(--scrollbar-track) !important;
+}
+
+.dark-theme *::-webkit-scrollbar-thumb,
+body.dark-theme *::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb) !important;
+}
+
+/* FONDO DE PÁGINA */
+.dark-theme,
+body.dark-theme {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ELEMENTOS INLINE */
+.dark-theme strong,
+.dark-theme b,
+body.dark-theme strong,
+body.dark-theme b {
+  color: var(--text-primary) !important;
+}
+
+/* FIN DEL ARCHIVO */
+/* ================================
+   2. NAVEGACIÓN PRINCIPAL
 ================================ */
 .main-nav {
   background: white;
@@ -248,14 +808,157 @@ body {
   height: 35px;
   border-radius: 50%;
   object-fit: cover;
-  
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .nav-profile i {
   font-size: 1.2rem;
 }
-/* === FILTROS Y BÚSQUEDA === */
+
+/* ================================
+   3. NAV RESPONSIVE - HAMBURGUESA
+================================ */
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: var(--primary-dark);
+  cursor: pointer;
+  z-index: 1100;
+  transition: transform 0.3s ease;
+}
+
+.nav-toggle .close-icon {
+  display: none;
+}
+
+.nav-toggle.open .open-icon {
+  display: none;
+}
+
+.nav-toggle.open .close-icon {
+  display: inline;
+  color: var(--primary-color);
+}
+
+@media (max-width: 992px) {
+  .nav-container {
+    position: relative;
+    flex-wrap: nowrap;
+  }
+
+  .nav-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 1rem;
+    border-radius: 0 0 16px 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    transform: scaleY(0);
+    transform-origin: top right;
+    transition: transform 0.4s ease, opacity 0.3s ease;
+    opacity: 0;
+    z-index: 1000;
+  }
+
+  .nav-menu.active {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--dark-color);
+    padding: 0.6rem 1rem;
+    text-align: right;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    transition: 0.3s ease;
+  }
+
+  .nav-link:hover {
+    background: rgba(0, 168, 232, 0.05);
+    color: var(--primary-color);
+  }
+
+  .nav-profile-container {
+    display: none;
+  }
+
+  .nav-toggle {
+    display: block;
+  }
+
+  .main-nav {
+    overflow: visible;
+  }
+}
+
+@media (max-width: 576px) {
+  .nav-link span {
+    display: none;
+  }
+  .nav-link i {
+    font-size: 1.4rem;
+  }
+}
+
+/* ================================
+   4. CONTAINER PRINCIPAL
+================================ */
+.modulos-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* ================================
+   5. HEADER DE PÁGINA
+================================ */
+.modulos-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.modulos-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.modulos-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  border-radius: 2px;
+}
+
+.modulos-subtitle {
+  font-size: 1.2rem;
+  color: var(--gray-color);
+  max-width: 700px;
+  margin: 0 auto 2rem;
+}
+
+/* ================================
+   6. FILTROS Y BÚSQUEDA
+================================ */
 .biblioteca-filtros {
   background: white;
   border-radius: 20px;
@@ -318,11 +1021,18 @@ body {
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
+  font-size: 1rem;
+  min-height: 42px;
 }
 
 .btn-limpiar-filtros:hover {
   background: #e67e22;
   transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(230, 126, 34, 0.4);
+}
+
+.btn-limpiar-filtros i {
+  font-size: 1rem;
 }
 
 .filtros-titulo {
@@ -370,7 +1080,9 @@ body {
   transform: translateY(-2px);
 }
 
-/* === PESTAÑAS === */
+/* ================================
+   7. PESTAÑAS
+================================ */
 .biblioteca-pestanas {
   display: flex;
   gap: 1rem;
@@ -390,6 +1102,7 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .pestana-boton:hover {
@@ -404,14 +1117,15 @@ body {
   transform: translateY(-2px);
 }
 
-/* === GRID DE RECURSOS === */
+/* ================================
+   8. GRID DE RECURSOS
+================================ */
 .recursos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
   gap: 2rem;
 }
 
-/* Cuando hay pocos elementos, mantener tamaño */
 .recursos-grid.pocos-elementos {
   grid-template-columns: repeat(auto-fit, minmax(350px, 380px));
   justify-content: center;
@@ -434,7 +1148,9 @@ body {
   border-color: var(--primary-color);
 }
 
-/* === IMAGEN DEL RECURSO === */
+/* ================================
+   9. IMAGEN DEL RECURSO
+================================ */
 .recurso-imagen {
   position: relative;
   height: 200px;
@@ -494,7 +1210,26 @@ body {
   transition: color 0.3s ease;
 }
 
-/* === CONTENIDO DEL RECURSO === */
+.recurso-leido-badge {
+  position: absolute;
+  top: 15px;
+  right: 60px;
+  background: var(--success-color);
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  box-shadow: 0 3px 10px rgba(46, 204, 113, 0.3);
+  z-index: 5;
+}
+
+/* ================================
+   10. CONTENIDO DEL RECURSO
+================================ */
 .recurso-contenido {
   padding: 1.5rem;
   display: flex;
@@ -576,110 +1311,6 @@ body {
   margin-top: 0.5rem;
 }
 
-/* === CONTAINER PRINCIPAL === */
-
-/* === VIDEO PLAYER === */
-.video-container {
-  /* Allow the video container to expand inside the modal */
-  position: relative;
-  width: 100%;
-  flex: 1 1 auto;
-  min-height: 360px; /* reasonable minimum */
-  background: #000;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-/* Wrapper para videos MP4 */
-.video-wrapper-mp4 {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  background: #000;
-}
-
-/* VIDEO PLAYER MP4 - CRÍTICO */
-.video-player-mp4 {
-  position: relative;
-  width: 100% !important;
-  height: 100% !important; /* fill the container */
-  min-height: 360px;
-  background: #000;
-  display: block;
-  margin: 0 auto;
-  z-index: 1;
-  object-fit: contain;
-}
-
-/* Remove custom darkening of native media controls so the video doesn't look dark on hover */
-.video-player-mp4::-webkit-media-controls-panel {
-  background-color: transparent !important;
-}
-
-.video-player-mp4::-webkit-media-controls {
-  background-color: transparent !important;
-}
-
-
-/* YouTube wrapper styles moved/declared later to allow flexible sizing inside the modal */
-
-
-.modal-close-btn {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.6);
-  border: 2px solid white;
-  color: white;
-  font-size: 1.2rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  z-index: 1100;
-}
-
-.modal-close-btn:hover {
-  background: rgba(0, 0, 0, 0.8);
-  transform: scale(1.1);
-}
-
-.modulos-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.modulos-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--primary-dark);
-  margin-bottom: 1rem;
-  position: relative;
-}
-
-.modulos-title::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100px;
-  height: 4px;
-  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
-  border-radius: 2px;
-}
-
-.modulos-subtitle {
-  font-size: 1.2rem;
-  color: var(--gray-color);
-  max-width: 700px;
-  margin: 0 auto 2rem;
-}
-
 .btn-ver-recurso {
   display: flex;
   align-items: center;
@@ -700,7 +1331,9 @@ body {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-/* === MENSAJE DE NO RECURSOS === */
+/* ================================
+   11. MENSAJE NO RECURSOS
+================================ */
 .no-recursos {
   text-align: center;
   padding: 4rem 2rem;
@@ -746,7 +1379,9 @@ body {
   transform: translateY(-2px);
 }
 
-/* === MODAL DE RECURSO === */
+/* ================================
+   12. MODAL DE RECURSO
+================================ */
 .recurso-modal {
   position: fixed;
   inset: 0;
@@ -790,14 +1425,22 @@ body {
   }
 }
 
-
 .modal-header {
   padding: 1.5rem 2rem;
   border-bottom: 2px solid var(--light-color);
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   background: linear-gradient(135deg, rgba(0, 168, 232, 0.05), rgba(128, 255, 219, 0.05));
+  flex-wrap: wrap;
+  gap: 1rem;
+  min-height: auto;
+}
+
+.modal-info {
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .modal-info h2 {
@@ -805,16 +1448,17 @@ body {
   font-weight: 600;
   color: var(--primary-dark);
   margin-bottom: 0.5rem;
-  max-width: 700px;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
-
-
 
 .modal-meta {
   display: flex;
   gap: 1rem;
   align-items: center;
   flex-wrap: wrap;
+  margin-top: 0.5rem;
 }
 
 .tipo-badge,
@@ -836,7 +1480,8 @@ body {
 .modal-acciones {
   display: flex;
   gap: 0.5rem;
-  align-items: center;
+  align-items: flex-start;
+  flex-shrink: 0;
 }
 
 .btn-modal-favorito,
@@ -844,7 +1489,7 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 2px solid transparent; /* Borde inicial transparente */
+  border: 2px solid transparent;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -853,15 +1498,13 @@ body {
 }
 
 .btn-modal-favorito {
-  background: rgba(243, 156, 18, 0.2); /* Fondo amarillo suave */
+  background: rgba(243, 156, 18, 0.2);
   color: var(--gray-color);
-   /* Borde amarillo */
 }
 
 .btn-modal-favorito:hover {
-  background: rgb(243, 157, 18); /* Fondo amarillo más intenso al hacer hover */
+  background: rgb(243, 157, 18);
   transform: scale(1.1);
-   /* Borde más destacado al hacer hover */
 }
 
 .btn-modal-cerrar {
@@ -877,143 +1520,36 @@ body {
   box-shadow: 0 4px 15px rgba(231, 76, 60, 0.6);
 }
 
-/* Animación de spin */
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.modal-close-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid white;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 1100;
+}
+
+.modal-close-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: scale(1.1);
 }
 
 .modal-body {
-  /* Use flex layout so the viewer (video/pdf) can expand to fill available space */
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* let inner sections scroll if needed */
-  max-height: calc(90vh - 120px);
-}
-
-/* === VISORES DE CONTENIDO === */
-.recurso-visor {
-  width: 100%;
-  /* fill the modal body area */
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.video-container {
-  /* Ensure the video container fills the available area in the modal */
-  width: 100%;
-  flex: 1 1 auto;
-  position: relative;
-  background: #000;
-}
-
-.youtube-wrapper {
-  /* ensure youtube iframe fills the video container */
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #000;
-}
-
-.youtube-embed {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: none;
-}
-
-.pdf-container {
-  width: 100%;
-  flex: 1 1 auto;
-  min-height: 480px;
-  position: relative;
-}
-
-.pdf-toolbar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 10;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  padding: 1rem;
-  border-bottom: 1px solid #e0e0e0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.btn-descargar {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: var(--primary-color);
-  color: white;
-  text-decoration: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 15px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  font-size: 0.9rem;
-  border: none;
-  cursor: pointer;
-}
-
-.btn-descargar:hover {
-  background: var(--primary-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 168, 232, 0.4);
-}
-
-.pdf-viewer {
-  /* position the iframe to fill the pdf-container below the toolbar */
-  position: absolute;
-  top: 60px; /* toolbar height */
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: calc(100% - 60px);
-  border: none;
-}
-
-
-/*
-.pdf-container iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  padding-top: 60px;
-}
-*/
-
-/* ================================
-   INDICADOR DE LECTURA
-================================ */
-
-.recurso-leido-badge {
-  position: absolute;
-  top: 15px;
-  right: 60px;
-  background: var(--success-color);
-  color: white;
-  padding: 0.4rem 0.8rem;
-  border-radius: 15px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  box-shadow: 0 3px 10px rgba(46, 204, 113, 0.3);
-  z-index: 5;
+  overflow-y: auto;
+  max-height: calc(90vh - 140px);
 }
 
 .puntos-ganados {
@@ -1036,509 +1572,71 @@ body {
     box-shadow: 0 6px 25px rgba(243, 156, 18, 0.6);
   }
 }
+
 /* ================================
-   ARTÍCULO/ESTUDIO VIEWER
+   13. VISORES DE CONTENIDO
 ================================ */
-.articulo-container {
-  padding: 2rem;
-  /* allow article viewer to expand inside modal and scroll its content */
+.recurso-visor {
+  width: 100%;
   flex: 1 1 auto;
-  min-height: 320px;
-  overflow-y: auto;
-}
-
-.articulo-imagen {
-  width: 100%;
-  height: 250px;
-  margin-bottom: 1.5rem;
-  border-radius: 15px;
-  overflow: hidden;
-}
-
-.articulo-imagen img {
-  width: 100%;
+  display: flex;
+  flex-direction: column;
   height: 100%;
-  object-fit: cover;
 }
 
-.articulo-contenido {
-  /* make article content use full width inside modal for better readability */
-  max-width: 100%;
-  margin: 0;
-}
-
-.texto-principal {
-  font-size: 1rem;
-  line-height: 1.8;
-  color: var(--dark-color);
-}
-
-/* Ensure images inside articles/infografias scale responsively */
-.texto-principal img,
-.pdf-preview img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 0.5rem auto;
-}
-
-/* PDF preview block inside article (used by 'estudio' and similar) */
-.pdf-preview {
+/* ================================
+   14. VIDEO CONTAINER
+================================ */
+.video-container {
   position: relative;
   width: 100%;
   flex: 1 1 auto;
-  min-height: 480px;
-  margin-bottom: 1rem;
-}
-
-/* When the iframe is used inside .pdf-preview or .articulo-container (estudio),
-   avoid the toolbar offset used on pdf-container; make it fill the container */
-.articulo-container .pdf-viewer,
-.pdf-preview .pdf-viewer {
-  position: static;
-  width: 100%;
-  height: 100%;
-  min-height: 60vh;
-  border: none;
-}
-
-.texto-principal h2,
-.texto-principal h3,
-.texto-principal h4 {
-  color: var(--primary-dark);
-  margin: 1.5rem 0 0.8rem 0;
-}
-
-
-
-.texto-principal h2 {
-  font-size: 1.3rem;
-}
-
-.texto-principal h3 {
-  font-size: 1.2rem;
-}
-
-.texto-principal h4 {
-  font-size: 1.1rem;
-}
-
-.texto-principal p {
-  margin-bottom: 1rem;
-}
-
-.texto-principal ul,
-.texto-principal ol {
-  margin: 1rem 0;
-  padding-left: 2rem;
-}
-
-.texto-principal li {
-  margin-bottom: 0.5rem;
-}
-
-.texto-principal strong {
-  color: var(--primary-dark);
-  font-weight: 600;
-}
-
-.articulo-footer {
-  border-top: 2px solid var(--light-color);
-  padding-top: 1.5rem;
-  margin-top: 2rem;
-  color: var(--gray-color);
-}
-
-.articulo-footer p {
-  margin-bottom: 0.5rem;
-}
-
-.articulo-footer a {
-  color: var(--primary-color);
-  text-decoration: none;
-  word-break: break-all;
-}
-
-.articulo-footer a:hover {
-  text-decoration: underline;
-}
-
-/* ========================================
-   RESPONSIVE - VIDEOS
-======================================== */
-
-@media (max-width: 1024px) {
-  .video-container {
-    min-height: 400px;
-  }
-  
-  .video-wrapper-mp4 {
-    min-height: 400px;
-  }
-  
-  .video-player-mp4 {
-    min-height: 400px;
-    max-height: 60vh;
-  }
-}
-
-@media (max-width: 768px) {
-  .video-container {
-    min-height: 300px;
-  }
-  
-  .video-wrapper-mp4 {
-    min-height: 300px;
-  }
-  
-  .video-player-mp4 {
-    min-height: 300px;
-    max-height: 50vh;
-  }
-  
-  .video-loading,
-  .video-error {
-    min-height: 300px;
-    padding: 2rem 1rem;
-  }
-  
-  .video-loading i,
-  .video-error i {
-    font-size: 2.5rem;
-  }
-  
-  .video-error h3 {
-    font-size: 1.2rem;
-  }
-  
-  .video-loading p,
-  .video-error p {
-    font-size: 0.95rem;
-  }
-  
-  .modal-contenido {
-    width: 98vw;
-    max-height: 95vh;
-  }
-  
-  .error-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  .btn-cancelar-carga,
-  .btn-cerrar-modal,
-  .btn-descargar {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 480px) {
-  .recurso-modal {
-    padding: 0.5rem;
-  }
-  
-  .modal-contenido {
-    border-radius: 15px;
-  }
-  
-  .video-container {
-    min-height: 250px;
-  }
-  
-  .video-player-mp4 {
-    min-height: 250px;
-  }
-}
-
-/* ========================================
-   FIXES ESPECÍFICOS PARA NAVEGADORES
-======================================== */
-
-/* Safari */
-@supports (-webkit-appearance: none) {
-  .video-player-mp4::-webkit-media-controls {
-    z-index: 999999 !important;
-  }
-}
-
-/* Firefox */
-@-moz-document url-prefix() {
-  .video-player-mp4::-moz-media-controls {
-    z-index: 999999 !important;
-  }
-}
-
-/* Edge/IE */
-@supports (-ms-ime-align: auto) {
-  .video-player-mp4::-ms-media-controls {
-    z-index: 999999 !important;
-  }
-}
-
-/* ========================================
-   PREVENIR PROBLEMAS DE Z-INDEX
-======================================== */
-
-/* Asegurar que nada tape el modal */
-body.modal-open {
+  min-height: 500px;
+  background: #000;
+  border-radius: 8px;
   overflow: hidden;
-}
-
-/* Cuando el modal está abierto */
-.recurso-modal ~ * {
-  pointer-events: none;
-}
-
-.recurso-modal {
-  pointer-events: all;
-}
-
-/* ========================================
-   MEJORAS DE ACCESIBILIDAD
-======================================== */
-
-/* Focus visible en botones */
-.btn-modal-cerrar:focus,
-.btn-descargar:focus,
-.btn-cancelar-carga:focus,
-.btn-cerrar-modal:focus {
-  outline: 3px solid var(--primary-color);
-  outline-offset: 2px;
-}
-
-/* Contraste mejorado para lectores de pantalla */
-.video-loading p,
-.video-error p {
-  font-weight: 500;
-  letter-spacing: 0.3px;
-}
-
-/* ========================================
-   TRANSICIONES SUAVES
-======================================== */
-
-.modal-contenido {
-  animation: modalFadeIn 0.3s ease-out;
-}
-
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.recurso-modal.closing .modal-contenido {
-  animation: modalFadeOut 0.2s ease-in;
-}
-
-@keyframes modalFadeOut {
-  from {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: scale(0.95) translateY(20px);
-  }
-}
-/* === RESPONSIVE DESIGN === */
-@media (max-width: 1024px) {
-  .recursos-grid {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  }
-  
-  .modal-contenido {
-    max-width: 95vw;
-    max-height: 95vh;
-  }
-}
-  
-  .filtros-busqueda {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .busqueda-container {
-    min-width: unset;
-  }
-
-
-@media (max-width: 768px) {
-  .biblioteca-filtros {
-    padding: 1.5rem;
-  }
-  
-  .recursos-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .recurso-card {
-    max-width: 100%;
-  }
-  
-  .modal-header {
-    padding: 1rem;
-    flex-direction: column;
-    gap: 1rem;
-    text-align: center;
-  }
-  
-  .modal-info h2 {
-    font-size: 1.2rem;
-    max-width: none;
-  }
-  
-  .filtros-opciones {
-    justify-content: center;
-  }
-  
-  .biblioteca-pestanas {
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-  
-  .video-container,
-  .pdf-container {
-    height: 400px;
-  }
-  
-  .articulo-container {
-    padding: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .modulos-container {
-    padding: 1rem;
-  }
-  
-  .biblioteca-filtros {
-    padding: 1rem;
-  }
-  
-  .recurso-contenido {
-    padding: 1rem;
-  }
-  
-  .modal-contenido {
-    border-radius: 15px;
-  }
-  
-  .modal-header {
-    padding: 0.8rem;
-  }
-  
-  .modal-info h2 {
-    font-size: 1.1rem;
-  }
-  
-  .video-container,
-  .pdf-container {
-    height: 300px;
-  }
-  
-  .recurso-imagen {
-    height: 160px;
-  }
-}
-
-/* ================================
-   LOADING SPINNER
-================================ */
-.loading-container {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 3rem;
-  color: var(--primary-color);
 }
 
-.loading-spinner i {
-  font-size: 3rem;
-  animation: spin 1s linear infinite;
+.video-wrapper-mp4,
+.youtube-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
+  background: #000;
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.video-player-mp4 {
+  position: relative;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 500px;
+  background: #000;
+  display: block;
+  margin: 0 auto;
+  z-index: 1;
+  object-fit: contain;
 }
 
-
-/* === SCROLLBAR PERSONALIZADO === */
-.articulo-container::-webkit-scrollbar,
-.modal-body::-webkit-scrollbar {
-  width: 6px;
+.video-player-mp4::-webkit-media-controls-panel {
+  background-color: transparent !important;
 }
 
-.articulo-container::-webkit-scrollbar-track,
-.modal-body::-webkit-scrollbar-track {
-  background: #f1f1f1;
+.video-player-mp4::-webkit-media-controls {
+  background-color: transparent !important;
 }
 
-.articulo-container::-webkit-scrollbar-thumb,
-.modal-body::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
-  border-radius: 3px;
-}
-
-.articulo-container::-webkit-scrollbar-thumb:hover,
-.modal-body::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-dark);
-}
-
-.formulario-crear {
-  margin: 20px 0;
-  padding: 15px;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  background: #f9f9f9;
-}
-
-.formulario-crear h2 {
-  margin-bottom: 10px;
-  color: #2c3e50;
-}
-
-.formulario-crear form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.formulario-crear input,
-.formulario-crear select {
-  flex: 1 1 calc(50% - 10px);
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-}
-
-.btn-guardar {
-  flex: 1 1 100%;
-  padding: 10px;
-  background: #27ae60;
-  color: white;
+.youtube-embed {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
 }
-
-.btn-guardar:hover {
-  background: #219150;
-}
-
-
-/* === VIDEO ERROR Y LOADING STATES === */
-
 
 .video-loading,
 .video-error {
@@ -1566,6 +1664,11 @@ body.modal-open {
   animation: spin 1s linear infinite;
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .video-error h3 {
   color: white;
   font-size: 1.5rem;
@@ -1581,14 +1684,6 @@ body.modal-open {
   line-height: 1.6;
 }
 
-.video-player {
-  width: 100%;
-  height: 100%;
-  background: #000;
-  border-radius: 8px;
-}
-
-/* Botones de acción en errores */
 .error-actions {
   display: flex;
   gap: 1rem;
@@ -1625,39 +1720,37 @@ body.modal-open {
   transform: translateY(-2px);
 }
 
-/* Modal más accesible */
-.recurso-modal {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  z-index: 9999 !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  overflow-y: auto;
-}
-
-.modal-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  cursor: pointer;
-  z-index: 1;
-}
-
-.modal-contenido {
+/* ================================
+   15. PDF/INFOGRAFÍA/GUÍA
+================================ */
+.pdf-container {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 600px;
   position: relative;
-  z-index: 2;
-  background: white;
-  border-radius: 20px;
-  width: 95vw;
-  max-width: 1200px;
-  max-height: 90vh;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+}
+
+.pdf-toolbar {
+  position: relative; /* Cambiar de absolute a relative */
+  top: auto;
+  left: auto;
+  right: auto;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0; /* No permitir que se encoja */
+}
+
+.pdf-toolbar h4 {
+  font-size: 1.1rem;
+  color: var(--primary-dark);
+  margin: 0;
+  flex: 1;
 }
