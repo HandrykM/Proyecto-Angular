@@ -1,0 +1,12 @@
+FROM mysql:8.0
+
+# Copiar script de inicialización
+COPY ./init-db.sql /docker-entrypoint-initdb.d/
+
+# Configuración MySQL
+ENV MYSQL_ROOT_PASSWORD=rootpassword
+ENV MYSQL_DATABASE=proyecto_agua
+ENV MYSQL_USER=hydrosave_user
+ENV MYSQL_PASSWORD=hydrosave_pass
+
+EXPOSE 3306
