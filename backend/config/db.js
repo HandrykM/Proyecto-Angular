@@ -1,3 +1,4 @@
+// backend/db.js
 const mysql = require('mysql2/promise');
 
 const db = mysql.createPool({
@@ -8,16 +9,21 @@ const db = mysql.createPool({
   database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  ssl: {
+    // Railway MySQL necesita SSL, pero sin validación estricta del certificado
+    rejectUnauthorized: false
+  }
 });
 
+// Verificar conexión al iniciar
 db.getConnection()
   .then(conn => {
-    console.log("Conexión a MySQL establecida ✅");
+    console.log("✅ Conexión a la base de datos establecida correctamente");
     conn.release();
   })
   .catch(err => {
-    console.error("Error al conectar a la base de datos:", err);
+    console.error("❌ Error al conectar a la base de datos:", err.message);
   });
 
 module.exports = db;
