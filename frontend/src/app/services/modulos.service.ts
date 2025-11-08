@@ -6,6 +6,7 @@ import { AuthService } from './auth';
 import { LogrosService } from './logros.service';
 import { RecordatoriosService } from './recordatorios.service';
 import { PushNotificationsService } from './push-notifications.service';
+import { environment } from '../environments/environment';
 
 export interface Lectura {
   id: number;
@@ -96,7 +97,7 @@ export interface NotasLectura {
   providedIn: 'root'
 })
 export class ModulosService {
-  private readonly API_URL = 'http://localhost:3000/api';
+  private readonly API_URL = environment.apiUrl; // ✅ Usa environment
   private readonly MODULOS_URL = `${this.API_URL}/modulos`;
   private readonly MATERIALES_URL = `${this.API_URL}/materiales`;
   
