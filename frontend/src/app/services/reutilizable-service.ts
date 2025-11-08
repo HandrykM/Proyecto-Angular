@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { environment } from '../environments/environment';
 
 interface TarjetaAgua {
   id: number;
@@ -26,7 +27,7 @@ interface ResultadoJuegoReutilizable {
   providedIn: 'root'
 })
 export class ReutilizableService {
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl; // ✅ Usa environment
   private resultadosSubject = new BehaviorSubject<ResultadoJuegoReutilizable | null>(null);
   public resultados$ = this.resultadosSubject.asObservable();
 

@@ -3,13 +3,15 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError, of } from 'rxjs';
 import { map, catchError, retry, tap } from 'rxjs/operators';
 import { Actividad, ProgresoActividad, EstadisticasActividades } from '../models/actividad.model';
+import { environment } from '../environments/environment';
 import { LogrosService } from './logros.service';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class ActividadesService {
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl; // ✅ Usa environment
   private actividadesSubject = new BehaviorSubject<Actividad[]>([]);
   public actividades$ = this.actividadesSubject.asObservable();
 

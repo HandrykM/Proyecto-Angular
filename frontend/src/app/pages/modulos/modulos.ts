@@ -5,6 +5,7 @@ import { Subscription, interval } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { takeWhile } from 'rxjs/operators';
 import { SafeHtmlPipe } from '../../pipes/safe-html.pipe';
+import { environment } from '../../environments/environment';
 
 import { 
   ModulosService, 
@@ -772,7 +773,7 @@ private actualizarModuloSeleccionado(idModulo: number, nuevoProgreso: number): v
   // === FUNCIONES DE UTILIDAD === //
 
   private esProduccion(): boolean {
-    return window.location.hostname !== 'localhost';
+    return environment.production;
   }
 
   recargarModulos(): void {

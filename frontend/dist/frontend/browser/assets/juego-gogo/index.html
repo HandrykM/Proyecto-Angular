@@ -1345,18 +1345,26 @@
       }, '*');
     }
 
-    async function loadRanking() {
-      try {
-        const response = await fetch('http://localhost:3000/api/ranking-gogo?limite=10');
-        if (!response.ok) throw new Error('Error al cargar ranking');
-        
-        const ranking = await response.json();
-        displayRanking(ranking);
-      } catch (error) {
-        console.error('Error cargando ranking:', error);
-        displayRanking([]);
-      }
-    }
+    function getApiUrl() {
+  const hostname = window.location.hostname;
+  
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:3000/api';
+  } else {
+    return 'https://proyecto-angular-rv4o.onrender.com/api';
+  }
+}
+
+async function loadRanking() {
+  try {
+    const apiUrl = getApiUrl();
+    const response = await fetch(`${apiUrl}/ranking-gogo?limite=10`);
+    // ... resto del código
+  } catch (error) {
+    console.error('Error cargando ranking:', error);
+    displayRanking([]);
+  }
+}
 
     function displayRanking(ranking) {
       const rankingList = document.getElementById('ranking-list');
@@ -1397,28 +1405,29 @@
     }
 
     async function updateRanking() {
-      try {
-        const userId = await getUserId();
-        
-        const response = await fetch('http://localhost:3000/api/ranking-gogo', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            idUsuario: userId,
-            puntuacionMaxima: gameState.score,
-            nivel: gameState.level
-          })
-        });
+  try {
+    const userId = await getUserId();
+    const apiUrl = window.API_URL || 'http://localhost:3000/api'; // ✅ Fallback
+    
+    const response = await fetch(`${apiUrl}/ranking-gogo`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        idUsuario: userId,
+        puntuacionMaxima: gameState.score,
+        nivel: gameState.level
+      })
+    });
 
         if (response.ok) {
-          setTimeout(() => loadRanking(), 500);
-        }
-      } catch (error) {
-        console.error('Error actualizando ranking:', error);
-      }
+      setTimeout(() => loadRanking(), 500);
     }
+  } catch (error) {
+    console.error('Error actualizando ranking:', error);
+  }
+}
 
     function getUserId() {
       return new Promise((resolve) => {

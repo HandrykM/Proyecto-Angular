@@ -5,6 +5,7 @@ import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { I18nService, Language } from './i18n.service';
 import { ThemeService } from './theme.service';
+import { environment } from '../environments/environment';
 
 export interface Preferencias {
   idioma: string;
@@ -23,7 +24,7 @@ export interface Preferencias {
   providedIn: 'root'
 })
 export class PreferenciasService {
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl; // ✅ Usa environment
   private preferenciasSubject = new BehaviorSubject<Preferencias | null>(null);
   public preferencias$ = this.preferenciasSubject.asObservable();
 

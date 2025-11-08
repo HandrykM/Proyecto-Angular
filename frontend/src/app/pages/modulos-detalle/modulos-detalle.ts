@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../environments/environment';
 
 interface Pregunta {
   id: number;
@@ -19,6 +20,7 @@ interface Pregunta {
   imports: [CommonModule, FormsModule]   // 👈 agrega FormsModule aquí
 })
 export class ModulosDetalle implements OnInit {
+private apiUrl = environment.apiUrl;
 
   modulo: any = {};
   preguntas: Pregunta[] = [];
@@ -26,6 +28,7 @@ export class ModulosDetalle implements OnInit {
   resultado: string = '';
 
   constructor(private route: ActivatedRoute, private http: HttpClient) {}
+  
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -36,21 +39,21 @@ export class ModulosDetalle implements OnInit {
   }
 
   cargarModulo(id: string) {
-    this.http.get(`http://localhost:3000/api/modulos/${id}`).subscribe({
+    this.http.get(`${this.apiUrl}/modulos/${id}`).subscribe({
       next: (data) => this.modulo = data,
       error: (err) => console.error(err)
     });
   }
 
   cargarPreguntas(id: string) {
-    this.http.get<Pregunta[]>(`http://localhost:3000/api/modulos/${id}/quiz`).subscribe({
+    this.http.get<Pregunta[]>(`${this.apiUrl}/modulos/${id}/quiz`).subscribe({
       next: (data) => this.preguntas = data,
       error: (err) => console.error(err)
     });
   }
 
   enviarQuiz() {
-    this.http.post(`http://localhost:3000/api/resultados`, {
+    this.http.post(`${this.apiUrl}/resultados`, {
       moduloId: this.modulo.id,
       respuestas: this.respuestas
     }).subscribe({

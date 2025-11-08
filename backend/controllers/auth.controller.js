@@ -130,7 +130,7 @@ exports.login = async (req, res) => {
         nombre: user.nombre,
         correo: user.correo,
         rol: user.rol,
-        foto: user.foto
+        foto: user.foto ? `${process.env.CLIENT_URL || 'http://localhost:3000'}${user.foto}` : null
       }
     });
   } catch (err) {

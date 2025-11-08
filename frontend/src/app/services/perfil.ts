@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject, of, Subject } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { AuthService } from './auth';
+import { environment } from '../environments/environment';
 import { 
   Usuario, 
   HistorialSesion, 
@@ -17,7 +18,7 @@ import {
   providedIn: 'root'
 })
 export class PerfilService {
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl; // ✅ Usa environment
   private usuarioActualSubject = new BehaviorSubject<Usuario | null>(null);
   public usuarioActual$ = this.usuarioActualSubject.asObservable();
   // Subject para emitir actualizaciones del historial de actividad

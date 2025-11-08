@@ -324,6 +324,8 @@ const actualizarInformacionPersonal = async (req, res) => {
   }
 };
 
+
+
 // === SUBIR FOTO DE PERFIL === //
 const subirFotoPerfil = [
   upload.single('foto'),

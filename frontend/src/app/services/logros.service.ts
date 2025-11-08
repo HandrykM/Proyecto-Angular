@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { environment } from '../environments/environment';
 
 export interface Logro {
   id: number;
@@ -28,7 +29,7 @@ export interface LogroNuevo {
   providedIn: 'root'
 })
 export class LogrosService {
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl; // ✅ Usa environment
   private logrosObtenidosSubject = new Subject<LogroNuevo[]>();
   public logrosObtenidos$ = this.logrosObtenidosSubject.asObservable();
 

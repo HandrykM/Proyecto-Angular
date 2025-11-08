@@ -3,14 +3,15 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Recurso } from '../pages/biblioteca/biblioteca';
+import { environment } from '../environments/environment';
 import { LogrosService } from './logros.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BibliotecaService {
-  private baseUrl = 'http://localhost:3000/api/biblioteca';
-  private uploadUrl = 'http://localhost:3000/api/upload';
+  private baseUrl = `${environment.apiUrl}/biblioteca`; // ✅ Usa environment
+  private uploadUrl = `${environment.apiUrl}/upload`; // ✅ Usa environment
 
   constructor(private http: HttpClient, private logrosService: LogrosService) {}
 
