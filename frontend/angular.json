@@ -35,19 +35,31 @@
           },
           "configurations": {
             "production": {
+              "fileReplacements": [
+  {
+    "replace": "src/app/environments/environment.ts",
+    "with": "src/app/environments/environment.prod.ts"
+  }
+]
+,
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
               "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "50kB",
-                  "maximumError": "100kB"
-                }
-              ],
-              "outputHashing": "all"
+  {
+    "type": "initial",
+    "maximumWarning": "2mb",
+    "maximumError": "5mb"
+  },
+  {
+    "type": "anyComponentStyle",
+    "maximumWarning": "50kb",
+    "maximumError": "100kb"
+  }
+]
+
             },
             "development": {
               "optimization": false,
@@ -81,16 +93,16 @@
             ],
             "tsConfig": "tsconfig.spec.json",
             "assets": [
-  {
-    "glob": "**/*",
-    "input": "public"
-  },
-  {
-    "glob": "**/*",
-    "input": "src/assets",
-    "output": "assets"
-  }
-],
+              {
+                "glob": "**/*",
+                "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/assets",
+                "output": "assets"
+              }
+            ],
             "styles": [
               "src/styles.css"
             ]
