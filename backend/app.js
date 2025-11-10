@@ -10,39 +10,46 @@ const app = express();
 // CORS Configuration
 // ============================================
 const allowedOrigins = process.env.ALLOWED_ORIGINS 
-      ? process.env.ALLOWED_ORIGINS.split(',') 
-      : [];
+  ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
+  : ['http://localhost:4200'];
+
+console.log('🌐 Orígenes permitidos:', allowedOrigins);
 
 app.use(cors({
   origin: function(origin, callback) {
-    const allowedOrigins = process.env.ALLOWED_ORIGINS 
-      ? process.env.ALLOWED_ORIGINS.split(',') 
-      : [];
-
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin) || origin === 'http://localhost:4200') {
+    // Permitir peticiones sin origin (como Postman, apps móviles, etc)
+    if (!origin) {
+      console.log('✅ Petición sin origin permitida');
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.includes(origin)) {
+      console.log(`✅ CORS permitido para: ${origin}`);
       callback(null, true);
     } else {
-      console.warn(`❌ CORS blocked: ${origin}`);
+      console.warn(`❌ CORS bloqueado para: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
-  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
 }));
 
 
 
+// Manejo explícito de preflight requests
+app.options('*', cors());
 
-
-
-//app.use(cors(corsOptions));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Logger de peticiones (opcional)
-// app.use(morgan('dev'));
+// Logger de peticiones (útil para debugging)
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
 
 // Middleware para medir duración de cada request
 app.use((req, res, next) => {
