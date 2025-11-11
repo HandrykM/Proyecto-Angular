@@ -4,23 +4,14 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "npx ng build --configuration production",
+    "build": "ng build --configuration production && npm run copy-redirects",
+    "copy-redirects": "cp src/_redirects dist/frontend/ 2>/dev/null || echo '_redirects copied'",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
-  },
-  "prettier": {
-    "overrides": [
-      {
-        "files": "*.html",
-        "options": {
-          "parser": "angular"
-        }
-      }
-    ]
   },
   "private": true,
   "dependencies": {
@@ -34,12 +25,8 @@
     "@angular/platform-browser": "^20.1.0",
     "@angular/router": "^20.1.0",
     "chart.js": "^4.5.0",
-    "express-rate-limit": "^8.0.1",
-    "express-validator": "^7.2.1",
     "gsap": "^3.13.0",
-    "multer": "^2.0.2",
     "ng2-charts": "^8.0.0",
-    "node-cron": "^4.2.1",
     "rxjs": "~7.8.0",
     "sweetalert2": "^11.22.4",
     "tslib": "^2.3.0",

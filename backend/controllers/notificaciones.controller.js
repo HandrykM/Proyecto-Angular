@@ -1,17 +1,8 @@
 // backend/controllers/notificaciones.controller.js
-const nodemailer = require('nodemailer');
 const db = require('../config/db');
+const { Resend } = require('resend');
 
-// Configurar transporter de nodemailer
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: process.env.SMTP_PORT || 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
-  }
-});
+const resend = new Resend('re_jY6zXfLJ_9WVw69K2JbHERkRnZL13YkJu'); // Tu API key de Resend
 
 class NotificacionesController {
   /**
@@ -59,9 +50,9 @@ class NotificacionesController {
         html: this.getDefaultTemplate(nombre, title, message)
       };
 
-      // Enviar email
-      await transporter.sendMail({
-        from: `"HydroSave" <${process.env.EMAIL_USER}>`,
+      // Enviar email usando Resend
+      await resend.emails.send({
+        from: 'HydroSave <hydrosave05@gmail.com>',
         to: correo,
         subject: template.subject,
         html: template.html
@@ -71,7 +62,7 @@ class NotificacionesController {
       res.json({ success: true, mensaje: 'Email enviado correctamente' });
 
     } catch (error) {
-      console.error('Error al enviar email:', error);
+      console.error('Error al enviar email con Resend:', error);
       res.status(500).json({ error: 'Error al enviar email' });
     }
   }
@@ -112,9 +103,7 @@ class NotificacionesController {
     }
   }
 
-  /**
-   * Plantillas de email
-   */
+  // ===================== PLANTILLAS =====================
   getLogroTemplate(nombre, titulo, mensaje) {
     return `
       <!DOCTYPE html>
@@ -140,7 +129,7 @@ class NotificacionesController {
               <p>Hola <strong>${nombre}</strong>,</p>
               <h2>${titulo}</h2>
               <p>${mensaje}</p>
-              <a href="http://localhost:4200/perfil" class="button">Ver mi perfil</a>
+              <a href="https://hydrosave-frontend.onrender.com/perfil" class="button">Ver mi perfil</a>
             </div>
             <div class="footer">
               <p>Este es un mensaje automático de HydroSave</p>
@@ -175,7 +164,7 @@ class NotificacionesController {
               <p>Hola <strong>${nombre}</strong>,</p>
               <h2>${titulo}</h2>
               <p>${mensaje}</p>
-              <a href="http://localhost:4200/modulos" class="button">Continuar aprendiendo</a>
+              <a href="https://hydrosave-frontend.onrender.com/modulos" class="button">Continuar aprendiendo</a>
             </div>
           </div>
         </body>
@@ -206,7 +195,7 @@ class NotificacionesController {
             <div class="content">
               <p>Hola <strong>${nombre}</strong>,</p>
               <p>${mensaje}</p>
-              <a href="http://localhost:4200/perfil" class="button">Descargar certificado</a>
+              <a href="https://hydrosave-frontend.onrender.com/perfil" class="button">Descargar certificado</a>
             </div>
           </div>
         </body>

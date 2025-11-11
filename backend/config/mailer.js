@@ -1,15 +1,27 @@
-// config/mailer.js
+// backend/config/mailer.js
+const { Resend } = require('resend');
 
-const nodemailer = require('nodemailer');
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST, // o 'smtp.gmail.com'
-  port: process.env.SMTP_PORT, // o 587
-  secure: process.env.SMTP_SECURE === 'true', // o false
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
+/**
+ * Envía un correo electrónico
+ */
+async function sendMail({ to, subject, html }) {
+  try {
+    const from = process.env.EMAIL_FROM || 'HydroSave <hydrosave05@gmail.com>';
+
+    await resend.emails.send({
+      from,
+      to,
+      subject,
+      html
+    });
+
+    console.log(`✅ Email enviado a ${to}`);
+  } catch (error) {
+    console.error('❌ Error al enviar correo:', error);
+    throw error;
   }
-});
+}
 
-module.exports = transporter;
+module.exports = { sendMail };

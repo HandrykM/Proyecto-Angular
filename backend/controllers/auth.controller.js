@@ -1,9 +1,14 @@
-// auth.controller.js
+// backend/controllers/auth.controller.js
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/user.model');
-const transporter = require('../config/mailer');
+const SibApiV3Sdk = require('@sendinblue/client');
+
+// Configurar Brevo (Sendinblue)
+const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+const apiKey = apiInstance.authentications['apiKey'];
+apiKey.apiKey = process.env.BREVO_API_KEY;
 
 // ======================
 // VALIDACIONES
@@ -143,12 +148,11 @@ exports.login = async (req, res) => {
 // LOGOUT
 // ======================
 exports.logout = (req, res) => {
-  // Aquí no es necesario hacer nada si usas JWT sin sesiones del lado del servidor
   res.status(200).json({ message: 'Sesión cerrada correctamente' });
 };
 
 // ======================
-// OLVIDÉ CONTRASEÑA
+// OLVIDÉ CONTRASEÑA (Con Brevo API)
 // ======================
 exports.forgotPassword = async (req, res) => {
   try {
@@ -177,35 +181,71 @@ exports.forgotPassword = async (req, res) => {
 
     const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
 
-    const mailOptions = {
-      from: `"HydroSave" <${process.env.EMAIL_USER}>`,
-      to: correo,
-      subject: 'Recuperación de contraseña - HydroSave',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #00a8e8;">Recuperación de contraseña</h2>
-          <p>Has solicitado restablecer tu contraseña. Haz clic en el siguiente enlace:</p>
+    console.log('📧 Enviando email a:', correo);
+
+    // Configurar email con Brevo
+    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+    
+    sendSmtpEmail.sender = { 
+      name: 'HydroSave', 
+      email: process.env.EMAIL_USER 
+    };
+    sendSmtpEmail.to = [{ email: correo }];
+    sendSmtpEmail.subject = 'Recuperación de contraseña - HydroSave';
+    sendSmtpEmail.htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #00a8e8; margin: 0;">💧 HydroSave</h1>
+        </div>
+        
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px;">
+          <h2 style="color: #00a8e8; margin-top: 0;">Recuperación de contraseña</h2>
+          <p style="color: #333; line-height: 1.6;">
+            Has solicitado restablecer tu contraseña. Haz clic en el siguiente botón para continuar:
+          </p>
+          
           <div style="text-align: center; margin: 30px 0;">
             <a href="${resetUrl}" 
-               style="background-color: #00a8e8; color: white; padding: 12px 30px; 
-                      text-decoration: none; border-radius: 5px; display: inline-block;">
+               style="background-color: #00a8e8; 
+                      color: white; 
+                      padding: 15px 40px; 
+                      text-decoration: none; 
+                      border-radius: 5px; 
+                      display: inline-block;
+                      font-weight: bold;">
               Restablecer contraseña
             </a>
           </div>
-          <p style="color: #666; font-size: 14px;">Este enlace expirará en 1 hora.</p>
-          <p style="color: #666; font-size: 14px;">Si no solicitaste este cambio, ignora este correo.</p>
+          
+          <p style="color: #666; font-size: 14px; margin-top: 20px;">
+            O copia y pega este enlace en tu navegador:
+          </p>
+          <p style="color: #00a8e8; font-size: 12px; word-break: break-all;">
+            ${resetUrl}
+          </p>
+          
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+          
+          <p style="color: #999; font-size: 12px; margin: 0;">
+            ⏱️ Este enlace expirará en 1 hora.<br>
+            🔒 Si no solicitaste este cambio, ignora este correo.
+          </p>
         </div>
-      `
-    };
+      </div>
+    `;
 
-    await transporter.sendMail(mailOptions);
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
+    
+    console.log('✅ Email enviado exitosamente a:', correo);
 
     res.json({ 
       message: 'Si el correo está registrado, recibirás un enlace de recuperación' 
     });
   } catch (error) {
-    console.error('Error en forgot password:', error);
-    res.status(500).json({ message: 'Error en el servidor' });
+    console.error('❌ Error en forgot password:', error);
+    res.status(500).json({ 
+      message: 'Error al enviar el correo. Por favor intenta más tarde.' 
+    });
   }
 };
 

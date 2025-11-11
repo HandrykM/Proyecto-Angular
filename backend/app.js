@@ -7,58 +7,73 @@ const morgan = require('morgan');
 const app = express();
 
 // ============================================
-// CORS Configuration
+// DEBUGGING MIDDLEWARE - DEBE IR PRIMERO
+// ============================================
+app.use((req, res, next) => {
+  console.log('==================================');
+  console.log('📨 Origin:', req.headers.origin);
+  console.log('🔍 Method:', req.method);
+  console.log('🛣️  Path:', req.path);
+  console.log('🌐 ALLOWED_ORIGINS env:', process.env.ALLOWED_ORIGINS);
+  console.log('==================================');
+  next();
+});
+
+// ============================================
+// CORS Configuration - CORREGIDA
 // ============================================
 const allowedOrigins = process.env.ALLOWED_ORIGINS 
   ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
   : ['http://localhost:4200'];
 
-console.log('🌐 Orígenes permitidos:', allowedOrigins);
+console.log('🚀 Servidor iniciando...');
+console.log('🌐 Orígenes permitidos configurados:', allowedOrigins);
 
-app.use(cors({
+const corsOptions = {
   origin: function(origin, callback) {
-    // Permitir peticiones sin origin (como Postman, apps móviles, etc)
+    // Permitir peticiones sin origin (Postman, apps móviles)
     if (!origin) {
-      console.log('✅ Petición sin origin permitida');
+      console.log('✅ Petición sin origin - PERMITIDA');
       return callback(null, true);
     }
     
+    console.log(`🔍 Verificando origin: ${origin}`);
+    console.log(`📋 Lista de permitidos:`, allowedOrigins);
+    
     if (allowedOrigins.includes(origin)) {
-      console.log(`✅ CORS permitido para: ${origin}`);
+      console.log(`✅ Origin PERMITIDO: ${origin}`);
       callback(null, true);
     } else {
-      console.warn(`❌ CORS bloqueado para: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
+      console.error(`❌ Origin BLOQUEADO: ${origin}`);
+      console.error(`📋 Orígenes permitidos:`, allowedOrigins);
+      callback(new Error(`Not allowed by CORS: ${origin}`));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   optionsSuccessStatus: 200
-}));
+};
 
+app.use(cors(corsOptions));
 
-
-// Manejo explícito de preflight requests
-app.options('*', cors());
+// Manejo explícito de preflight
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Logger de peticiones (útil para debugging)
+// Logger de peticiones
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
-
 
 // Middleware para medir duración de cada request
 app.use((req, res, next) => {
   const start = Date.now();
   res.on('finish', () => {
     const duration = Date.now() - start;
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`⏱️ ${req.method} ${req.originalUrl} -> ${res.statusCode} (${duration}ms)`);
-    }
+    console.log(`⏱️ ${req.method} ${req.originalUrl} -> ${res.statusCode} (${duration}ms)`);
   });
   next();
 });
@@ -170,6 +185,7 @@ app.get('/api/health-check', (req, res) => {
     environment: process.env.NODE_ENV,
     timestamp: new Date().toISOString(),
     database: process.env.DB_HOST ? 'connected' : 'not configured',
+    allowedOrigins: allowedOrigins,
     modules: [
       'auth', 'modulos', 'lecturas', 'materiales',
       'actividades', 'biblioteca', 'upload', 'perfil', 
@@ -187,7 +203,16 @@ app.get('/', (req, res) => {
 // ============================================
 
 app.use((err, req, res, next) => {
-  console.error('Error global:', err);
+  console.error('❌ Error global:', err);
+  
+  if (err.message && err.message.includes('Not allowed by CORS')) {
+    return res.status(403).json({ 
+      error: 'CORS policy error',
+      message: 'Origin not allowed',
+      origin: req.headers.origin,
+      allowedOrigins: allowedOrigins
+    });
+  }
   
   if (err.name === 'MulterError') {
     if (err.code === 'LIMIT_FILE_SIZE') {
@@ -210,8 +235,11 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
+  console.log('='.repeat(50));
   console.log(`✅ Servidor corriendo en puerto ${PORT}`);
-  console.log(`🔍 Health check: /api/health-check`);
+  console.log(`🔍 Health check: http://localhost:${PORT}/api/health-check`);
   console.log(`📁 Archivos estáticos: /uploads/`);
   console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🌐 CORS permitido para:`, allowedOrigins);
+  console.log('='.repeat(50));
 });

@@ -1,48 +1,27 @@
 // backend/controllers/preferencias.controller.js
 const db = require('../config/db');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-// Configurar transporter de nodemailer (usando tu configuración de Mailer.js)
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: process.env.EMAIL_PORT || 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+const resend = new Resend('re_jY6zXfLJ_9WVw69K2JbHERkRnZL13YkJu');
 
 class PreferenciasController {
-  /**
-   * Obtener preferencias del usuario
-   */
+  // ===================== PREFERENCIAS =====================
   async obtenerPreferencias(req, res) {
     try {
       const userId = req.user.id;
-
       const [preferencias] = await db.execute(`
-        SELECT 
-          idioma,
-          modo_oscuro as modoOscuro,
-          tamano_fuente as tamanoFuente,
-          notif_email,
-          notif_sms,
-          notif_push,
-          notif_recordatorios,
-          notif_logros
+        SELECT idioma, modo_oscuro as modoOscuro, tamano_fuente as tamanoFuente,
+               notif_email, notif_sms, notif_push, notif_recordatorios, notif_logros
         FROM configuracion_usuario
         WHERE id_usuario = ?
       `, [userId]);
 
       if (preferencias.length === 0) {
-        // Crear configuración por defecto
         await this.crearConfiguracionDefecto(userId);
         return this.obtenerPreferencias(req, res);
       }
 
       const config = preferencias[0];
-
       res.json({
         idioma: config.idioma || 'es',
         modoOscuro: config.modoOscuro === 1,
@@ -58,28 +37,18 @@ class PreferenciasController {
 
     } catch (error) {
       console.error('Error al obtener preferencias:', error);
-      res.status(500).json({
-        success: false,
-        mensaje: 'Error al obtener preferencias'
-      });
+      res.status(500).json({ success: false, mensaje: 'Error al obtener preferencias' });
     }
   }
 
-  /**
-   * Guardar preferencias del usuario
-   */
   async guardarPreferencias(req, res) {
     try {
       const userId = req.user.id;
       const { idioma, modoOscuro, tamanoFuente, notificaciones } = req.body;
 
-      // Verificar si existe configuración
-      const [existe] = await db.execute(`
-        SELECT id FROM configuracion_usuario WHERE id_usuario = ?
-      `, [userId]);
+      const [existe] = await db.execute(`SELECT id FROM configuracion_usuario WHERE id_usuario = ?`, [userId]);
 
       if (existe.length === 0) {
-        // Crear nueva configuración
         await db.execute(`
           INSERT INTO configuracion_usuario (
             id_usuario, idioma, modo_oscuro, tamano_fuente,
@@ -97,18 +66,11 @@ class PreferenciasController {
           notificaciones?.logros ? 1 : 0
         ]);
       } else {
-        // Actualizar configuración existente
         await db.execute(`
           UPDATE configuracion_usuario SET
-            idioma = ?,
-            modo_oscuro = ?,
-            tamano_fuente = ?,
-            notif_email = ?,
-            notif_sms = ?,
-            notif_push = ?,
-            notif_recordatorios = ?,
-            notif_logros = ?,
-            fecha_modificacion = NOW()
+            idioma = ?, modo_oscuro = ?, tamano_fuente = ?,
+            notif_email = ?, notif_sms = ?, notif_push = ?,
+            notif_recordatorios = ?, notif_logros = ?, fecha_modificacion = NOW()
           WHERE id_usuario = ?
         `, [
           idioma || 'es',
@@ -123,23 +85,14 @@ class PreferenciasController {
         ]);
       }
 
-      res.json({
-        success: true,
-        mensaje: 'Preferencias guardadas correctamente'
-      });
+      res.json({ success: true, mensaje: 'Preferencias guardadas correctamente' });
 
     } catch (error) {
       console.error('Error al guardar preferencias:', error);
-      res.status(500).json({
-        success: false,
-        mensaje: 'Error al guardar preferencias'
-      });
+      res.status(500).json({ success: false, mensaje: 'Error al guardar preferencias' });
     }
   }
 
-  /**
-   * Crear configuración por defecto
-   */
   async crearConfiguracionDefecto(userId) {
     await db.execute(`
       INSERT INTO configuracion_usuario (
@@ -149,29 +102,20 @@ class PreferenciasController {
     `, [userId]);
   }
 
-  /**
-   * Enviar notificación por email
-   */
+  // ===================== EMAIL CON RESEND =====================
   async enviarNotificacionEmail(userId, asunto, mensaje) {
     try {
-      // Verificar si el usuario tiene notificaciones por email activadas
       const [config] = await db.execute(`
         SELECT notif_email FROM configuracion_usuario WHERE id_usuario = ?
       `, [userId]);
 
-      if (config.length === 0 || config[0].notif_email !== 1) {
-        return; // Usuario no tiene notificaciones activadas
-      }
+      if (config.length === 0 || config[0].notif_email !== 1) return;
 
-      // Obtener email del usuario
-      const [usuario] = await db.execute(`
-        SELECT correo, nombre FROM usuarios WHERE id = ?
-      `, [userId]);
-
+      const [usuario] = await db.execute(`SELECT correo, nombre FROM usuarios WHERE id = ?`, [userId]);
       if (usuario.length === 0) return;
 
-      const mailOptions = {
-        from: `"HydroSave" <${process.env.EMAIL_USER}>`,
+      await resend.emails.send({
+        from: 'HydroSave <hydrosave05@gmail.com>',
         to: usuario[0].correo,
         subject: asunto,
         html: `
@@ -189,13 +133,11 @@ class PreferenciasController {
             </head>
             <body>
               <div class="container">
-                <div class="header">
-                  <h1>HydroSave</h1>
-                </div>
+                <div class="header"><h1>HydroSave</h1></div>
                 <div class="content">
                   <p>Hola ${usuario[0].nombre},</p>
                   <p>${mensaje}</p>
-                  <a href="http://localhost:4200/perfil" class="button">Ver mi perfil</a>
+                  <a href="https://hydrosave-frontend.onrender.com/perfil" class="button">Ver mi perfil</a>
                 </div>
                 <div class="footer">
                   <p>Este es un mensaje automático de HydroSave</p>
@@ -205,19 +147,16 @@ class PreferenciasController {
             </body>
           </html>
         `
-      };
+      });
 
-      await transporter.sendMail(mailOptions);
       console.log('Email enviado correctamente a:', usuario[0].correo);
 
     } catch (error) {
-      console.error('Error al enviar email:', error);
+      console.error('Error al enviar email con Resend:', error);
     }
   }
 
-  /**
-   * Enviar notificación de logro
-   */
+  // ===================== LOGROS =====================
   async notificarLogro(userId, logro) {
     try {
       const [config] = await db.execute(`
@@ -239,9 +178,7 @@ class PreferenciasController {
     }
   }
 
-  /**
-   * Enviar recordatorio de estudio
-   */
+  // ===================== RECORDATORIOS =====================
   async enviarRecordatorioEstudio(userId) {
     try {
       const [config] = await db.execute(`
@@ -262,9 +199,7 @@ class PreferenciasController {
     }
   }
 
-  /**
-   * Enviar notificación de certificado disponible
-   */
+  // ===================== CERTIFICADOS =====================
   async notificarCertificadoDisponible(userId) {
     try {
       const [config] = await db.execute(`
@@ -285,35 +220,20 @@ class PreferenciasController {
     }
   }
 
-  /**
- * Enviar notificación por SMS (usando Twilio o similar)
- */
-async enviarNotificacionSMS(userId, mensaje) {
-  try {
-    // Verificar si el usuario tiene notificaciones SMS activadas
-    const [config] = await db.execute(`
-      SELECT notif_sms FROM configuracion_usuario WHERE id_usuario = ?
-    `, [userId]);
+  // ===================== SMS (por ahora logging) =====================
+  async enviarNotificacionSMS(userId, mensaje) {
+    try {
+      const [config] = await db.execute(`SELECT notif_sms FROM configuracion_usuario WHERE id_usuario = ?`, [userId]);
+      if (config.length === 0 || config[0].notif_sms !== 1) return;
 
-    if (config.length === 0 || config[0].notif_sms !== 1) {
-      return;
+      const [usuario] = await db.execute(`SELECT telefono, nombre FROM usuarios WHERE id = ?`, [userId]);
+      if (usuario.length === 0 || !usuario[0].telefono) return;
+
+      console.log(`SMS a ${usuario[0].telefono}: ${mensaje}`);
+    } catch (error) {
+      console.error('Error al enviar SMS:', error);
     }
-
-    // Obtener teléfono del usuario
-    const [usuario] = await db.execute(`
-      SELECT telefono, nombre FROM usuarios WHERE id = ?
-    `, [userId]);
-
-    if (usuario.length === 0 || !usuario[0].telefono) return;
-
-    // Aquí integrarías Twilio u otro servicio SMS
-    // Por ahora solo logging
-    console.log(`SMS a ${usuario[0].telefono}: ${mensaje}`);
-    
-  } catch (error) {
-    console.error('Error al enviar SMS:', error);
   }
-}
 }
 
 module.exports = new PreferenciasController();
