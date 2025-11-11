@@ -2,11 +2,11 @@
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "projects": {
-  "frontend": {
-    "root": "",
-    "sourceRoot": "src",
-    "projectType": "application",
-    "architect": {
+    "frontend": {
+      "root": "",
+      "sourceRoot": "src",
+      "projectType": "application",
+      "architect": {
         "build": {
           "builder": "@angular/build:application",
           "options": {
@@ -24,6 +24,11 @@
               },
               {
                 "glob": "_redirects",
+                "input": "src",
+                "output": "/"
+              },
+              {
+                "glob": "_headers",
                 "input": "src",
                 "output": "/"
               }
@@ -45,17 +50,16 @@
               "extractLicenses": true,
               "budgets": [
                 {
-    "type": "initial",
-    "maximumWarning": "2mb",
-    "maximumError": "5mb"
-  },
-  {
-    "type": "anyComponentStyle",
-    "maximumWarning": "50kb",
-    "maximumError": "100kb"
-  }
-]
-
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "50kb",
+                  "maximumError": "100kb"
+                }
+              ]
             },
             "development": {
               "optimization": false,
