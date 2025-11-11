@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 // ============================================
 const allowedOrigins = process.env.ALLOWED_ORIGINS 
   ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
-  : ['http://localhost:4200'];
+  : ['https://hydrosave-frontend.onrender.com'];
 
 console.log('🚀 Servidor iniciando...');
 console.log('🌐 Orígenes permitidos configurados:', allowedOrigins);
