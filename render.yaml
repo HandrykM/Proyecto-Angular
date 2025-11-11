@@ -37,8 +37,8 @@ services:
     env: static
     region: oregon
     plan: free
-    buildCommand: cd frontend && npm install && npm run build && cp src/_redirects dist/frontend/
-    staticPublishPath: frontend/dist/frontend
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist/frontend/browser
     routes:
       - type: rewrite
         source: /*
