@@ -11,9 +11,9 @@
   "render-build": "ng build --configuration production"
 },
   "engines": {
-    "node": ">=22.19.0",
-    "npm": ">=10.9.3"
-  },
+  "node": "20.x",
+  "npm": ">=10.0.0"
+},
   "private": true,
   "dependencies": {
     "@angular/animations": "^20.1.7",
