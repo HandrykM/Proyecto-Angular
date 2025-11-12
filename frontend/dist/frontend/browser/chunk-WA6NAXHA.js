@@ -1,1 +1,1 @@
-var o={production:!0,apiUrl:"https://proyecto-angular-rv4o.onrender.com/api",appName:"HydroSave"};export{o as a};
+var o={production:!0,apiUrl:"https://proyecto-angular-loa8.onrender.com/api",appName:"HydroSave"};export{o as a};
