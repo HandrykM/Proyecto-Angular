@@ -237,7 +237,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log('='.repeat(50));
   console.log(`✅ Servidor corriendo en puerto ${PORT}`);
-  console.log(`🔍 Health check: http://localhost:${PORT}/api/health-check`);
+  console.log(`🔍 Health check: https://proyecto-angular-loa8.onrender.com/api/health-check`);
   console.log(`📁 Archivos estáticos: /uploads/`);
   console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🌐 CORS permitido para:`, allowedOrigins);
