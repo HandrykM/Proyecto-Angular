@@ -6,6 +6,24 @@ const path = require('path');
 const fs = require('fs');
 const db = require('../config/db');
 
+// Agregar esta función helper al inicio del archivo
+function construirUrlCompleta(ruta) {
+  if (!ruta) return null;
+  
+  // Si ya es una URL completa, devolverla tal cual
+  if (ruta.startsWith('http://') || ruta.startsWith('https://')) {
+    return ruta;
+  }
+  
+  // Construir URL completa
+  const backendUrl = process.env.BACKEND_URL || process.env.CLIENT_URL || 'https://proyecto-angular-loa8.onrender.com';
+  
+  // Asegurar que la ruta comience con /
+  const rutaLimpia = ruta.startsWith('/') ? ruta : `/${ruta}`;
+  
+  return `${backendUrl}${rutaLimpia}`;
+}
+
 // Configuración de multer para subir archivos
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -170,29 +188,13 @@ const obtenerPerfilCompleto = async (req, res) => {
     };
 
     const perfilCompleto = {
-      ...usuario,
-      configuracion,
-      estadisticas,
-      foto: usuario.foto ? construirUrlCompleta(usuario.foto) : null
-    };
+  ...usuario,
+  configuracion,
+  estadisticas,
+  foto: construirUrlCompleta(usuario.foto)  // ← CAMBIAR ESTA LÍNEA
+};
     
-    // Agregar esta función helper al inicio del archivo
-function construirUrlCompleta(ruta) {
-  if (!ruta) return null;
-  
-  // Si ya es una URL completa, devolverla tal cual
-  if (ruta.startsWith('http://') || ruta.startsWith('https://')) {
-    return ruta;
-  }
-  
-  // Construir URL completa con el backend URL
-  const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
-  
-  // Asegurar que la ruta comience con /
-  const rutaLimpia = ruta.startsWith('/') ? ruta : `/${ruta}`;
-  
-  return `${backendUrl}${rutaLimpia}`;
-}
+    
 
     res.json(perfilCompleto);
 
@@ -359,7 +361,7 @@ const subirFotoPerfil = [
       }
 
       const userId = req.user.id;
-      const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
+      const backendUrl = process.env.BACKEND_URL || 'https://proyecto-angular-loa8.onrender.com';
       const fotoUrl = `${backendUrl}/uploads/perfiles/${req.file.filename}`;
 
       const [oldPhotoResult] = await db.execute(

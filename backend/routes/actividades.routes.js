@@ -68,10 +68,28 @@ router.get('/progreso-actividades/:idUsuario', async (req, res) => {
     
     const [progreso] = await db.execute(query, [idUsuario]);
     
-    res.json(progreso);
+    // ✅ AGREGAR ESTA PARTE:
+    const progresoFormateado = progreso.map(item => ({
+      ...item,
+      datos_progreso: (() => {
+        try {
+          return typeof item.datos_progreso === 'string' 
+            ? JSON.parse(item.datos_progreso) 
+            : (item.datos_progreso || {});
+        } catch (e) {
+          return {};
+        }
+      })()
+    }));
+    
+    res.json(progresoFormateado);
+    
   } catch (error) {
     console.error('Error al obtener progreso:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ 
+      error: 'Error interno del servidor',
+      message: error.message 
+    });
   }
 });
 

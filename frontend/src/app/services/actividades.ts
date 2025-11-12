@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError, of } from 'rxjs';
-import { map, catchError, retry, tap } from 'rxjs/operators';
+import { map, catchError, retry, tap, switchMap } from 'rxjs/operators';
 import { Actividad, ProgresoActividad, EstadisticasActividades } from '../models/actividad.model';
 import { environment } from '../environments/environment';
 import { LogrosService } from './logros.service';
@@ -55,14 +55,22 @@ export class ActividadesService {
   /**
    * Obtiene el progreso del usuario para todas las actividades
    */
-  obtenerProgresoUsuario(idUsuario: number): Observable<ProgresoActividad[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/progreso-actividades/${idUsuario}`)
-      .pipe(
-        retry(2),
-        map(progreso => this.mapearProgreso(progreso)),
-        catchError(this.handleError('obtenerProgresoUsuario', []))
-      );
-  }
+  obtenerProgresoUsuario(idUsuario: number): Observable<any> {
+  return this.http.get(`${this.apiUrl}/progreso-actividades/${idUsuario}`)
+    .pipe(
+      map(progreso => {
+        if (Array.isArray(progreso)) {
+          return progreso.map(item => ({
+            ...item,
+            datos_progreso: typeof item.datos_progreso === 'string' 
+              ? JSON.parse(item.datos_progreso) 
+              : item.datos_progreso
+          }));
+        }
+        return progreso;
+      })
+    );
+}
 
   /**
    * Mapea el progreso del backend al formato del frontend
@@ -149,11 +157,12 @@ export class ActividadesService {
    * Combina actividades con progreso del usuario
    */
   obtenerActividadesConProgreso(idUsuario: number): Observable<Actividad[]> {
-    return this.obtenerActividades().pipe(
-      map(actividades => {
-        this.obtenerProgresoUsuario(idUsuario).subscribe(progreso => {
+  return this.obtenerActividades().pipe(
+    switchMap((actividades: Actividad[]) =>
+      this.obtenerProgresoUsuario(idUsuario).pipe(
+        map((progreso: ProgresoActividad[]) => {
           const actividadesConProgreso = actividades.map(actividad => {
-            const progresoActividad = progreso.find(p => p.idActividad === actividad.id);
+            const progresoActividad = progreso.find((p: ProgresoActividad) => p.idActividad === actividad.id);
             if (progresoActividad) {
               actividad.completada = progresoActividad.completada;
               actividad.progreso = progresoActividad.progreso;
@@ -163,11 +172,13 @@ export class ActividadesService {
             return actividad;
           });
           this.actividadesSubject.next(actividadesConProgreso);
-        });
-        return actividades;
-      })
-    );
-  }
+          return actividadesConProgreso;
+        })
+      )
+    )
+  );
+}
+
 
   /**
    * Actualiza una actividad específica con nuevo progreso
@@ -304,8 +315,11 @@ export class ActividadesService {
    * Obtiene el progreso de una actividad específica
    */
   obtenerProgresoActividad(idUsuario: number, idActividad: number): Observable<ProgresoActividad | null> {
-    return this.obtenerProgresoUsuario(idUsuario).pipe(
-      map(progresos => progresos.find(p => p.idActividad === idActividad) || null)
-    );
-  }
+  return this.obtenerProgresoUsuario(idUsuario).pipe(
+    map((progresos: ProgresoActividad[]) => 
+      progresos.find((p: ProgresoActividad) => p.idActividad === idActividad) || null
+    )
+  );
+}
+
 }
