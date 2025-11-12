@@ -8,11 +8,7 @@
   "build": "ng build --configuration production",
   "watch": "ng build --watch --configuration development",
   "test": "ng test",
-  "render-build": "ng build --configuration production"
-},
-  "engines": {
-  "node": "20.x",
-  "npm": ">=10.0.0"
+  "render-build": "npx ng build --configuration production"
 },
   "private": true,
   "dependencies": {
