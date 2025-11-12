@@ -182,32 +182,40 @@ router.get('/estadisticas-actividades/:idUsuario', async (req, res) => {
 // Actualizar puntuación en ranking GoGo - CORREGIDO
 router.get('/ranking-gogo', async (req, res) => {
   try {
-    const { limite = 10 } = req.query;
+    const limite = parseInt(req.query.limite) || 10;
+    
+    // Verificar si la tabla tiene datos
+    const [count] = await db.execute('SELECT COUNT(*) as total FROM ranking_gogo');
+    
+    if (count[0].total === 0) {
+      // Si no hay datos, devolver array vacío
+      return res.json([]);
+    }
     
     const query = `
       SELECT 
         rg.id, 
         rg.id_usuario, 
         u.nombre as nombreUsuario,
-        rg.puntuacion_maxima, 
-        rg.nivel, 
-        rg.fecha_record
+        CAST(rg.puntuacion_maxima AS UNSIGNED) as puntuacion_maxima,
+        CAST(rg.nivel AS UNSIGNED) as nivel,
+        DATE_FORMAT(rg.fecha_record, '%Y-%m-%d %H:%i:%s') as fecha_record
       FROM ranking_gogo rg
-      JOIN usuarios u ON rg.id_usuario = u.id
+      INNER JOIN usuarios u ON rg.id_usuario = u.id
       ORDER BY rg.puntuacion_maxima DESC, rg.fecha_record ASC
       LIMIT ?
     `;
     
-    const [ranking] = await db.execute(query, [parseInt(limite)]);
+    const [ranking] = await db.execute(query, [limite]);
     
     res.json(ranking);
     
   } catch (error) {
-    console.error('Error al obtener ranking:', error);
-    res.status(500).json({ 
-      error: 'Error interno del servidor',
-      details: error.message 
-    });
+    console.error('❌ Error al obtener ranking:', error);
+    console.error('Error stack:', error.stack);
+    
+    // Devolver array vacío en caso de error para no romper el frontend
+    res.status(200).json([]);
   }
 });
 
@@ -216,26 +224,47 @@ router.post('/ranking-gogo', async (req, res) => {
   try {
     const { idUsuario, puntuacionMaxima, nivel } = req.body;
     
-    // Usar INSERT...ON DUPLICATE KEY UPDATE para manejar ambos casos
+    // Validar datos
+    if (!idUsuario || puntuacionMaxima === undefined || nivel === undefined) {
+      return res.status(400).json({
+        success: false,
+        error: 'Datos incompletos',
+        message: 'Se requiere idUsuario, puntuacionMaxima y nivel'
+      });
+    }
+    
+    // Convertir a números para asegurar tipo correcto
+    const puntuacion = parseInt(puntuacionMaxima) || 0;
+    const nivelInt = parseInt(nivel) || 1;
+    
+    // Usar INSERT...ON DUPLICATE KEY UPDATE
     const query = `
       INSERT INTO ranking_gogo 
       (id_usuario, puntuacion_maxima, nivel, fecha_record)
       VALUES (?, ?, ?, NOW())
       ON DUPLICATE KEY UPDATE 
-        puntuacion_maxima = GREATEST(puntuacion_maxima, VALUES(puntuacion_maxima)),
-        nivel = GREATEST(nivel, VALUES(nivel)),
-        fecha_record = IF(VALUES(puntuacion_maxima) > puntuacion_maxima, NOW(), fecha_record)
+        puntuacion_maxima = IF(VALUES(puntuacion_maxima) > puntuacion_maxima, 
+                                VALUES(puntuacion_maxima), 
+                                puntuacion_maxima),
+        nivel = IF(VALUES(puntuacion_maxima) > puntuacion_maxima, 
+                   VALUES(nivel), 
+                   nivel),
+        fecha_record = IF(VALUES(puntuacion_maxima) > puntuacion_maxima, 
+                          NOW(), 
+                          fecha_record)
     `;
     
-    await db.execute(query, [idUsuario, puntuacionMaxima, nivel]);
+    await db.execute(query, [idUsuario, puntuacion, nivelInt]);
     
     res.json({ 
       success: true,
-      message: 'Ranking actualizado exitosamente' 
+      message: 'Ranking actualizado exitosamente',
+      puntuacion: puntuacion,
+      nivel: nivelInt
     });
     
   } catch (error) {
-    console.error('Error al actualizar ranking:', error);
+    console.error('❌ Error al actualizar ranking:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Error interno del servidor',
