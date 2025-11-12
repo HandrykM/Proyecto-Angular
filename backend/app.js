@@ -7,52 +7,50 @@ const morgan = require('morgan');
 const app = express();
 
 // ============================================
-// DEBUGGING MIDDLEWARE - DEBE IR PRIMERO
+// DEBUGGING MIDDLEWARE - Solo en desarrollo
 // ============================================
-app.use((req, res, next) => {
-  console.log('==================================');
-  console.log('📨 Origin:', req.headers.origin);
-  console.log('🔍 Method:', req.method);
-  console.log('🛣️  Path:', req.path);
-  console.log('🌐 ALLOWED_ORIGINS env:', process.env.ALLOWED_ORIGINS);
-  console.log('==================================');
-  next();
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.use((req, res, next) => {
+    console.log('==================================');
+    console.log('📨 Origin:', req.headers.origin);
+    console.log('🔍 Method:', req.method);
+    console.log('🛣️  Path:', req.path);
+    console.log('==================================');
+    next();
+  });
+}
 
 // ============================================
-// CORS Configuration - CORREGIDA
+// CORS Configuration - OPTIMIZADA
 // ============================================
 const allowedOrigins = process.env.ALLOWED_ORIGINS 
   ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
   : ['https://hydrosave-frontend.onrender.com'];
 
 console.log('🚀 Servidor iniciando...');
-console.log('🌐 Orígenes permitidos configurados:', allowedOrigins);
+console.log('🌐 Entorno:', process.env.NODE_ENV);
+console.log('🌐 Orígenes permitidos:', allowedOrigins);
 
 const corsOptions = {
   origin: function(origin, callback) {
-    // Permitir peticiones sin origin (Postman, apps móviles)
-    if (!origin) {
-      console.log('✅ Petición sin origin - PERMITIDA');
+    // Permitir peticiones sin origin (Postman, apps móviles, mismo dominio)
+    if (!origin || origin === 'null') {
       return callback(null, true);
     }
     
-    console.log(`🔍 Verificando origin: ${origin}`);
-    console.log(`📋 Lista de permitidos:`, allowedOrigins);
-    
     if (allowedOrigins.includes(origin)) {
-      console.log(`✅ Origin PERMITIDO: ${origin}`);
       callback(null, true);
     } else {
       console.error(`❌ Origin BLOQUEADO: ${origin}`);
-      console.error(`📋 Orígenes permitidos:`, allowedOrigins);
       callback(new Error(`Not allowed by CORS: ${origin}`));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  optionsSuccessStatus: 200
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  optionsSuccessStatus: 200,
+  maxAge: 86400 // 24 horas
 };
 
 app.use(cors(corsOptions));
@@ -60,23 +58,18 @@ app.use(cors(corsOptions));
 // Manejo explícito de preflight
 app.options('*', cors(corsOptions));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Logger de peticiones
-if (process.env.NODE_ENV === 'development') {
+// Logger de peticiones - Solo en desarrollo
+if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
+} else {
+  // En producción, solo loggear errores
+  app.use(morgan('combined', {
+    skip: function (req, res) { return res.statusCode < 400 }
+  }));
 }
-
-// Middleware para medir duración de cada request
-app.use((req, res, next) => {
-  const start = Date.now();
-  res.on('finish', () => {
-    const duration = Date.now() - start;
-    console.log(`⏱️ ${req.method} ${req.originalUrl} -> ${res.statusCode} (${duration}ms)`);
-  });
-  next();
-});
 
 // Disable ETag and force no-cache for API responses
 app.disable('etag');
@@ -84,6 +77,7 @@ app.use('/api', (req, res, next) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.set('Pragma', 'no-cache');
   res.set('Expires', '0');
+  res.set('Surrogate-Control', 'no-store');
   next();
 });
 
@@ -94,6 +88,7 @@ app.use('/uploads', (req, res, next) => {
   res.set({
     'Accept-Ranges': 'bytes',
     'Cache-Control': 'public, max-age=3600',
+    'Access-Control-Allow-Origin': allowedOrigins.join(','),
   });
   if (req.path.endsWith('.mp4') || req.path.endsWith('.webm')) {
     const options = {
@@ -107,6 +102,7 @@ app.use('/uploads', (req, res, next) => {
     express.static(path.join(__dirname, 'uploads'))(req, res, next);
   }
 });
+
 app.use('/assets', express.static(path.join(__dirname, 'public/assets')));
 
 // ============================================
@@ -186,6 +182,7 @@ app.get('/api/health-check', (req, res) => {
     timestamp: new Date().toISOString(),
     database: process.env.DB_HOST ? 'connected' : 'not configured',
     allowedOrigins: allowedOrigins,
+    backend_url: process.env.BACKEND_URL || 'not set',
     modules: [
       'auth', 'modulos', 'lecturas', 'materiales',
       'actividades', 'biblioteca', 'upload', 'perfil', 
@@ -195,13 +192,30 @@ app.get('/api/health-check', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.send('💧 API de Proyecto Agua funcionando');
+  res.json({
+    message: '💧 API de Proyecto Agua funcionando',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health-check',
+      frontend: process.env.CLIENT_URL
+    }
+  });
 });
 
 // ============================================
 // MANEJO DE ERRORES
 // ============================================
 
+// 404 handler
+app.use((req, res, next) => {
+  res.status(404).json({
+    error: 'Ruta no encontrada',
+    path: req.path,
+    method: req.method
+  });
+});
+
+// Error handler global
 app.use((err, req, res, next) => {
   console.error('❌ Error global:', err);
   
@@ -222,10 +236,18 @@ app.use((err, req, res, next) => {
     }
     return res.status(400).json({ error: err.message });
   }
+
+  if (err.name === 'UnauthorizedError') {
+    return res.status(401).json({ 
+      error: 'Token inválido o expirado',
+      message: err.message 
+    });
+  }
   
-  res.status(500).json({ 
+  res.status(err.status || 500).json({ 
     error: 'Error interno del servidor',
-    message: process.env.NODE_ENV === 'development' ? err.message : undefined
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Algo salió mal',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 });
 
@@ -234,12 +256,24 @@ app.use((err, req, res, next) => {
 // ============================================
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log('='.repeat(50));
   console.log(`✅ Servidor corriendo en puerto ${PORT}`);
-  console.log(`🔍 Health check: https://proyecto-angular-loa8.onrender.com/api/health-check`);
+  console.log(`🔍 Health check: ${process.env.BACKEND_URL || `http://localhost:${PORT}`}/api/health-check`);
   console.log(`📁 Archivos estáticos: /uploads/`);
-  console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🌐 Entorno: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🌐 CORS permitido para:`, allowedOrigins);
+  console.log(`🎯 Frontend URL: ${process.env.CLIENT_URL || 'not set'}`);
   console.log('='.repeat(50));
 });
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+    process.exit(0);
+  });
+});
+
+module.exports = app;

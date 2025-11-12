@@ -272,12 +272,12 @@ router.get('/historial-actividades/:idUsuario', async (req, res) => {
 });
 
 // Health check específico para actividades
-router.get('/health-check', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
-    service: 'actividades',
-    timestamp: new Date().toISOString() 
-  });
-});
+//router.get('/health-check', (req, res) => {
+  //res.status(200).json({ 
+    //status: 'OK', 
+    //service: 'actividades',
+    //timestamp: new Date().toISOString() 
+  //});
+//});
 
 module.exports = router;

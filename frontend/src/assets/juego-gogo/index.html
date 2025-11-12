@@ -1347,7 +1347,7 @@
 
     async function loadRanking() {
       try {
-        const response = await fetch('http://localhost:3000/api/ranking-gogo?limite=10');
+        const response = await fetch('${this.apiUrl}/api/ranking-gogo?limite=10');
         if (!response.ok) throw new Error('Error al cargar ranking');
         
         const ranking = await response.json();
@@ -1400,7 +1400,7 @@
       try {
         const userId = await getUserId();
         
-        const response = await fetch('http://localhost:3000/api/ranking-gogo', {
+        const response = await fetch('${this.apiUrl}/api/ranking-gogo', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
